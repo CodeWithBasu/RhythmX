@@ -259,15 +259,13 @@ export default function Component() {
         await audioContextRef.current.resume()
       }
 
-      if (isPlaying) {
-        audioRef.current.pause()
-        console.log("Paused")
-      } else {
+      if (audioRef.current.paused) {
         await audioRef.current.play()
         console.log("Playing")
+      } else {
+        audioRef.current.pause()
+        console.log("Paused")
       }
-
-      setIsPlaying(!isPlaying)
     } catch (error) {
       console.error("Error toggling playback:", error)
     }
@@ -315,8 +313,15 @@ export default function Component() {
         ref={audioRef}
         crossOrigin="anonymous"
         onLoadedData={() => console.log("Audio loaded")}
-        onPlay={() => console.log("Audio started playing")}
-        onPause={() => console.log("Audio paused")}
+        onPlay={() => {
+          console.log("Audio started playing")
+          setIsPlaying(true)
+        }}
+        onPause={() => {
+          console.log("Audio paused")
+          setIsPlaying(false)
+        }}
+        onEnded={() => setIsPlaying(false)}
       />
 
       {/* Upload button - SIEMPRE VISIBLE */}
