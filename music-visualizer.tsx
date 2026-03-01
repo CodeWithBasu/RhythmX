@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import { Geist_Mono } from "next/font/google"
 import { Upload } from "lucide-react"
+import ElasticSlider from "./components/ui/elastic-slider"
 
 const geistMono = Geist_Mono({
   subsets: ["latin"],
@@ -20,6 +21,8 @@ export default function Component() {
   const [isInitialized, setIsInitialized] = useState(false)
   const [isLooping, setIsLooping] = useState(false)
   const [showInitialAnimation, setShowInitialAnimation] = useState(false)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
 
   // Audio refs
   const audioRef = useRef<HTMLAudioElement>(null)
@@ -322,6 +325,12 @@ export default function Component() {
           setIsPlaying(false)
         }}
         onEnded={() => setIsPlaying(false)}
+        onTimeUpdate={() => {
+          if (audioRef.current) setCurrentTime(audioRef.current.currentTime)
+        }}
+        onLoadedMetadata={() => {
+          if (audioRef.current) setDuration(audioRef.current.duration)
+        }}
       />
 
       {/* Upload button - SIEMPRE VISIBLE */}
@@ -408,6 +417,26 @@ export default function Component() {
         >
           {currentTrack}
         </motion.div>
+      </div>
+
+      {/* Seek Bar */}
+      <div className="w-full max-w-2xl mt-12 mb-4">
+        <div className="flex justify-between w-full px-2 text-xs font-medium text-white/40 mb-2">
+          <span>{Math.floor(currentTime / 60)}:{(Math.floor(currentTime % 60)).toString().padStart(2, '0')}</span>
+          <span>{Math.floor(duration / 60)}:{(Math.floor(duration % 60)).toString().padStart(2, '0')}</span>
+        </div>
+        <ElasticSlider
+          value={currentTime}
+          maxValue={duration || 100}
+          startingValue={0}
+          onChange={(val) => setCurrentTime(val)}
+          onDragEnd={(val) => {
+            if (audioRef.current) audioRef.current.currentTime = val
+          }}
+          leftIcon={null}
+          rightIcon={null}
+          className="w-full"
+        />
       </div>
     </div>
   )
