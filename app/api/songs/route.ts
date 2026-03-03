@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import clientPromise from '@/lib/mongodb'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const client = await clientPromise
@@ -20,7 +22,10 @@ export async function GET() {
 
     return NextResponse.json(formattedSongs)
   } catch (error) {
-    console.error('Error fetching songs:', error)
+    console.error('Error fetching songs in API:', error)
+    if (error instanceof Error) {
+      console.error('Stack trace:', error.stack)
+    }
     return new NextResponse('Internal Server Error', { status: 500 })
   }
 }

@@ -13,12 +13,9 @@ let client: MongoClient
 let clientPromise: Promise<MongoClient>
 
 if (!uri) {
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('Please add your Mongo URI to .env')
-  } else {
-    // In dev, we can provide a dummy promise to avoid crashing the whole dev server setup immediately
-    clientPromise = Promise.reject(new Error('DATABASE_URL is missing in .env'))
-  }
+  // We don't throw at the top level to avoid breaking the build. 
+  // Instead, we return a rejected promise that will only throw when awaited at runtime.
+  clientPromise = Promise.reject(new Error('DATABASE_URL is missing in environment variables. Please add it to Vercel/Local .env'))
 } else {
 
 if (process.env.NODE_ENV === 'development') {
