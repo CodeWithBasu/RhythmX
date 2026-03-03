@@ -1,11 +1,11 @@
 "use client"
 
-import type React from "react"
+import React, { useState, useEffect, useRef } from "react"
 
-import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import { Geist_Mono } from "next/font/google"
-import { Upload } from "lucide-react"
+import { Upload, Database } from "lucide-react"
+import Link from "next/link"
 import ElasticSlider from "@/components/ui/elastic-slider"
 
 const geistMono = Geist_Mono({
@@ -515,6 +515,17 @@ export default function Component() {
 
       {/* Actions */}
       <div className="absolute top-8 right-8 flex gap-3">
+        <Link href="/admin">
+          <motion.button
+            className="flex items-center gap-2 px-4 py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 hover:text-purple-200 rounded-lg border border-purple-500/20 hover:border-purple-500/40 transition-all duration-200"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Database size={16} />
+            <span className="text-sm">Admin</span>
+          </motion.button>
+        </Link>
+        
         <motion.button
           className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white rounded-lg border border-white/10 transition-all duration-200"
           onClick={() => setIsAddingSong(true)}
@@ -534,6 +545,7 @@ export default function Component() {
           <span className="text-sm">Upload MP3</span>
         </motion.button>
       </div>
+
 
       {/* Add Song Modal */}
       {isAddingSong && (
@@ -789,8 +801,8 @@ export default function Component() {
           value={currentTime}
           maxValue={duration || 100}
           startingValue={0}
-          onChange={(val) => setCurrentTime(val)}
-          onDragEnd={(val) => {
+          onChange={(val: number) => setCurrentTime(val)}
+          onDragEnd={(val: number) => {
             if (audioRef.current) audioRef.current.currentTime = val
           }}
           leftIcon={null}
