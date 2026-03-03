@@ -7,6 +7,7 @@ import { Geist_Mono } from "next/font/google"
 import { Upload, Database } from "lucide-react"
 import Link from "next/link"
 import ElasticSlider from "@/components/ui/elastic-slider"
+import { useDevice } from "@/hooks/use-device"
 
 const geistMono = Geist_Mono({
   subsets: ["latin"],
@@ -14,8 +15,18 @@ const geistMono = Geist_Mono({
 })
 
 export default function Component() {
+  const device = useDevice()
+  const activeBars = device === 'mobile' ? 32 : device === 'tablet' ? 56 : 80;
+  
+  const barsRef = useRef(activeBars)
+  
+  useEffect(() => {
+    barsRef.current = activeBars
+    setAudioData(new Array(activeBars).fill(0.01))
+  }, [activeBars])
+
   const [isPlaying, setIsPlaying] = useState(false)
-  const [audioData, setAudioData] = useState<number[]>(new Array(80).fill(0.01))
+  const [audioData, setAudioData] = useState<number[]>(() => new Array(80).fill(0.01))
   const [currentTrack, setCurrentTrack] = useState<string>("~/ 2 Million")
   const [hasAudio, setHasAudio] = useState(true) // Ahora true por defecto
   const [isInitialized, setIsInitialized] = useState(false)
@@ -177,7 +188,8 @@ export default function Component() {
 
     analyserRef.current.getByteFrequencyData(dataArray)
 
-    const bars = 80
+    const bars = barsRef.current
+    const halfBars = Math.floor(bars / 2)
     const rawData = []
     const usefulFreqRange = Math.floor(bufferLength * 0.3)
 
@@ -192,9 +204,9 @@ export default function Component() {
     for (let i = 0; i < bars; i++) {
       let value = 0
 
-      if (i < 40) {
+      if (i < halfBars) {
         // Lado izquierdo: AHORA TAMBIÉN SINTÉTICO
-        const freqIndex = Math.floor((i / 40) * usefulFreqRange)
+        const freqIndex = Math.floor((i / halfBars) * usefulFreqRange)
         const baseValue = dataArray[freqIndex] || 0
 
         // Añadir variación sintética al lado izquierdo también
@@ -203,8 +215,8 @@ export default function Component() {
         value = baseValue * (0.8 + synthetic) // Ligeramente diferente al derecho
       } else {
         // Lado derecho: crear datos sintéticos basados en el lado izquierdo
-        const mirrorIndex = 79 - i
-        const baseIndex = Math.floor((mirrorIndex / 40) * usefulFreqRange)
+        const mirrorIndex = (bars - 1) - i
+        const baseIndex = Math.floor((mirrorIndex / halfBars) * usefulFreqRange)
         const baseValue = dataArray[baseIndex] || 0
 
         const timeOffset = Date.now() * 0.008 + i * 0.15
@@ -219,11 +231,12 @@ export default function Component() {
         normalized = 0.01
       } else {
         // Amplificación por posición para efecto ola - REDUCIDA 40% MÁS
-        if (i < 20) {
+        const quarterBars = Math.floor(bars / 4)
+        if (i < quarterBars) {
           normalized *= 1.5 // Era 2.5, ahora 1.5 (40% menos)
-        } else if (i < 40) {
+        } else if (i < halfBars) {
           normalized *= 1.2 // Era 2.0, ahora 1.2 (40% menos)
-        } else if (i < 60) {
+        } else if (i < quarterBars * 3) {
           normalized *= 1.05 // Era 1.75, ahora 1.05 (40% menos)
         } else {
           normalized *= 0.9 // Era 1.5, ahora 0.9 (40% menos)
@@ -696,13 +709,13 @@ export default function Component() {
       </div>
 
       {/* Audio Visualizer - EFECTO OLA */}
-      <div className="flex items-end justify-center gap-1 mb-16 h-80 w-full max-w-6xl">
-        {audioData.map((height, index) => (
+      <div className="flex items-end justify-center gap-[2px] sm:gap-1 mb-16 h-80 w-full max-w-6xl px-2 sm:px-4 overflow-hidden">
+        {audioData.slice(0, activeBars).map((height, index) => (
           <motion.div
             key={index}
-            className="bg-white"
+            className="bg-white rounded-t-sm"
             style={{
-              width: "8px",
+              width: device === 'mobile' ? '4px' : device === 'tablet' ? '6px' : '8px',
               opacity: height > 0 ? 1 : 0,
             }}
             initial={{ scaleX: 0 }}
