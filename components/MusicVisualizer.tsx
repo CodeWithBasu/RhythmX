@@ -507,7 +507,8 @@ export default function Component() {
                       setNewSongMeta({ title: '', url: '', language: 'English' })
                       fetchSongs()
                     } else {
-                      alert("Error: File might be too large (>16MB) for simple storage.")
+                      const data = await response.json()
+                      alert(`Error: ${data.error || 'Failed to save song. The file might be too large.'}`)
                     }
                   }
                 } else {
@@ -520,6 +521,9 @@ export default function Component() {
                   if (response.ok) {
                     setIsAddingSong(false)
                     fetchSongs()
+                  } else {
+                    const data = await response.json()
+                    alert(`Error: ${data.error || 'Failed to save song.'}`)
                   }
                 }
               }} 

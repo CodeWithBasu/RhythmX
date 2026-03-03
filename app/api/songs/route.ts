@@ -38,6 +38,8 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { title, url, language, duration } = body
 
+    console.log(`[API] POST: Adding song "${title}" (Size: ~${Math.round(JSON.stringify(body).length / 1024)} KB)`)
+
     if (!title || !url) {
       return new NextResponse(JSON.stringify({ error: 'Title and URL are required' }), { status: 400 })
     }
@@ -54,14 +56,16 @@ export async function POST(request: Request) {
     }
 
     const result = await db.collection('songs').insertOne(newSong)
+    console.log(`[API] Success: Inserted song with ID ${result.insertedId}`)
     
     return NextResponse.json({ 
       success: true, 
       id: result.insertedId,
       song: newSong 
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('[API] POST Error:', error)
-    return new NextResponse(JSON.stringify({ error: 'Failed to add song' }), { status: 500 })
+    const errorMessage = error.message || 'Failed to add song'
+    return new NextResponse(JSON.stringify({ error: errorMessage }), { status: 500 })
   }
 }
