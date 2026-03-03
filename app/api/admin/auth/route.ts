@@ -9,7 +9,12 @@ export async function POST(request: Request) {
       return new NextResponse(JSON.stringify({ error: 'Password is required' }), { status: 400 })
     }
 
-    const adminPassword = process.env.ADMIN_PASSWORD || 'rhythmxadmin'
+    const adminPassword = process.env.ADMIN_PASSWORD
+
+    if (!adminPassword) {
+      console.error('[API] Admin Auth Error: ADMIN_PASSWORD is not set in .env')
+      return new NextResponse(JSON.stringify({ error: 'Server misconfiguration. Admin password not set in environment.' }), { status: 500 })
+    }
 
     if (password === adminPassword) {
       return NextResponse.json({ success: true })
