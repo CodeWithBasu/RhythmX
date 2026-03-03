@@ -1,9 +1,5 @@
 import { MongoClient, ServerApiVersion } from 'mongodb'
 
-if (!process.env.DATABASE_URL) {
-  throw new Error('Please add your Mongo URI to .env')
-}
-
 const uri = process.env.DATABASE_URL
 const options = {
   serverApi: {
@@ -15,6 +11,15 @@ const options = {
 
 let client: MongoClient
 let clientPromise: Promise<MongoClient>
+
+if (!uri) {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('Please add your Mongo URI to .env')
+  } else {
+    // In dev, we can provide a dummy promise to avoid crashing the whole dev server setup immediately
+    clientPromise = Promise.reject(new Error('DATABASE_URL is missing in .env'))
+  }
+} else {
 
 if (process.env.NODE_ENV === 'development') {
   // In development mode, use a global variable so that the value
@@ -32,6 +37,7 @@ if (process.env.NODE_ENV === 'development') {
   // In production mode, it's best to not use a global variable.
   client = new MongoClient(uri, options)
   clientPromise = client.connect()
+}
 }
 
 export default clientPromise
