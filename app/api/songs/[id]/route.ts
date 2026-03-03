@@ -4,10 +4,10 @@ import { ObjectId } from 'mongodb'
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id
+    const { id } = await params
     if (!id || id.length !== 24) {
        return new NextResponse(JSON.stringify({ error: 'Invalid Song ID' }), { status: 400 })
     }
