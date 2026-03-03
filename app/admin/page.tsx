@@ -13,10 +13,41 @@ interface Song {
 }
 
 export default function AdminPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [password, setPassword] = useState("")
+  const [authError, setAuthError] = useState("")
+  const [isAuthenticating, setIsAuthenticating] = useState(false)
+
   const [songs, setSongs] = useState<Song[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsAuthenticating(true)
+    setAuthError("")
+    
+    try {
+      const res = await fetch('/api/admin/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      })
+      
+      if (res.ok) {
+        setIsAuthenticated(true)
+        fetchSongs() // Load songs once authenticated
+      } else {
+        setAuthError("Invalid password. Please try again.")
+        setPassword("")
+      }
+    } catch (err) {
+      setAuthError("Network error. Please try again.")
+    } finally {
+      setIsAuthenticating(false)
+    }
+  }
 
   const fetchSongs = async () => {
     setLoading(true)
@@ -32,10 +63,6 @@ export default function AdminPage() {
       setLoading(false)
     }
   }
-
-  useEffect(() => {
-    fetchSongs()
-  }, [])
 
   const handleDelete = async (id: string, title: string) => {
     if (!confirm(`Are you sure you want to permanently delete "${title}"? This cannot be undone.`)) return
@@ -62,6 +89,59 @@ export default function AdminPage() {
     const m = Math.floor(seconds / 60)
     const s = Math.floor(seconds % 60)
     return `${m}:${s.toString().padStart(2, '0')}`
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-8 font-mono">
+        <div className="max-w-md w-full bg-[#111] border border-white/10 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-blue-500"></div>
+          
+          <div className="flex flex-col items-center text-center mb-8">
+            <div className="p-4 bg-white/5 border border-white/10 rounded-2xl mb-4">
+              <Database className="text-white/80" size={32} />
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight">Admin Access</h1>
+            <p className="text-white/40 text-sm mt-2">Enter the master password to access your cloud library</p>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter password..."
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50 transition-colors"
+                autoFocus
+              />
+            </div>
+            
+            {authError && (
+              <div className="text-red-400 text-sm text-center bg-red-400/10 py-2 rounded-lg">
+                {authError}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={isAuthenticating || !password}
+              className="w-full py-3 bg-white text-black font-bold rounded-xl hover:bg-white/90 disabled:opacity-50 transition-all flex justify-center items-center gap-2"
+            >
+              {isAuthenticating ? <RefreshCw size={18} className="animate-spin" /> : "Authenticate"}
+            </button>
+          </form>
+
+          <div className="mt-8 pt-6 border-t border-white/10 text-center">
+            <Link href="/" className="text-white/40 hover:text-white text-sm transition-colors flex items-center justify-center gap-2">
+              <Home size={14} />
+              Return to RhythmX
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
