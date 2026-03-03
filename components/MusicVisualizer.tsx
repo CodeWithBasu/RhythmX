@@ -26,6 +26,7 @@ export default function Component() {
   const [songs, setSongs] = useState<any[]>([])
   const [error, setError] = useState<string | null>(null)
   const [isAddingSong, setIsAddingSong] = useState(false)
+  const [isBuffering, setIsBuffering] = useState(false)
   const [dragActive, setDragActive] = useState(false)
   const [newSongMeta, setNewSongMeta] = useState({ title: '', url: '', language: 'English' })
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -42,8 +43,20 @@ export default function Component() {
       })
       .catch(err => {
         console.error("Failed to load songs", err)
-        setError("Failed to connect to database. Check your Vercel environment variables and MongoDB Network Access.")
+        setError("Network error. Please check your connection.")
       })
+  }
+
+  const deleteSong = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!confirm("Are you sure you want to delete this song?")) return
+    
+    try {
+      const res = await fetch(`/api/songs?id=${id}`, { method: 'DELETE' })
+      if (res.ok) fetchSongs()
+    } catch (err) {
+      console.error("Delete failed")
+    }
   }
 
   useEffect(() => {
@@ -340,15 +353,19 @@ export default function Component() {
       let songUrl = song.url
       if (!songUrl) {
         try {
+          setIsBuffering(true)
           console.log(`Fetching audio data for: ${song.title}`)
           const res = await fetch(`/api/songs/${song.id}`)
           const data = await res.json()
+          setIsBuffering(false)
+          
           if (data.url) {
             songUrl = data.url
           } else {
             throw new Error("No URL found in response")
           }
         } catch (err) {
+          setIsBuffering(false)
           console.error("Failed to fetch song URL", err)
           alert("Could not load song data. Please try again.")
           return
@@ -427,9 +444,32 @@ export default function Component() {
       setIsPlaying(false)
     }
 
-    const handleError = (e: Event) => {
-      console.error("Audio error:", e)
+    const handleError = (e: any) => {
+      console.error("Audio error event:", e)
       setIsPlaying(false)
+      setIsBuffering(false)
+      // Check for specific error types
+      if (e.target.error) {
+        switch (e.target.error.code) {
+          case e.target.error.MEDIA_ERR_ABORTED:
+            console.log("Audio playback aborted.")
+            break
+          case e.target.error.MEDIA_ERR_NETWORK:
+            alert("Audio playback error: A network error caused the audio download to fail.")
+            break
+          case e.target.error.MEDIA_ERR_DECODE:
+            alert("Audio playback error: The audio file is corrupted or not supported.")
+            break
+          case e.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+            alert("Audio playback error: The audio format is not supported or the URL is invalid.")
+            break
+          default:
+            alert("Audio playback error: An unknown error occurred.")
+            break
+        }
+      } else {
+        alert("Audio playback error: An unknown error occurred.")
+      }
     }
 
     audio.addEventListener("canplaythrough", handleCanPlay)
@@ -452,7 +492,10 @@ export default function Component() {
       <audio
         ref={audioRef}
         crossOrigin="anonymous"
-        onLoadedData={() => console.log("Audio loaded")}
+        onLoadedData={() => {
+            console.log("Audio loaded")
+            setIsBuffering(false)
+        }}
         onPlay={() => {
           console.log("Audio started playing")
           setIsPlaying(true)
@@ -505,56 +548,63 @@ export default function Component() {
             <form 
               onSubmit={async (e) => {
                 e.preventDefault()
-                let updateMeta = { ...newSongMeta }
                 
-                // For files, we convert to Base64 to store in DB (simple way)
                 if (selectedFile) {
-                  // Vercel limit is 4.5MB total request size. 
-                  // Base64 increases size by ~33%, so ~4MB file + overhead = ~5.3MB (Risky)
-                  // Let's set a safe limit of 4MB.
                   if (selectedFile.size > 4 * 1024 * 1024) {
                     alert("Error: File is too large. Vercel limits uploads to 4.5MB. Please use a smaller MP3 or a direct URL.")
                     return
                   }
 
-                  const reader = new FileReader()
-                  reader.readAsDataURL(selectedFile)
-                  reader.onload = async () => {
-                    try {
-                      updateMeta.url = reader.result as string
-                      
-                      const response = await fetch('/api/songs', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(updateMeta),
-                      })
-
-                      if (response.ok) {
-                        setIsAddingSong(false)
-                        setSelectedFile(null)
-                        setNewSongMeta({ title: '', url: '', language: 'English' })
-                        fetchSongs()
-                      } else {
-                        let errorMsg = 'Failed to save song.'
-                        try {
-                          const data = await response.json()
-                          errorMsg = data.error || errorMsg
-                        } catch (e) {
-                          if (response.status === 413) errorMsg = "File is too large for the server (Vercel limit)."
+                  setIsBuffering(true) // Use buffering state as loading
+                  const audio = new Audio()
+                  const url = URL.createObjectURL(selectedFile)
+                  audio.src = url
+                  audio.onloadedmetadata = () => {
+                    const duration = Math.floor(audio.duration)
+                    URL.revokeObjectURL(url)
+                    
+                    const reader = new FileReader()
+                    reader.readAsDataURL(selectedFile)
+                    reader.onload = async () => {
+                      try {
+                        const songData = {
+                          ...newSongMeta,
+                          url: reader.result as string,
+                          duration: duration
                         }
-                        alert(`Error: ${errorMsg}`)
+                        
+                        const response = await fetch('/api/songs', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify(songData),
+                        })
+
+                        setIsBuffering(false)
+                        if (response.ok) {
+                          setIsAddingSong(false)
+                          setSelectedFile(null)
+                          setNewSongMeta({ title: '', url: '', language: 'English' })
+                          fetchSongs()
+                        } else {
+                          const data = await response.json()
+                          alert(`Error: ${data.error || 'Failed to save song.'}`)
+                        }
+                      } catch (err) {
+                        setIsBuffering(false)
+                        alert("Network error: Could not connect to the server.")
                       }
-                    } catch (err) {
-                      alert("Network error: Could not connect to the server.")
                     }
                   }
+                  audio.onerror = () => {
+                    setIsBuffering(false)
+                    alert("Failed to read audio file duration. The file might be corrupted.")
+                  }
                 } else {
-                  // Standard URL approach
                   try {
                     const response = await fetch('/api/songs', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify(updateMeta),
+                      body: JSON.stringify(newSongMeta),
                     })
                     if (response.ok) {
                       setIsAddingSong(false)
@@ -638,10 +688,10 @@ export default function Component() {
                 </button>
                 <button 
                   type="submit"
-                  disabled={!newSongMeta.title || (!newSongMeta.url && !selectedFile)}
+                  disabled={!newSongMeta.title || (!newSongMeta.url && !selectedFile) || isBuffering}
                   className="flex-1 py-3 bg-white text-black font-bold rounded-lg hover:bg-white/90 disabled:opacity-50 transition-colors"
                 >
-                  Save to Library
+                  {isBuffering ? "Processing..." : "Save to Library"}
                 </button>
               </div>
             </form>
@@ -655,6 +705,7 @@ export default function Component() {
         <div>Initialized: {isInitialized ? "✓" : "✗"}</div>
         <div>Playing: {isPlaying ? "✓" : "✗"}</div>
         <div>Loop: {isLooping ? "✓" : "✗"}</div>
+        <div>{isBuffering ? "BUFF..." : ""}</div>
       </div>
 
       {/* Audio Visualizer - EFECTO OLA */}
@@ -702,16 +753,20 @@ export default function Component() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-white">
-            <motion.path
-              d={isPlaying ? "M6 4h4v16H6V4zm8 0h4v16h-4V4z" : "M8 5v14l11-7z"}
-              fill="currentColor"
-              animate={{
-                d: isPlaying ? "M6 4h4v16H6V4zm8 0h4v16h-4V4z" : "M8 5v14l11-7z",
-              }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-            />
-          </svg>
+          {isBuffering ? (
+              <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+          ) : (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-white">
+                <motion.path
+                d={isPlaying ? "M6 4h4v16H6V4zm8 0h4v16h-4V4z" : "M8 5v14l11-7z"}
+                fill="currentColor"
+                animate={{
+                    d: isPlaying ? "M6 4h4v16H6V4zm8 0h4v16h-4V4z" : "M8 5v14l11-7z",
+                }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                />
+            </svg>
+          )}
         </motion.button>
 
         <motion.div
@@ -746,27 +801,42 @@ export default function Component() {
 
       {/* Playlist */}
       <div className="mt-8 w-full max-w-2xl bg-white/5 rounded-xl border border-white/10 overflow-hidden">
-        <div className="p-4 border-b border-white/10 bg-white/5 font-semibold text-white/80">
-          Playlist
+        <div className="p-4 border-b border-white/10 bg-white/5 font-semibold text-white/80 flex justify-between">
+          <span>Playlist</span>
+          <span className="text-[10px] text-white/20 uppercase tracking-[2px]">On-Demand Cloud Library</span>
         </div>
         <div className="divide-y divide-white/5 max-h-60 overflow-y-auto">
           {songs.map((song) => (
             <div 
               key={song.id} 
               onClick={() => playSong(song)}
-              className="p-3 text-white/60 hover:text-white hover:bg-white/10 cursor-pointer transition-colors flex justify-between items-center"
+              className="p-3 text-white/60 hover:text-white hover:bg-white/10 cursor-pointer transition-colors group flex justify-between items-center"
             >
-              <div>
-                <span className="font-medium mr-2">{song.title}</span>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-white/10">{song.language}</span>
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 rounded-full bg-white/10 group-hover:bg-white transition-colors" />
+                <div>
+                    <span className="font-medium mr-2">{song.title}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/5 border border-white/10">{song.language}</span>
+                </div>
               </div>
-              <div className="text-xs opacity-50">
-                {Math.floor(song.duration / 60)}:{(Math.floor(song.duration % 60)).toString().padStart(2, '0')}
+              <div className="flex items-center gap-4">
+                <div className="text-xs opacity-50">
+                    {Math.floor(song.duration / 60)}:{(Math.floor(song.duration % 60)).toString().padStart(2, '0')}
+                </div>
+                <button 
+                  onClick={(e) => deleteSong(song.id, e)}
+                  className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-500 transition-all"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/></svg>
+                </button>
               </div>
             </div>
           ))}
           {songs.length === 0 && !error && (
-            <div className="p-4 text-center text-sm text-white/40">Loading songs...</div>
+            <div className="p-6 text-center">
+                <div className="text-white/20 text-sm italic">Library is empty.</div>
+                <div className="text-white/10 text-[10px] mt-1">Add music using the buttons above.</div>
+            </div>
           )}
           {error && (
             <div className="p-4 text-center text-sm text-red-400 bg-red-400/10">

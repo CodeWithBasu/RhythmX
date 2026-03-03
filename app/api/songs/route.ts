@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { MongoClient, ObjectId } from 'mongodb'
 import clientPromise from '@/lib/mongodb'
 
 export const dynamic = 'force-dynamic'
@@ -68,5 +69,26 @@ export async function POST(request: Request) {
     console.error('[API] POST Error:', error)
     const errorMessage = error.message || 'Failed to add song'
     return new NextResponse(JSON.stringify({ error: errorMessage }), { status: 500 })
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+
+    if (!id || id.length !== 24) {
+      return new NextResponse(JSON.stringify({ error: 'Invalid ID' }), { status: 400 })
+    }
+
+    const client = await clientPromise
+    const db = client.db('RhythmX')
+    
+    await db.collection('songs').deleteOne({ _id: new ObjectId(id) })
+    
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('[API] DELETE Error:', error)
+    return new NextResponse(JSON.stringify({ error: 'Failed to delete song' }), { status: 500 })
   }
 }
