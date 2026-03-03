@@ -26,13 +26,42 @@ export async function GET() {
     return NextResponse.json(formattedSongs)
   } catch (error) {
     console.error('[API] Critical Error:', error)
-    if (error instanceof Error) {
-      console.error('[API] Error Name:', error.name)
-      console.error('[API] Error Message:', error.message)
-    }
     return new NextResponse(JSON.stringify({ error: 'Failed to fetch songs' }), { 
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     })
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json()
+    const { title, url, language, duration } = body
+
+    if (!title || !url) {
+      return new NextResponse(JSON.stringify({ error: 'Title and URL are required' }), { status: 400 })
+    }
+
+    const client = await clientPromise
+    const db = client.db('RhythmX')
+    
+    const newSong = {
+      title,
+      url,
+      language: language || 'Unknown',
+      duration: duration || 0,
+      createdAt: new Date()
+    }
+
+    const result = await db.collection('songs').insertOne(newSong)
+    
+    return NextResponse.json({ 
+      success: true, 
+      id: result.insertedId,
+      song: newSong 
+    })
+  } catch (error) {
+    console.error('[API] POST Error:', error)
+    return new NextResponse(JSON.stringify({ error: 'Failed to add song' }), { status: 500 })
   }
 }

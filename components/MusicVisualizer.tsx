@@ -25,8 +25,10 @@ export default function Component() {
   const [duration, setDuration] = useState(0)
   const [songs, setSongs] = useState<any[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [isAddingSong, setIsAddingSong] = useState(false)
+  const [newSongMeta, setNewSongMeta] = useState({ title: '', url: '', language: 'English' })
 
-  useEffect(() => {
+  const fetchSongs = () => {
     fetch('/api/songs')
       .then(res => {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
@@ -40,7 +42,32 @@ export default function Component() {
         console.error("Failed to load songs", err)
         setError("Failed to connect to database. Check your Vercel environment variables and MongoDB Network Access.")
       })
+  }
+
+  useEffect(() => {
+    fetchSongs()
   }, [])
+
+  const handleAddSong = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      const response = await fetch('/api/songs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newSongMeta),
+      })
+
+      if (response.ok) {
+        setIsAddingSong(false)
+        setNewSongMeta({ title: '', url: '', language: 'English' })
+        fetchSongs() // Refresh list
+      } else {
+        alert("Failed to add song. Make sure Title and URL are valid.")
+      }
+    } catch (err) {
+      console.error("Error adding song:", err)
+    }
+  }
 
   // Audio refs
   const audioRef = useRef<HTMLAudioElement>(null)
@@ -391,16 +418,79 @@ export default function Component() {
         }}
       />
 
-      {/* Upload button - SIEMPRE VISIBLE */}
-      <motion.button
-        className="absolute top-8 right-8 flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded-lg border border-white/20 hover:border-white/40 transition-all duration-200"
-        onClick={() => fileInputRef.current?.click()}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        <Upload size={16} />
-        <span className="text-sm">Upload MP3</span>
-      </motion.button>
+      {/* Actions */}
+      <div className="absolute top-8 right-8 flex gap-3">
+        <motion.button
+          className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white rounded-lg border border-white/10 transition-all duration-200"
+          onClick={() => setIsAddingSong(true)}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <span className="text-sm">+ Add to Library</span>
+        </motion.button>
+
+        <motion.button
+          className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded-lg border border-white/20 hover:border-white/40 transition-all duration-200"
+          onClick={() => fileInputRef.current?.click()}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Upload size={16} />
+          <span className="text-sm">Upload MP3</span>
+        </motion.button>
+      </div>
+
+      {/* Add Song Modal */}
+      {isAddingSong && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-[#111] border border-white/10 p-8 rounded-2xl w-full max-w-md shadow-2xl"
+          >
+            <h2 className="text-xl font-bold text-white mb-6">Add Song to Library</h2>
+            <form onSubmit={handleAddSong} className="space-y-4">
+              <div>
+                <label className="block text-xs text-white/40 mb-2 uppercase tracking-widest">Song Title</label>
+                <input 
+                  required
+                  type="text" 
+                  value={newSongMeta.title}
+                  onChange={(e) => setNewSongMeta({...newSongMeta, title: e.target.value})}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-white/30"
+                  placeholder="e.g. Starboy (The Weeknd)"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-white/40 mb-2 uppercase tracking-widest">Direct MP3 URL</label>
+                <input 
+                  required
+                  type="url" 
+                  value={newSongMeta.url}
+                  onChange={(e) => setNewSongMeta({...newSongMeta, url: e.target.value})}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-white/30"
+                  placeholder="https://example.com/song.mp3"
+                />
+              </div>
+              <div className="flex gap-4 mt-8">
+                <button 
+                  type="button"
+                  onClick={() => setIsAddingSong(false)}
+                  className="flex-1 py-3 text-white/40 hover:text-white transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  className="flex-1 py-3 bg-white text-black font-bold rounded-lg hover:bg-white/90 transition-colors"
+                >
+                  Save to Library
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
 
       {/* Debug info */}
       <div className="absolute top-8 left-8 text-white/40 text-xs">
