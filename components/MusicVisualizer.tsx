@@ -841,6 +841,11 @@ export default function Component() {
           )}
         </div>
       </div>
+
+      {/* Footer */}
+      <div className="mt-12 text-center text-white/30 text-xs sm:text-sm tracking-widest uppercase font-medium">
+        made with ❤️ by Basudev ☕
+      </div>
     </div>
   )
 }
