@@ -15,20 +15,24 @@ export async function GET() {
       .sort({ createdAt: 1 })
       .toArray()
     
-    console.log(`Found ${songs.length} songs in database.`)
+    console.log(`[API] Success: Found ${songs.length} songs in collection 'songs'`)
       
     // Transform _id to id for frontend compatibility
     const formattedSongs = songs.map(song => ({
       ...song,
-      id: song._id.toString(),
+      id: song._id?.toString() || Math.random().toString(),
     }))
 
     return NextResponse.json(formattedSongs)
   } catch (error) {
-    console.error('Error fetching songs in API:', error)
+    console.error('[API] Critical Error:', error)
     if (error instanceof Error) {
-      console.error('Stack trace:', error.stack)
+      console.error('[API] Error Name:', error.name)
+      console.error('[API] Error Message:', error.message)
     }
-    return new NextResponse('Internal Server Error', { status: 500 })
+    return new NextResponse(JSON.stringify({ error: 'Failed to fetch songs' }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    })
   }
 }

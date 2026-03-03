@@ -7,6 +7,9 @@ const options = {
     strict: true,
     deprecationErrors: true,
   },
+  connectTimeoutMS: 10000, // 10 seconds
+  socketTimeoutMS: 45000,  // 45 seconds
+  maxPoolSize: 10,         // Limit connections in serverless
 }
 
 let client: MongoClient

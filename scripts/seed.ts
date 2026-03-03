@@ -167,7 +167,7 @@ const hitSongs = [
 async function main() {
   try {
     await client.connect()
-    const db = client.db()
+    const db = client.db('RhythmX')
     const songsCollection = db.collection('songs')
 
     console.log(`Clearing existing records...`)
