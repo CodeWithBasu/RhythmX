@@ -11,6 +11,12 @@ const audioCache = new LRUCache<string, { buffer: Buffer; mimeType: string }>({
   ttl: 1000 * 60 * 60 * 24, // 24 hours
 })
 
+// Cache for standard redirects (non-base64 songs)
+const redirectCache = new LRUCache<string, string>({
+  max: 100,
+  ttl: 1000 * 60 * 60 * 24, // 24 hours
+})
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -22,7 +28,7 @@ export async function GET(
        return new NextResponse('Invalid Song ID', { status: 400 })
     }
 
-    // 1. Check in-memory fast cache
+    // 1. Check in-memory fast caches
     const cachedData = audioCache.get(id)
     if (cachedData) {
       console.log(`[API Stream] Cache HIT for: ${id}`)
@@ -34,6 +40,12 @@ export async function GET(
           'Cache-Control': 'public, max-age=86400, immutable'
         }
       })
+    }
+
+    const cachedRedirect = redirectCache.get(id)
+    if (cachedRedirect) {
+      console.log(`[API Stream] Redirect Cache HIT for: ${id}`)
+      return NextResponse.redirect(new URL(cachedRedirect, request.url))
     }
 
     console.log(`[API Stream] Cache MISS for: ${id}`)
@@ -48,9 +60,15 @@ export async function GET(
       return new NextResponse('Song not found', { status: 404 })
     }
 
-    // Extract mime type and base64 data
-    // Format: "data:audio/mp3;base64,....."
     const dataUrl = song.url as string
+
+    // Check if it's a standard URL or file path (e.g. /songs/..., http://...)
+    if (!dataUrl.startsWith('data:')) {
+      redirectCache.set(id, dataUrl)
+      return NextResponse.redirect(new URL(dataUrl, request.url))
+    }
+
+    // Otherwise, parse Base64 data URI format
     const match = dataUrl.match(/^data:(.*?);base64,(.*)$/)
     
     if (!match) {
