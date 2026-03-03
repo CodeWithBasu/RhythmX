@@ -26,7 +26,9 @@ export default function Component() {
   const [songs, setSongs] = useState<any[]>([])
   const [error, setError] = useState<string | null>(null)
   const [isAddingSong, setIsAddingSong] = useState(false)
+  const [dragActive, setDragActive] = useState(false)
   const [newSongMeta, setNewSongMeta] = useState({ title: '', url: '', language: 'English' })
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
   const fetchSongs = () => {
     fetch('/api/songs')
@@ -48,8 +50,38 @@ export default function Component() {
     fetchSongs()
   }, [])
 
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true)
+    } else if (e.type === "dragleave") {
+      setDragActive(false)
+    }
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragActive(false)
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0]
+      if (file.type.startsWith('audio/')) {
+        setSelectedFile(file)
+        setNewSongMeta({
+          ...newSongMeta,
+          title: file.name.replace(/\.[^/.]+$/, "")
+        })
+      }
+    }
+  }
+
   const handleAddSong = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // We'll use the URL as a backup for now, but extract the title. 
+    // Usually we would need storage like Vercel Blob or Amazon S3 here.
     try {
       const response = await fetch('/api/songs', {
         method: 'POST',
@@ -60,7 +92,8 @@ export default function Component() {
       if (response.ok) {
         setIsAddingSong(false)
         setNewSongMeta({ title: '', url: '', language: 'English' })
-        fetchSongs() // Refresh list
+        setSelectedFile(null)
+        fetchSongs() 
       } else {
         alert("Failed to add song. Make sure Title and URL are valid.")
       }
@@ -446,10 +479,85 @@ export default function Component() {
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-[#111] border border-white/10 p-8 rounded-2xl w-full max-w-md shadow-2xl"
+            className="bg-[#111] border border-white/10 p-8 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden"
           >
             <h2 className="text-xl font-bold text-white mb-6">Add Song to Library</h2>
-            <form onSubmit={handleAddSong} className="space-y-4">
+            
+            <form 
+              onSubmit={async (e) => {
+                e.preventDefault()
+                let updateMeta = { ...newSongMeta }
+                
+                // For files, we convert to Base64 to store in DB (simple way)
+                if (selectedFile) {
+                  const reader = new FileReader()
+                  reader.readAsDataURL(selectedFile)
+                  reader.onload = async () => {
+                    updateMeta.url = reader.result as string
+                    
+                    const response = await fetch('/api/songs', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(updateMeta),
+                    })
+
+                    if (response.ok) {
+                      setIsAddingSong(false)
+                      setSelectedFile(null)
+                      setNewSongMeta({ title: '', url: '', language: 'English' })
+                      fetchSongs()
+                    } else {
+                      alert("Error: File might be too large (>16MB) for simple storage.")
+                    }
+                  }
+                } else {
+                  // Standard URL approach
+                  const response = await fetch('/api/songs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updateMeta),
+                  })
+                  if (response.ok) {
+                    setIsAddingSong(false)
+                    fetchSongs()
+                  }
+                }
+              }} 
+              className="space-y-4"
+              onDragEnter={handleDrag}
+            >
+              <div 
+                className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
+                  dragActive ? "border-white bg-white/5" : "border-white/10 bg-white/0"
+                } ${selectedFile ? "border-green-500/50 bg-green-500/5" : ""}`}
+                onDragOver={handleDrag}
+                onDragLeave={handleDrag}
+                onDrop={handleDrop}
+              >
+                {selectedFile ? (
+                  <div className="space-y-2">
+                    <div className="text-green-500 font-medium">✓ {selectedFile.name}</div>
+                    <button type="button" onClick={() => setSelectedFile(null)} className="text-xs text-white/40 hover:text-white underline">Change File</button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="text-white/60">Drag and drop an MP3 here</div>
+                    <div className="text-xs text-white/30 uppercase tracking-widest">or</div>
+                    <button type="button" onClick={() => fileInputRef.current?.click()} className="text-sm border border-white/20 px-3 py-1 rounded hover:bg-white/5 text-white/80 transition-colors">Select File</button>
+                  </div>
+                )}
+              </div>
+
+              {dragActive && (
+                <div 
+                  className="fixed inset-0 z-10" 
+                  onDragEnter={handleDrag} 
+                  onDragLeave={handleDrag} 
+                  onDragOver={handleDrag} 
+                  onDrop={handleDrop}
+                />
+              )}
+
               <div>
                 <label className="block text-xs text-white/40 mb-2 uppercase tracking-widest">Song Title</label>
                 <input 
@@ -461,17 +569,20 @@ export default function Component() {
                   placeholder="e.g. Starboy (The Weeknd)"
                 />
               </div>
-              <div>
-                <label className="block text-xs text-white/40 mb-2 uppercase tracking-widest">Direct MP3 URL</label>
-                <input 
-                  required
-                  type="url" 
-                  value={newSongMeta.url}
-                  onChange={(e) => setNewSongMeta({...newSongMeta, url: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-white/30"
-                  placeholder="https://example.com/song.mp3"
-                />
-              </div>
+
+              {!selectedFile && (
+                <div>
+                  <label className="block text-xs text-white/40 mb-2 uppercase tracking-widest">Or Use Direct MP3 URL</label>
+                  <input 
+                    type="url" 
+                    value={newSongMeta.url}
+                    onChange={(e) => setNewSongMeta({...newSongMeta, url: e.target.value})}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-white/30"
+                    placeholder="https://example.com/song.mp3"
+                  />
+                </div>
+              )}
+
               <div className="flex gap-4 mt-8">
                 <button 
                   type="button"
@@ -482,7 +593,8 @@ export default function Component() {
                 </button>
                 <button 
                   type="submit"
-                  className="flex-1 py-3 bg-white text-black font-bold rounded-lg hover:bg-white/90 transition-colors"
+                  disabled={!newSongMeta.title || (!newSongMeta.url && !selectedFile)}
+                  className="flex-1 py-3 bg-white text-black font-bold rounded-lg hover:bg-white/90 disabled:opacity-50 transition-colors"
                 >
                   Save to Library
                 </button>
