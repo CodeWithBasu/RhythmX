@@ -336,8 +336,27 @@ export default function Component() {
         audioRef.current.pause()
       }
       
+      // If the song doesn't have a URL (meta-only from playlist), fetch it
+      let songUrl = song.url
+      if (!songUrl) {
+        try {
+          console.log(`Fetching audio data for: ${song.title}`)
+          const res = await fetch(`/api/songs/${song.id}`)
+          const data = await res.json()
+          if (data.url) {
+            songUrl = data.url
+          } else {
+            throw new Error("No URL found in response")
+          }
+        } catch (err) {
+          console.error("Failed to fetch song URL", err)
+          alert("Could not load song data. Please try again.")
+          return
+        }
+      }
+
       // Update track info
-      audioRef.current.src = song.url
+      audioRef.current.src = songUrl
       audioRef.current.load()
       setCurrentTrack(`~/ ${song.title}`)
       setHasAudio(true)

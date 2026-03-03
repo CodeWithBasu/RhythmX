@@ -12,10 +12,11 @@ export async function GET() {
     const songs = await db
       .collection('songs')
       .find({})
+      .project({ url: 0 }) // Optimization: Don't fetch huge Base64 data for the playlist
       .sort({ createdAt: 1 })
       .toArray()
     
-    console.log(`[API] Success: Found ${songs.length} songs in collection 'songs'`)
+    console.log(`[API] Success: Found ${songs.length} songs (Metadata only)`)
       
     // Transform _id to id for frontend compatibility
     const formattedSongs = songs.map(song => ({
