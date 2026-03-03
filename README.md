@@ -29,7 +29,7 @@ graph TD
     end
 
     subgraph "Backend (Next.js API)"
-        API[/api/songs]
+        API["/api/songs"]
         MongoClient[(MongoDB Native Driver)]
     end
 
