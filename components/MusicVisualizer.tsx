@@ -339,27 +339,11 @@ export default function Component() {
         audioRef.current.pause()
       }
       
-      // If the song doesn't have a URL (meta-only from playlist), fetch it
+      // Instead of downloading a massive Base64 JSON payload, use the new streaming endpoint
       let songUrl = song.url
       if (!songUrl) {
-        try {
-          setIsBuffering(true)
-          console.log(`Fetching audio data for: ${song.title}`)
-          const res = await fetch(`/api/songs/${song.id}`)
-          const data = await res.json()
-          setIsBuffering(false)
-          
-          if (data.url) {
-            songUrl = data.url
-          } else {
-            throw new Error("No URL found in response")
-          }
-        } catch (err) {
-          setIsBuffering(false)
-          console.error("Failed to fetch song URL", err)
-          alert("Could not load song data. Please try again.")
-          return
-        }
+        setIsBuffering(true) // Indicate buffering while the server fetches DB and decodes
+        songUrl = `/api/songs/${song.id}/stream`
       }
 
       // Update track info
@@ -425,6 +409,7 @@ export default function Component() {
 
     const handleCanPlay = () => {
       console.log("Audio can play")
+      setIsBuffering(false)
       if (!isInitialized) {
         initializeAudioContext()
       }
