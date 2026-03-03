@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import { Geist_Mono } from "next/font/google"
 import { Upload } from "lucide-react"
-import ElasticSlider from "./components/ui/elastic-slider"
+import ElasticSlider from "@/components/ui/elastic-slider"
 
 const geistMono = Geist_Mono({
   subsets: ["latin"],
