@@ -473,7 +473,7 @@ export default function Component() {
   }, [hasAudio, isInitialized])
 
   return (
-    <div className={`min-h-screen bg-black flex flex-col items-center justify-center p-8 ${geistMono.className}`}>
+    <div className={`min-h-screen bg-transparent flex flex-col items-center justify-center p-8 ${geistMono.className}`}>
       {/* Hidden file input */}
       <input ref={fileInputRef} type="file" accept="audio/*" onChange={handleFileUpload} className="hidden" />
 
