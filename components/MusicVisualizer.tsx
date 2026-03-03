@@ -490,40 +490,62 @@ export default function Component() {
                 
                 // For files, we convert to Base64 to store in DB (simple way)
                 if (selectedFile) {
+                  // Vercel limit is 4.5MB total request size. 
+                  // Base64 increases size by ~33%, so ~4MB file + overhead = ~5.3MB (Risky)
+                  // Let's set a safe limit of 4MB.
+                  if (selectedFile.size > 4 * 1024 * 1024) {
+                    alert("Error: File is too large. Vercel limits uploads to 4.5MB. Please use a smaller MP3 or a direct URL.")
+                    return
+                  }
+
                   const reader = new FileReader()
                   reader.readAsDataURL(selectedFile)
                   reader.onload = async () => {
-                    updateMeta.url = reader.result as string
-                    
+                    try {
+                      updateMeta.url = reader.result as string
+                      
+                      const response = await fetch('/api/songs', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updateMeta),
+                      })
+
+                      if (response.ok) {
+                        setIsAddingSong(false)
+                        setSelectedFile(null)
+                        setNewSongMeta({ title: '', url: '', language: 'English' })
+                        fetchSongs()
+                      } else {
+                        let errorMsg = 'Failed to save song.'
+                        try {
+                          const data = await response.json()
+                          errorMsg = data.error || errorMsg
+                        } catch (e) {
+                          if (response.status === 413) errorMsg = "File is too large for the server (Vercel limit)."
+                        }
+                        alert(`Error: ${errorMsg}`)
+                      }
+                    } catch (err) {
+                      alert("Network error: Could not connect to the server.")
+                    }
+                  }
+                } else {
+                  // Standard URL approach
+                  try {
                     const response = await fetch('/api/songs', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify(updateMeta),
                     })
-
                     if (response.ok) {
                       setIsAddingSong(false)
-                      setSelectedFile(null)
-                      setNewSongMeta({ title: '', url: '', language: 'English' })
                       fetchSongs()
                     } else {
                       const data = await response.json()
-                      alert(`Error: ${data.error || 'Failed to save song. The file might be too large.'}`)
+                      alert(`Error: ${data.error || 'Failed to save song.'}`)
                     }
-                  }
-                } else {
-                  // Standard URL approach
-                  const response = await fetch('/api/songs', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(updateMeta),
-                  })
-                  if (response.ok) {
-                    setIsAddingSong(false)
-                    fetchSongs()
-                  } else {
-                    const data = await response.json()
-                    alert(`Error: ${data.error || 'Failed to save song.'}`)
+                  } catch (err) {
+                    alert("Network error: Could not connect to the server.")
                   }
                 }
               }} 
