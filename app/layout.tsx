@@ -22,6 +22,8 @@ export const metadata: Metadata = {
   },
 }
 
+import Background from '@/components/Background'
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -29,7 +31,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="font-sans antialiased">
+      <body className="font-sans antialiased text-white">
+        <Background />
         {children}
       </body>
     </html>
