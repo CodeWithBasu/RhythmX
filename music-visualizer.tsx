@@ -24,12 +24,22 @@ export default function Component() {
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
   const [songs, setSongs] = useState<any[]>([])
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetch('/api/songs')
-      .then(res => res.json())
-      .then(data => setSongs(data))
-      .catch(err => console.error("Failed to load songs", err))
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
+        return res.json()
+      })
+      .then(data => {
+        setSongs(data)
+        setError(null)
+      })
+      .catch(err => {
+        console.error("Failed to load songs", err)
+        setError("Failed to connect to database. Check your Vercel environment variables and MongoDB Network Access.")
+      })
   }, [])
 
   // Audio refs
@@ -508,8 +518,13 @@ export default function Component() {
               </div>
             </div>
           ))}
-          {songs.length === 0 && (
+          {songs.length === 0 && !error && (
             <div className="p-4 text-center text-sm text-white/40">Loading songs...</div>
+          )}
+          {error && (
+            <div className="p-4 text-center text-sm text-red-400 bg-red-400/10">
+              {error}
+            </div>
           )}
         </div>
       </div>
