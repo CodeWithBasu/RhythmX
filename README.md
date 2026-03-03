@@ -23,18 +23,18 @@ graph TD
     User((User))
 
     subgraph "Frontend (Next.js 15)"
-        UI[React Components]
-        Visualizer[Web Audio API Visualizer]
-        State[Framer Motion State]
+        UI["React Components"]
+        Visualizer["Web Audio API Visualizer"]
+        State["Framer Motion State"]
     end
 
     subgraph "Backend (Next.js API)"
         API["/api/songs"]
-        MongoClient[(MongoDB Native Driver)]
+        MongoClient["MongoDB Native Driver (Client)"]
     end
 
     subgraph "Database (Cloud)"
-        Atlas[[MongoDB Atlas Cluster]]
+        Atlas[("MongoDB Atlas Cluster")]
     end
 
     User --> UI
