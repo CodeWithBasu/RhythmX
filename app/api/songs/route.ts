@@ -6,13 +6,16 @@ export const dynamic = 'force-dynamic'
 export async function GET() {
   try {
     const client = await clientPromise
-    const db = client.db() // Uses the DB from the connection string (RhythmX)
+    const db = client.db('RhythmX') // Explicitly use RhythmX database
     
+    console.log('Fetching songs from MongoDB...')
     const songs = await db
       .collection('songs')
       .find({})
       .sort({ createdAt: 1 })
       .toArray()
+    
+    console.log(`Found ${songs.length} songs in database.`)
       
     // Transform _id to id for frontend compatibility
     const formattedSongs = songs.map(song => ({
