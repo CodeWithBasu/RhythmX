@@ -1,0 +1,21 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Song {
+  id        Int      @id @default(autoincrement())
+  title     String
+  url       String
+  language  String   // e.g "English" or "Hindi"
+  duration  Int?     // Duration in seconds, optional
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

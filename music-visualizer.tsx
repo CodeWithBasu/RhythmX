@@ -23,6 +23,14 @@ export default function Component() {
   const [showInitialAnimation, setShowInitialAnimation] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
+  const [songs, setSongs] = useState<any[]>([])
+
+  useEffect(() => {
+    fetch('/api/songs')
+      .then(res => res.json())
+      .then(data => setSongs(data))
+      .catch(err => console.error("Failed to load songs", err))
+  }, [])
 
   // Audio refs
   const audioRef = useRef<HTMLAudioElement>(null)
@@ -59,12 +67,14 @@ export default function Component() {
       analyserRef.current.fftSize = 1024
       analyserRef.current.smoothingTimeConstant = 0.2
 
-      // Create source
-      sourceRef.current = audioContextRef.current.createMediaElementSource(audioRef.current)
-
-      // Connect: source -> analyser -> destination
-      sourceRef.current.connect(analyserRef.current)
-      analyserRef.current.connect(audioContextRef.current.destination)
+      // Create source - only if it doesn't exist
+      if (!sourceRef.current) {
+        sourceRef.current = audioContextRef.current.createMediaElementSource(audioRef.current)
+        
+        // Connect: source -> analyser -> destination
+        sourceRef.current.connect(analyserRef.current)
+        analyserRef.current.connect(audioContextRef.current.destination)
+      }
 
       setIsInitialized(true)
       console.log("Audio context initialized successfully")
@@ -229,8 +239,8 @@ export default function Component() {
           setIsPlaying(false)
         }
 
-        // Reset initialization
-        setIsInitialized(false)
+        // Reset initialization (Removed to fix createMediaElementSource error)
+        // setIsInitialized(false)
 
         // Set new source
         audioRef.current.src = audioUrl
@@ -247,6 +257,44 @@ export default function Component() {
       }
     } catch (error) {
       console.error("Error loading audio file:", error)
+    }
+  }
+
+  const playSong = async (song: any) => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause()
+      }
+      
+      // Update track info
+      audioRef.current.src = song.url
+      audioRef.current.load()
+      setCurrentTrack(`~/ ${song.title}`)
+      setHasAudio(true)
+      
+      // Reset visualizer state for new song
+      setShowInitialAnimation(true)
+      setTimeout(() => setShowInitialAnimation(false), 2000)
+
+      try {
+        // Ensure context is initialized
+        if (!isInitialized) {
+          await initializeAudioContext()
+        }
+        
+        // Ensure context is running
+        if (audioContextRef.current?.state === "suspended") {
+          await audioContextRef.current.resume()
+        }
+
+        // Start playing
+        await audioRef.current.play()
+        setIsPlaying(true)
+        console.log("Auto-playing:", song.title)
+      } catch (error) {
+        console.error("Error auto-playing song:", error)
+        setIsPlaying(false)
+      }
     }
   }
 
@@ -437,6 +485,33 @@ export default function Component() {
           rightIcon={null}
           className="w-full"
         />
+      </div>
+
+      {/* Playlist */}
+      <div className="mt-8 w-full max-w-2xl bg-white/5 rounded-xl border border-white/10 overflow-hidden">
+        <div className="p-4 border-b border-white/10 bg-white/5 font-semibold text-white/80">
+          Playlist
+        </div>
+        <div className="divide-y divide-white/5 max-h-60 overflow-y-auto">
+          {songs.map((song) => (
+            <div 
+              key={song.id} 
+              onClick={() => playSong(song)}
+              className="p-3 text-white/60 hover:text-white hover:bg-white/10 cursor-pointer transition-colors flex justify-between items-center"
+            >
+              <div>
+                <span className="font-medium mr-2">{song.title}</span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-white/10">{song.language}</span>
+              </div>
+              <div className="text-xs opacity-50">
+                {Math.floor(song.duration / 60)}:{(Math.floor(song.duration % 60)).toString().padStart(2, '0')}
+              </div>
+            </div>
+          ))}
+          {songs.length === 0 && (
+            <div className="p-4 text-center text-sm text-white/40">Loading songs...</div>
+          )}
+        </div>
       </div>
     </div>
   )
