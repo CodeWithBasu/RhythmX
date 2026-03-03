@@ -16,7 +16,8 @@ const geistMono = Geist_Mono({
 
 export default function Component() {
   const device = useDevice()
-  const activeBars = device === 'mobile' ? 32 : device === 'tablet' ? 56 : 80;
+  // Increased bar counts to make the visualizer span wider on all devices
+  const activeBars = device === 'mobile' ? 56 : device === 'tablet' ? 64 : 80;
   
   const barsRef = useRef(activeBars)
   
@@ -717,7 +718,7 @@ export default function Component() {
             key={index}
             className="bg-white rounded-t-sm"
             style={{
-              width: device === 'mobile' ? '4px' : device === 'tablet' ? '6px' : '8px',
+              width: device === 'mobile' ? '5px' : device === 'tablet' ? '6px' : '8px',
               opacity: height > 0 ? 1 : 0,
             }}
             initial={{ scaleX: 0 }}
