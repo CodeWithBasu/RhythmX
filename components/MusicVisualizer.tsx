@@ -502,35 +502,37 @@ export default function Component() {
       />
 
       {/* Actions */}
-      <div className="absolute top-8 right-8 flex gap-3">
+      {/* Actions */}
+      <div className="absolute top-4 right-4 sm:top-8 sm:right-8 flex flex-wrap justify-end gap-2 sm:gap-3 z-10 w-full max-w-[calc(100%-80px)] sm:max-w-none">
         <Link href="/admin">
           <motion.button
-            className="flex items-center gap-2 px-4 py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 hover:text-purple-200 rounded-lg border border-purple-500/20 hover:border-purple-500/40 transition-all duration-200"
+            className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 hover:text-purple-200 rounded-lg border border-purple-500/20 hover:border-purple-500/40 transition-all duration-200"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <Database size={16} />
-            <span className="text-sm">Admin</span>
+            <Database size={14} className="sm:w-4 sm:h-4" />
+            <span className="text-[10px] sm:text-sm">Admin</span>
           </motion.button>
         </Link>
         
         <motion.button
-          className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white rounded-lg border border-white/10 transition-all duration-200"
+          className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white rounded-lg border border-white/10 transition-all duration-200"
           onClick={() => setIsAddingSong(true)}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          <span className="text-sm">+ Add to Library</span>
+          <span className="text-[10px] sm:text-sm">+ Library</span>
         </motion.button>
 
         <motion.button
-          className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded-lg border border-white/20 hover:border-white/40 transition-all duration-200"
+          className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded-lg border border-white/20 hover:border-white/40 transition-all duration-200"
           onClick={() => fileInputRef.current?.click()}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          <Upload size={16} />
-          <span className="text-sm">Upload MP3</span>
+          <Upload size={14} className="sm:w-4 sm:h-4" />
+          <span className="text-[10px] sm:text-sm hidden sm:inline">Upload MP3</span>
+          <span className="text-[10px] sm:hidden">Upload</span>
         </motion.button>
       </div>
 
