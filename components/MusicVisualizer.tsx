@@ -843,8 +843,16 @@ export default function Component() {
       </div>
 
       {/* Footer */}
-      <div className="mt-12 text-center text-white/30 text-xs sm:text-sm tracking-widest uppercase font-medium">
-        made with ❤️ by Basudev ☕
+      <div className="mt-16 mb-8 flex flex-col items-center justify-center gap-2 opacity-60 hover:opacity-100 transition-opacity duration-300">
+        <div className="flex items-center gap-3 text-[10px] sm:text-xs text-white/50 tracking-[0.2em] font-light uppercase">
+          <span className="flex items-center gap-1">
+            &copy; {new Date().getFullYear()} RhythmX
+          </span>
+          <span className="w-1 h-1 rounded-full bg-purple-500/50"></span>
+          <span className="flex items-center gap-1.5">
+            Designed with <span className="text-red-500/80 animate-pulse text-xs">❤️</span> by <span className="text-white/90 font-medium tracking-widest text-[#a855f7] mix-blend-screen">Basudev</span> ☕
+          </span>
+        </div>
       </div>
     </div>
   )
