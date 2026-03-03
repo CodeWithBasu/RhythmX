@@ -47,6 +47,7 @@
     "embla-carousel-react": "8.5.1",
     "framer-motion": "latest",
     "input-otp": "1.4.1",
+    "lru-cache": "^11.2.6",
     "lucide-react": "^0.454.0",
     "mongodb": "^7.1.0",
     "next": "^16.2.0-canary.69",
