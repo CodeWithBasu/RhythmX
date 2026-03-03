@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "next build",
+    "build": "prisma generate && next build",
     "dev": "next dev",
     "lint": "eslint .",
     "start": "next start"
@@ -11,6 +11,7 @@
   "dependencies": {
     "@emotion/is-prop-valid": "latest",
     "@hookform/resolvers": "^3.10.0",
+    "@prisma/client": "^6.19.2",
     "@radix-ui/react-accordion": "1.2.2",
     "@radix-ui/react-alert-dialog": "1.1.4",
     "@radix-ui/react-aspect-ratio": "1.1.1",
@@ -63,7 +64,6 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
-    "@prisma/client": "^6.19.2",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
