@@ -26,6 +26,7 @@ export const viewport: Viewport = {
 }
 
 import Background from '@/components/Background'
+import Providers from '@/components/Providers'
 
 export default function RootLayout({
   children,
@@ -35,8 +36,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans antialiased text-white">
-        <Background />
-        {children}
+        <Providers>
+          <Background />
+          {children}
+        </Providers>
       </body>
     </html>
   )
