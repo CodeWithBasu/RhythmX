@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 
@@ -10,7 +10,6 @@ export const metadata: Metadata = {
   description: 'A stunning cloud-connected music visualizer and library player.',
   generator: 'Next.js',
   manifest: '/manifest.json',
-  themeColor: '#000000',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
@@ -20,6 +19,10 @@ export const metadata: Metadata = {
     icon: '/icon-512x512.png',
     apple: '/icon-512x512.png',
   },
+}
+
+export const viewport: Viewport = {
+  themeColor: '#000000',
 }
 
 import Background from '@/components/Background'
