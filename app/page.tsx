@@ -1,4 +1,4 @@
-import MusicVisualizer from "@/components/MusicVisualizer"
+import MusicVisualizer from "@/components/music-visualizer"
 
 export default function Page() {
   return (

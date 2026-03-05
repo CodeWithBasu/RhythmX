@@ -25,8 +25,8 @@ export const viewport: Viewport = {
   themeColor: '#000000',
 }
 
-import Background from '@/components/Background'
-import Providers from '@/components/Providers'
+import Background from '@/components/background'
+import Providers from '@/components/providers'
 
 export default function RootLayout({
   children,
