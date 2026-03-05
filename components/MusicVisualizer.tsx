@@ -8,8 +8,6 @@ import { Upload, Database } from "lucide-react"
 import Link from "next/link"
 import ElasticSlider from "@/components/ui/elastic-slider"
 import { useDevice } from "@/hooks/use-device"
-import { useSession, signIn, signOut } from "next-auth/react"
-import { Music2 } from "lucide-react"
 
 const geistMono = Geist_Mono({
   subsets: ["latin"],
@@ -45,12 +43,6 @@ export default function Component() {
   const [newSongMeta, setNewSongMeta] = useState({ title: '', url: '', language: 'English' })
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
-  // Spotify integration
-  const { data: session }: any = useSession()
-  const [isSpotifyMode, setIsSpotifyMode] = useState(false)
-  const [spotifyAnalysis, setSpotifyAnalysis] = useState<any>(null)
-  const [spotifyTrackId, setSpotifyTrackId] = useState<string | null>(null)
-
   const fetchSongs = () => {
     fetch('/api/songs')
       .then(res => {
@@ -66,8 +58,6 @@ export default function Component() {
         setError("Network error. Please check your connection.")
       })
   }
-
-
 
   useEffect(() => {
     fetchSongs()
@@ -97,31 +87,6 @@ export default function Component() {
           title: file.name.replace(/\.[^/.]+$/, "")
         })
       }
-    }
-  }
-
-  const handleAddSong = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    // We'll use the URL as a backup for now, but extract the title. 
-    // Usually we would need storage like Vercel Blob or Amazon S3 here.
-    try {
-      const response = await fetch('/api/songs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newSongMeta),
-      })
-
-      if (response.ok) {
-        setIsAddingSong(false)
-        setNewSongMeta({ title: '', url: '', language: 'English' })
-        setSelectedFile(null)
-        fetchSongs() 
-      } else {
-        alert("Failed to add song. Make sure Title and URL are valid.")
-      }
-    } catch (err) {
-      console.error("Error adding song:", err)
     }
   }
 
@@ -188,103 +153,8 @@ export default function Component() {
     return smoothed
   }
 
-  // Spotify Sync Loop
-  useEffect(() => {
-    let interval: any;
-    if (isSpotifyMode && session) {
-      const syncSpotify = async () => {
-        try {
-          const res = await fetch('/api/spotify/sync');
-          if (res.ok) {
-            const data = await res.json();
-            if (data.playing) {
-              if (data.trackId !== spotifyTrackId) {
-                setSpotifyAnalysis(data.analysis);
-                setSpotifyTrackId(data.trackId);
-                setCurrentTrack(`spotify:/ ${data.trackName}`);
-                setDuration(data.analysis?.track?.duration || 0);
-              }
-              setIsPlaying(data.isPlaying);
-              setCurrentTime(data.progress_ms / 1000);
-            } else {
-              setIsPlaying(false);
-              setCurrentTrack("Spotify: Nothing Playing");
-            }
-          }
-        } catch (err) {
-          console.error("Spotify Sync Error:", err);
-        }
-      };
-      syncSpotify();
-      interval = setInterval(syncSpotify, 3000);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isSpotifyMode, session, spotifyTrackId]);
-
-  // Smoother time tracking for Spotify playback
-  useEffect(() => {
-    let lastUpdate = Date.now();
-    let frame: any;
-
-    const animate = () => {
-      if (isSpotifyMode && isPlaying) {
-        const now = Date.now();
-        const delta = (now - lastUpdate) / 1000;
-        setCurrentTime(prev => prev + delta);
-        lastUpdate = now;
-      } else {
-        lastUpdate = Date.now();
-      }
-      frame = requestAnimationFrame(animate);
-    };
-
-    frame = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(frame);
-  }, [isSpotifyMode, isPlaying]);
-
   // Función para actualizar datos con efecto OLA - AMBOS LADOS SINTÉTICOS
   const updateAudioData = () => {
-    if (isSpotifyMode && spotifyAnalysis) {
-      // SPOTIFY MODUS: Use pre-analyzed data
-      const timeMs = currentTime * 1000;
-      const segments = spotifyAnalysis.segments;
-      const currentSegment = segments.find((s: any) => 
-        timeMs >= s.start * 1000 && timeMs < (s.start + s.duration) * 1000
-      ) || segments[0];
-
-      if (currentSegment) {
-        const bars = barsRef.current;
-        const rawData = [];
-        
-        // Spotify segments have 12 pitch values and 12 timbre values
-        // We will map these to our 80 bars using a wave pattern
-        for (let i = 0; i < bars; i++) {
-          const pitchIndex = i % 12;
-          const timbreIndex = (i + 6) % 12; // Offset for variety
-          
-          let val = (currentSegment.pitches[pitchIndex] * 0.8) + (currentSegment.timbre[timbreIndex] * 0.2 / 100);
-          val = Math.max(0.01, val);
-          
-          // Apply some movement based on beat/tatum if available?
-          // For now, just amplify based on the segment loudness
-          const loudness = Math.abs(currentSegment.loudness_max) / 60;
-          val *= (1 + loudness);
-
-          // Add some synthetic wave movement like the local player
-          const timeOffset = Date.now() * 0.005 + i * 0.1;
-          const wave = Math.sin(timeOffset) * 0.1;
-          
-          rawData.push(val + wave);
-        }
-        
-        const smoothed = smoothData(rawData);
-        setAudioData(smoothData(smoothed));
-      }
-      return;
-    }
-
     if (!analyserRef.current) return
 
     const bufferLength = analyserRef.current.frequencyBinCount
@@ -429,9 +299,6 @@ export default function Component() {
           setIsPlaying(false)
         }
 
-        // Reset initialization (Removed to fix createMediaElementSource error)
-        // setIsInitialized(false)
-
         // Set new source
         audioRef.current.src = audioUrl
         audioRef.current.load()
@@ -456,10 +323,9 @@ export default function Component() {
         audioRef.current.pause()
       }
       
-      // Instead of downloading a massive Base64 JSON payload, use the new streaming endpoint
       let songUrl = song.url
       if (!songUrl) {
-        setIsBuffering(true) // Indicate buffering while the server fetches DB and decodes
+        setIsBuffering(true)
         songUrl = `/api/songs/${song.id}/stream`
       }
 
@@ -496,12 +362,6 @@ export default function Component() {
   }
 
   const togglePlayback = async () => {
-    if (isSpotifyMode) {
-      // In Spotify mode, we don't control the audio, we just sync
-      alert("Spotify playback is controlled on your Spotify app. RhythmX will sync with it automatically.")
-      return
-    }
-
     if (!audioRef.current) return
 
     try {
@@ -546,7 +406,6 @@ export default function Component() {
       console.error("Audio error event:", e)
       setIsPlaying(false)
       setIsBuffering(false)
-      // Check for specific error types
       if (e.target.error) {
         switch (e.target.error.code) {
           case e.target.error.MEDIA_ERR_ABORTED:
@@ -612,7 +471,6 @@ export default function Component() {
       />
 
       {/* Actions */}
-      {/* Actions */}
       <div className="absolute top-4 right-4 sm:top-8 sm:right-8 flex flex-wrap justify-end gap-2 sm:gap-3 z-10 w-full max-w-[calc(100%-80px)] sm:max-w-none">
         <Link href="/admin">
           <motion.button
@@ -624,51 +482,6 @@ export default function Component() {
             <span className="text-[10px] sm:text-sm">Admin</span>
           </motion.button>
         </Link>
-        
-        {/* Spotify Control */}
-        {!session ? (
-          <motion.button
-            className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-[#1DB954]/10 hover:bg-[#1DB954]/20 text-[#1DB954] hover:text-[#1DB954] rounded-lg border border-[#1DB954]/20 hover:border-[#1DB954]/40 transition-all duration-200"
-            onClick={() => signIn('spotify')}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Music2 size={14} className="sm:w-4 sm:h-4" />
-            <span className="text-[10px] sm:text-sm">Connect Spotify</span>
-          </motion.button>
-        ) : (
-          <div className="flex gap-2">
-            <motion.button
-              className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg border transition-all duration-200 ${
-                isSpotifyMode 
-                  ? "bg-[#1DB954] text-black border-[#1DB954] font-bold" 
-                  : "bg-[#1DB954]/10 text-[#1DB954] border-[#1DB954]/20 hover:bg-[#1DB954]/20"
-              }`}
-              onClick={() => {
-                if (!isSpotifyMode && audioRef.current) {
-                  audioRef.current.pause();
-                  setIsPlaying(false);
-                }
-                setIsSpotifyMode(!isSpotifyMode);
-              }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Music2 size={14} className="sm:w-4 sm:h-4" />
-              <span className="text-[10px] sm:text-sm">{isSpotifyMode ? "Spotify Active" : "Spotify Sync"}</span>
-            </motion.button>
-            
-            <motion.button
-              className="px-2 py-1.5 bg-white/5 hover:bg-red-500/20 text-white/20 hover:text-red-400 rounded-lg border border-white/10 hover:border-red-500/20 transition-all duration-200"
-              onClick={() => signOut()}
-              title="Disconnect Spotify"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            </motion.button>
-          </div>
-        )}
 
         <motion.button
           className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white rounded-lg border border-white/10 transition-all duration-200"
