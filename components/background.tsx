@@ -15,7 +15,7 @@ const Background = () => {
 
       {/* Top Left Deep Purple Glow */}
       <div 
-        className="absolute -top-[20%] -left-[10%] w-[70vw] h-[70vw] rounded-full opacity-30 mix-blend-screen"
+        className="absolute -top-[20%] -left-[10%] w-[150vw] h-[150vw] md:w-[70vw] md:h-[70vw] rounded-full opacity-30 mix-blend-screen"
         style={{
           background: 'radial-gradient(circle at center, rgba(120, 30, 255, 0.4) 0%, rgba(120, 30, 255, 0) 70%)',
           animation: 'float1 20s ease-in-out infinite alternate',
@@ -25,7 +25,7 @@ const Background = () => {
 
       {/* Bottom Right Blue Glow */}
       <div 
-        className="absolute -bottom-[20%] -right-[10%] w-[60vw] h-[60vw] rounded-full opacity-20 mix-blend-screen"
+        className="absolute -bottom-[20%] -right-[10%] w-[130vw] h-[130vw] md:w-[60vw] md:h-[60vw] rounded-full opacity-20 mix-blend-screen"
         style={{
           background: 'radial-gradient(circle at center, rgba(0, 150, 255, 0.4) 0%, rgba(0, 150, 255, 0) 70%)',
           animation: 'float2 25s ease-in-out infinite alternate-reverse',
@@ -35,7 +35,7 @@ const Background = () => {
 
       {/* Center Subtle Pink Core */}
       <div 
-        className="absolute top-[30%] left-[20%] w-[50vw] h-[50vw] rounded-full opacity-10 mix-blend-screen"
+        className="absolute top-[30%] left-[20%] w-[120vw] h-[120vw] md:w-[50vw] md:h-[50vw] rounded-full opacity-10 mix-blend-screen"
         style={{
           background: 'radial-gradient(circle at center, rgba(255, 50, 150, 0.3) 0%, rgba(255, 50, 150, 0) 70%)',
           animation: 'float3 30s ease-in-out infinite alternate',
