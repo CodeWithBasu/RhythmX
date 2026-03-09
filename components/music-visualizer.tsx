@@ -608,7 +608,26 @@ export default function Component() {
                   <div className="space-y-2">
                     <div className="text-white/60">Drag and drop an MP3 here</div>
                     <div className="text-xs text-white/30 uppercase tracking-widest">or</div>
-                    <button type="button" onClick={() => fileInputRef.current?.click()} className="text-sm border border-white/20 px-3 py-1 rounded hover:bg-white/5 text-white/80 transition-colors">Select File</button>
+                    <label className="text-sm border border-white/20 px-3 py-1 rounded hover:bg-white/5 text-white/80 transition-colors cursor-pointer inline-block">
+                      Select File
+                      <input 
+                        type="file" 
+                        accept="audio/*" 
+                        className="hidden" 
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file && file.type.startsWith('audio/')) {
+                            setSelectedFile(file)
+                            setNewSongMeta({
+                              ...newSongMeta,
+                              title: file.name.replace(/\.[^/.]+$/, "")
+                            })
+                          }
+                          // Reset input value so the same file can be selected again if needed
+                          e.target.value = ''
+                        }} 
+                      />
+                    </label>
                   </div>
                 )}
               </div>
