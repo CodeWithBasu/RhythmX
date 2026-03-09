@@ -654,6 +654,23 @@ export default function Component() {
                 />
               </div>
 
+              <div>
+                <label className="block text-xs text-white/40 mb-2 uppercase tracking-widest">Language / Genre</label>
+                <select
+                  value={newSongMeta.language}
+                  onChange={(e) => setNewSongMeta({...newSongMeta, language: e.target.value})}
+                  className="w-full bg-[#111] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-white/30 appearance-none"
+                  style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center', backgroundSize: '1.2em' }}
+                >
+                  <option value="English">English</option>
+                  <option value="Hindi">Hindi</option>
+                  <option value="Odia">Odia</option>
+                  <option value="Punjabi">Punjabi</option>
+                  <option value="Instrumental">Instrumental</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
               {!selectedFile && (
                 <div>
                   <label className="block text-xs text-white/40 mb-2 uppercase tracking-widest">Or Use Direct MP3 URL</label>
