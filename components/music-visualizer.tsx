@@ -7,6 +7,7 @@ import { Geist_Mono } from "next/font/google"
 import { Upload, Database } from "lucide-react"
 import Link from "next/link"
 import ElasticSlider from "@/components/ui/elastic-slider"
+import TextType from "@/components/ui/TextType"
 import { useDevice } from "@/hooks/use-device"
 
 const geistMono = Geist_Mono({
@@ -629,19 +630,41 @@ export default function Component() {
           ) : (
             // Default Placeholder Hologram
             <>
-              {(isFetchingLyrics ? ["SEARCHING SATELLITE DATA...", "DECODING AUDIO FILE...", "SYNCING TIMESTAMPS..."] : ["LOST IN THE NEON LIGHTS", "FEEL THE RHYTHM IN YOUR MIND", "ECHOES OF A CYBER CITY", "WE ARE INFINITE"]).map((line, i) => (
-                <motion.div
-                  key={i}
-                  className={`text-xl sm:text-2xl lg:text-4xl font-black tracking-[0.2em] uppercase my-4 whitespace-nowrap opacity-20 mix-blend-screen ${i % 2 === 0 ? 'text-transparent' : 'text-white'}`}
+              {isFetchingLyrics ? (
+                // Hardcoded fallback during loading for aesthetic
+                ["SEARCHING SATELLITE DATA...", "DECODING AUDIO FILE...", "SYNCING TIMESTAMPS..."].map((line, i) => (
+                  <motion.div
+                    key={i}
+                    className={`text-xl sm:text-2xl lg:text-4xl font-black tracking-[0.2em] uppercase my-4 whitespace-nowrap opacity-20 mix-blend-screen ${i % 2 === 0 ? 'text-transparent' : 'text-white'}`}
+                    style={{
+                      WebkitTextStroke: i % 2 === 0 ? "2px rgba(255,255,255,0.8)" : "0px",
+                      transform: `translateZ(${(i - 1.5) * 120}px)`,
+                      textShadow: i % 2 !== 0 ? "0 0 30px rgba(255,255,255,0.3)" : "none"
+                    }}
+                  >
+                    {line}
+                  </motion.div>
+                ))
+              ) : (
+                <div 
                   style={{
-                    WebkitTextStroke: i % 2 === 0 ? "2px rgba(255,255,255,0.8)" : "0px",
-                    transform: `translateZ(${(i - 1.5) * 120}px)`,
-                    textShadow: i % 2 !== 0 ? "0 0 30px rgba(255,255,255,0.3)" : "none"
+                    transform: `translateZ(120px)`,
+                    textShadow: "0 0 30px rgba(255,255,255,0.3)" 
                   }}
+                  className="w-full flex justify-center text-white"
                 >
-                  {line}
-                </motion.div>
-              ))}
+                  <TextType 
+                    text={["LOST IN THE NEON LIGHTS", "FEEL THE RHYTHM IN YOUR MIND", "ECHOES OF A CYBER CITY", "WE ARE INFINITE"]}
+                    typingSpeed={75}
+                    pauseDuration={1500}
+                    showCursor
+                    cursorCharacter="_"
+                    deletingSpeed={50}
+                    className="text-xl sm:text-2xl lg:text-4xl font-black tracking-[0.2em] uppercase whitespace-nowrap opacity-20 mix-blend-screen"
+                    cursorBlinkDuration={0.5}
+                  />
+                </div>
+              )}
             </>
           )}
         </motion.div>
