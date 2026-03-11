@@ -42,6 +42,7 @@ export default function Component() {
   const [dragActive, setDragActive] = useState(false)
   const [newSongMeta, setNewSongMeta] = useState({ title: '', url: '', language: 'English' })
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
 
   const fetchSongs = () => {
     fetch('/api/songs')
@@ -806,13 +807,27 @@ export default function Component() {
       </div>
 
       {/* Playlist */}
-      <div className="mt-8 w-full max-w-2xl bg-white/5 rounded-xl border border-white/10 overflow-hidden">
-        <div className="p-4 border-b border-white/10 bg-white/5 font-semibold text-white/80 flex justify-between">
-          <span>Playlist</span>
-          <span className="text-[10px] text-white/20 uppercase tracking-[2px]">On-Demand Cloud Library</span>
+      <div className="mt-8 w-full max-w-2xl bg-white/5 rounded-xl border border-white/10 overflow-hidden flex flex-col">
+        <div className="p-4 border-b border-white/10 bg-white/5 font-semibold text-white/80 flex flex-col gap-3">
+          <div className="flex justify-between items-center">
+            <span>Playlist</span>
+            <span className="text-[10px] text-white/20 uppercase tracking-[2px]">On-Demand Cloud Library</span>
+          </div>
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search by song name or language..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-[#111]/50 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:outline-none focus:border-white/30 transition-colors"
+            />
+          </div>
         </div>
         <div className="divide-y divide-white/5 max-h-60 overflow-y-auto">
-          {songs.map((song) => (
+          {songs.filter((song) => song.title.toLowerCase().includes(searchQuery.toLowerCase()) || song.language?.toLowerCase().includes(searchQuery.toLowerCase())).map((song) => (
             <div 
               key={song.id} 
               onClick={() => playSong(song)}
@@ -832,6 +847,11 @@ export default function Component() {
               </div>
             </div>
           ))}
+          {songs.length > 0 && songs.filter((song) => song.title.toLowerCase().includes(searchQuery.toLowerCase()) || song.language?.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+            <div className="p-6 text-center">
+                <div className="text-white/40 text-sm">No songs found matching "{searchQuery}"</div>
+            </div>
+          )}
           {songs.length === 0 && !error && (
             <div className="p-6 text-center">
                 <div className="text-white/20 text-sm italic">Library is empty.</div>
