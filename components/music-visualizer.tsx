@@ -562,7 +562,7 @@ export default function Component() {
 
   return (
     <div 
-      className={`min-h-screen bg-transparent flex flex-col items-center justify-center p-8 ${geistMono.className}`}
+      className={`min-h-screen bg-transparent flex flex-col items-center justify-center p-4 sm:p-8 overflow-x-hidden ${geistMono.className}`}
       onMouseMove={handleMouseMove}
     >
       {/* Holographic 3D Lyrics Background */}
@@ -579,7 +579,7 @@ export default function Component() {
         >
           {lyrics.length > 0 ? (
             // Animated, Synced LRCLIB Lyrics
-            <div className="relative w-full h-[50vh] flex flex-col items-center justify-center">
+            <div className="relative w-full h-[35vh] sm:h-[40vh] md:h-[50vh] flex flex-col items-center justify-center">
               {lyrics.map((line, i) => {
                 // Only render lines somewhat near the active line for performance
                 const dist = i - currentLyricIndex
@@ -939,7 +939,7 @@ export default function Component() {
       </div>
 
       {/* Audio Visualizer - EFECTO OLA */}
-      <div className="flex items-end justify-center gap-[2px] sm:gap-1 mb-16 h-80 w-full max-w-6xl px-2 sm:px-4 overflow-hidden">
+      <div className={`flex items-end justify-center gap-[2px] sm:gap-1 mb-8 sm:mb-16 w-full max-w-6xl px-1 sm:px-4 overflow-hidden ${device === 'mobile' ? 'h-40' : device === 'tablet' ? 'h-60' : 'h-80'}`}>
         {audioData.slice(0, activeBars).map((height, index) => (
           <motion.div
             key={index}
