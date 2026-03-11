@@ -45,6 +45,79 @@ export default function Component() {
   const [searchQuery, setSearchQuery] = useState("")
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
 
+  // Synced Lyrics State
+  interface LyricLine {
+    time: number // in seconds
+    text: string
+  }
+  const [lyrics, setLyrics] = useState<LyricLine[]>([])
+  const [currentLyricIndex, setCurrentLyricIndex] = useState<number>(-1)
+  const [isFetchingLyrics, setIsFetchingLyrics] = useState(false)
+
+  // Parse standard .lrc file format into our array structure
+  const parseLRC = (lrcString: string): LyricLine[] => {
+    const lines = lrcString.split('\n')
+    const parsedLyrics: LyricLine[] = []
+    
+    // Regex matches [mm:ss.xx]
+    const timeRegex = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/
+
+    lines.forEach(line => {
+      const match = timeRegex.exec(line)
+      if (match) {
+        const minutes = parseInt(match[1], 10)
+        const seconds = parseInt(match[2], 10)
+        const milliseconds = parseInt(match[3], 10)
+        
+        const timeInSeconds = minutes * 60 + seconds + (milliseconds / (match[3].length === 2 ? 100 : 1000))
+        const text = line.replace(timeRegex, '').trim()
+        
+        if (text) {
+          parsedLyrics.push({ time: timeInSeconds, text })
+        }
+      }
+    })
+    
+    return parsedLyrics
+  }
+
+  // Fetch true synced lyrics from LRCLIB
+  const fetchSyncedLyrics = async (songTitleRaw: string) => {
+    try {
+      setIsFetchingLyrics(true)
+      setLyrics([])
+      setCurrentLyricIndex(-1)
+      
+      // Clean up title (remove "The Weeknd" part from "Starboy (The Weeknd)" if possible)
+      // For LRCLIB, usually just throwing the full string works well on their search endpoint
+      let searchTitle = songTitleRaw.replace('~/', '').trim()
+      
+      const res = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(searchTitle)}`)
+      if (!res.ok) throw new Error("Network response was not ok")
+      
+      const data = await res.json()
+      
+      if (data && data.length > 0 && data[0].syncedLyrics) {
+        const parsed = parseLRC(data[0].syncedLyrics)
+        setLyrics(parsed)
+        console.log("Successfully loaded synced lyrics from LRCLIB!")
+      } else {
+        console.log("No synced lyrics found for this track.")
+      }
+    } catch (error) {
+      console.error("Failed to fetch lyrics:", error)
+    } finally {
+      setIsFetchingLyrics(false)
+    }
+  }
+
+  // Listen for track changes to refetch lyrics
+  useEffect(() => {
+    if (currentTrack && currentTrack !== "~/ 2 Million") {
+      fetchSyncedLyrics(currentTrack)
+    }
+  }, [currentTrack])
+
   const handleMouseMove = (e: React.MouseEvent) => {
     // Normalize mouse position between -1 and 1
     const x = (e.clientX / window.innerWidth) * 2 - 1
@@ -477,21 +550,62 @@ export default function Component() {
           }}
           transition={{ type: "spring", stiffness: 100, damping: 30 }}
           style={{ transformStyle: "preserve-3d" }}
-          className="flex flex-col items-center justify-center text-center relative w-full"
+          className="flex flex-col items-center justify-center text-center relative w-full h-full"
         >
-          {["LOST IN THE NEON LIGHTS", "FEEL THE RHYTHM IN YOUR MIND", "ECHOES OF A CYBER CITY", "WE ARE INFINITE"].map((line, i) => (
-            <motion.div
-              key={i}
-              className={`text-[5vw] sm:text-[4vw] font-black tracking-[0.2em] uppercase my-4 whitespace-nowrap opacity-20 mix-blend-screen ${i % 2 === 0 ? 'text-transparent' : 'text-white'}`}
-              style={{
-                WebkitTextStroke: i % 2 === 0 ? "2px rgba(255,255,255,0.8)" : "0px",
-                transform: `translateZ(${(i - 1.5) * 120}px)`,
-                textShadow: i % 2 !== 0 ? "0 0 30px rgba(255,255,255,0.3)" : "none"
-              }}
-            >
-              {line}
-            </motion.div>
-          ))}
+          {lyrics.length > 0 ? (
+            // Animated, Synced LRCLIB Lyrics
+            <div className="relative w-full h-[50vh] flex flex-col items-center justify-center">
+              {lyrics.map((line, i) => {
+                // Only render lines somewhat near the active line for performance
+                const dist = i - currentLyricIndex
+                if (Math.abs(dist) > 3) return null
+
+                // Is this the currently active word?
+                const isActive = i === currentLyricIndex
+                // If it's a past line, it floats upwards. If future, it waits below.
+                const offsetZ = isActive ? 150 : (dist < 0 ? -100 + dist * 50 : -100 - dist * 50)
+                const offsetY = dist * 20 // Move text up/down based on distance from current
+
+                return (
+                  <motion.div
+                    key={i}
+                    animate={{
+                      z: offsetZ,
+                      y: `${offsetY}vh`,
+                      opacity: isActive ? 1 : Math.max(0, 0.4 - Math.abs(dist) * 0.2),
+                      scale: isActive ? 1 : 0.8
+                    }}
+                    transition={{ type: "spring", damping: 20, stiffness: 100 }}
+                    className={`absolute text-[6vw] sm:text-[4vw] font-black tracking-wider uppercase whitespace-nowrap mix-blend-screen text-center w-full ${isActive ? 'text-white' : 'text-transparent'}`}
+                    style={{
+                      WebkitTextStroke: isActive ? "0px" : "1.5px rgba(255,255,255,0.6)",
+                      textShadow: isActive ? "0 0 40px rgba(255,255,255,0.6)" : "none",
+                      filter: isActive ? "none" : `blur(${Math.abs(dist)}px)`
+                    }}
+                  >
+                    {line.text}
+                  </motion.div>
+                )
+              })}
+            </div>
+          ) : (
+            // Default Placeholder Hologram
+            <>
+              {(isFetchingLyrics ? ["SEARCHING SATELLITE DATA...", "DECODING AUDIO FILE...", "SYNCING TIMESTAMPS..."] : ["LOST IN THE NEON LIGHTS", "FEEL THE RHYTHM IN YOUR MIND", "ECHOES OF A CYBER CITY", "WE ARE INFINITE"]).map((line, i) => (
+                <motion.div
+                  key={i}
+                  className={`text-[5vw] sm:text-[4vw] font-black tracking-[0.2em] uppercase my-4 whitespace-nowrap opacity-20 mix-blend-screen ${i % 2 === 0 ? 'text-transparent' : 'text-white'}`}
+                  style={{
+                    WebkitTextStroke: i % 2 === 0 ? "2px rgba(255,255,255,0.8)" : "0px",
+                    transform: `translateZ(${(i - 1.5) * 120}px)`,
+                    textShadow: i % 2 !== 0 ? "0 0 30px rgba(255,255,255,0.3)" : "none"
+                  }}
+                >
+                  {line}
+                </motion.div>
+              ))}
+            </>
+          )}
         </motion.div>
       </div>
 
@@ -516,7 +630,26 @@ export default function Component() {
         }}
         onEnded={() => setIsPlaying(false)}
         onTimeUpdate={() => {
-          if (audioRef.current) setCurrentTime(audioRef.current.currentTime)
+          if (audioRef.current) {
+            const time = audioRef.current.currentTime
+            setCurrentTime(time)
+            
+            // Sync Lyrics engine
+            if (lyrics.length > 0) {
+              // Find the last lyric line that is past its timestamp
+              let activeIndex = -1
+              for (let i = 0; i < lyrics.length; i++) {
+                if (time >= lyrics[i].time) {
+                  activeIndex = i
+                } else {
+                  break // Since array is sorted by time, we can break early
+                }
+              }
+              if (activeIndex !== currentLyricIndex) {
+                setCurrentLyricIndex(activeIndex)
+              }
+            }
+          }
         }}
         onLoadedMetadata={() => {
           if (audioRef.current) setDuration(audioRef.current.duration)
