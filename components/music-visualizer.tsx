@@ -175,59 +175,108 @@ export default function Component() {
     return smoothed
   }
 
-  // Función para actualizar datos fiel al audio (sin distorsión temporal)
+  // Función para actualizar datos con efecto OLA - AMBOS LADOS SINTÉTICOS
   const updateAudioData = () => {
     if (!analyserRef.current) return
 
     const bufferLength = analyserRef.current.frequencyBinCount
     const dataArray = new Uint8Array(bufferLength)
 
-    // Extraer exactamente las frecuencias reales
     analyserRef.current.getByteFrequencyData(dataArray)
 
     const bars = barsRef.current
+    const halfBars = Math.floor(bars / 2)
     const rawData = []
+    const usefulFreqRange = Math.floor(bufferLength * 0.3)
 
-    // Las frecuencias más útiles para visualización musical están en el 40% inferior del espectro
-    const usefulFreqRange = Math.floor(bufferLength * 0.4) 
+    // Calcular nivel general de audio para threshold
+    let totalEnergy = 0
+    for (let i = 0; i < usefulFreqRange; i++) {
+      totalEnergy += dataArray[i]
+    }
+    const averageEnergy = totalEnergy / usefulFreqRange
+    const energyThreshold = 50 // Mantener alto
 
     for (let i = 0; i < bars; i++) {
-      // Calcular visualizador simétrico (Graves en el centro, Agudos en los bordes)
-      const centerDist = Math.abs((bars / 2) - i)
-      const normalizedDist = centerDist / (bars / 2) // 0 en el centro, 1 en el borde
-      
-      // Mapeo no lineal para darle más espacio a las frecuencias bajas/medias (donde ocurre la acción)
-      const freqIndex = Math.floor(Math.pow(normalizedDist, 1.2) * usefulFreqRange)
-      
-      const value = dataArray[freqIndex] || 0
-      
-      // Normalizar 0 a 1
-      let normalized = value / 255.0
+      let value = 0
 
-      // Amplificar frecuencias graves (el bombo y el bajo en el centro) para más explosividad visual
-      if (normalizedDist < 0.2) {
-        normalized *= 1.3
-      } else if (normalizedDist > 0.8) {
-        normalized *= 1.5 // Amplificar frecuencias agudas extremas (hi-hats en los bordes) porque suelen ser más débiles
+      if (i < halfBars) {
+        // Lado izquierdo: AHORA TAMBIÉN SINTÉTICO
+        const freqIndex = Math.floor((i / halfBars) * usefulFreqRange)
+        const baseValue = dataArray[freqIndex] || 0
+
+        // Añadir variación sintética al lado izquierdo también
+        const timeOffset = Date.now() * 0.006 + i * 0.12 // Diferentes parámetros que el derecho
+        const synthetic = Math.sin(timeOffset) * 0.25 + Math.cos(timeOffset * 1.5) * 0.15
+        value = baseValue * (0.8 + synthetic) // Ligeramente diferente al derecho
+      } else {
+        // Lado derecho: crear datos sintéticos basados en el lado izquierdo
+        const mirrorIndex = (bars - 1) - i
+        const baseIndex = Math.floor((mirrorIndex / halfBars) * usefulFreqRange)
+        const baseValue = dataArray[baseIndex] || 0
+
+        const timeOffset = Date.now() * 0.008 + i * 0.15
+        const synthetic = Math.sin(timeOffset) * 0.3 + Math.cos(timeOffset * 1.2) * 0.2
+        value = baseValue * (0.7 + synthetic)
       }
 
-      // Eliminar el ruido base del audio
-      if (normalized < 0.15) {
+      let normalized = value / 255
+
+      // Si el nivel general está muy bajo, no mostrar nada
+      if (averageEnergy < energyThreshold) {
         normalized = 0.01
       } else {
-        // Hacer que los picos de audio se vean mucho más pronunciados en el eje Y
-        normalized = Math.pow(normalized, 1.5) * 1.5
+        // Amplificación por posición para efecto ola - REDUCIDA 40% MÁS
+        const quarterBars = Math.floor(bars / 4)
+        if (i < quarterBars) {
+          normalized *= 1.5 // Era 2.5, ahora 1.5 (40% menos)
+        } else if (i < halfBars) {
+          normalized *= 1.2 // Era 2.0, ahora 1.2 (40% menos)
+        } else if (i < quarterBars * 3) {
+          normalized *= 1.05 // Era 1.75, ahora 1.05 (40% menos)
+        } else {
+          normalized *= 0.9 // Era 1.5, ahora 0.9 (40% menos)
+        }
+
+        // Curva suave para efecto ola
+        normalized = Math.pow(Math.max(0, normalized), 0.4)
+
+        // SISTEMA DE NIVELES - CONTRASTE EXTREMO + REDUCCIÓN 40%
+        if (normalized > 0.8) {
+          // NIVEL SÚPER ALTO: Explosivo - MÁS CONTRASTE
+          normalized = Math.pow(normalized, 0.15) * 1.8 // Era 2.0, ahora 1.8 (40% menos) pero curva más agresiva
+        } else if (normalized > 0.7) {
+          // NIVEL ALTO: Elevado - REDUCIDO
+          normalized = Math.pow(normalized, 0.3) * 0.9 // Era 1.5, ahora 0.9 (40% menos)
+        } else if (normalized > 0.5) {
+          // NIVEL MEDIO-ALTO: Súper reducido para contraste extremo
+          normalized = Math.pow(normalized, 0.8) * 0.1 // Era 0.25, ahora 0.1 (60% menos para más contraste)
+        } else if (normalized > 0.45) {
+          // NIVEL MEDIO-BAJO: Eliminado
+          normalized = 0.01
+        } else {
+          // NIVEL BAJO: Desaparecer
+          normalized = 0.01
+        }
+
+        // Threshold individual MÁS ESTRICTO
+        if (normalized < 0.45) {
+          // Era 0.4, ahora 0.45 - más estricto
+          normalized = 0.01
+        }
       }
 
-      const final = Math.max(0.01, Math.min(1.2, normalized));
+      const final = Math.max(0, Math.min(1.2, normalized)) // Era 2.0, ahora 1.2 (40% menos)
       rawData.push(final)
     }
 
-    // Un solo suavizado espacial para reducir el aserrado de Fourier entre barras vecinas,
-    // pero SIN suavizado temporal extra, permitiendo respuestas de milisegundos a los drops y beats.
+    // Aplicar suavizado para efecto ola
     const smoothedData = smoothData(rawData)
 
-    setAudioData(smoothedData)
+    // Aplicar suavizado adicional para olas más fluidas
+    const extraSmoothed = smoothData(smoothedData)
+
+    setAudioData(extraSmoothed)
   }
 
   // useEffect para manejar el loop de visualización
