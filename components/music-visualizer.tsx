@@ -43,6 +43,14 @@ export default function Component() {
   const [newSongMeta, setNewSongMeta] = useState({ title: '', url: '', language: 'English' })
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    // Normalize mouse position between -1 and 1
+    const x = (e.clientX / window.innerWidth) * 2 - 1
+    const y = (e.clientY / window.innerHeight) * 2 - 1
+    setMousePos({ x, y })
+  }
 
   const fetchSongs = () => {
     fetch('/api/songs')
@@ -455,7 +463,38 @@ export default function Component() {
   }, [hasAudio, isInitialized])
 
   return (
-    <div className={`min-h-screen bg-transparent flex flex-col items-center justify-center p-8 ${geistMono.className}`}>
+    <div 
+      className={`min-h-screen bg-transparent flex flex-col items-center justify-center p-8 ${geistMono.className}`}
+      onMouseMove={handleMouseMove}
+    >
+      {/* Holographic 3D Lyrics Background */}
+      <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden z-0" style={{ perspective: '1200px' }}>
+        <motion.div
+          animate={{
+            rotateX: mousePos.y * -25,
+            rotateY: mousePos.x * 25,
+            scale: isPlaying && audioData.length > 5 ? 1 + (audioData[5] * 0.1) : 1
+          }}
+          transition={{ type: "spring", stiffness: 100, damping: 30 }}
+          style={{ transformStyle: "preserve-3d" }}
+          className="flex flex-col items-center justify-center text-center relative w-full"
+        >
+          {["LOST IN THE NEON LIGHTS", "FEEL THE RHYTHM IN YOUR MIND", "ECHOES OF A CYBER CITY", "WE ARE INFINITE"].map((line, i) => (
+            <motion.div
+              key={i}
+              className={`text-[5vw] sm:text-[4vw] font-black tracking-[0.2em] uppercase my-4 whitespace-nowrap opacity-20 mix-blend-screen ${i % 2 === 0 ? 'text-transparent' : 'text-white'}`}
+              style={{
+                WebkitTextStroke: i % 2 === 0 ? "2px rgba(255,255,255,0.8)" : "0px",
+                transform: `translateZ(${(i - 1.5) * 120}px)`,
+                textShadow: i % 2 !== 0 ? "0 0 30px rgba(255,255,255,0.3)" : "none"
+              }}
+            >
+              {line}
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+
       {/* Hidden file input */}
       <input ref={fileInputRef} type="file" accept="audio/*" onChange={handleFileUpload} className="hidden" />
 
