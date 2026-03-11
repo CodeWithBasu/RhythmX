@@ -818,17 +818,17 @@ export default function Component() {
           { id: 'night_drive', label: 'Night Drive' },
           { id: 'concert_hall', label: 'Stadium' }
         ].map(vibe => (
-          <button
+          <div
             key={vibe.id}
             onClick={() => setCurrentVibe(vibe.id as VibeMode)}
-            className={`whitespace-nowrap px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 ${
+            className={`cursor-pointer whitespace-nowrap px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 ${
               currentVibe === vibe.id 
                 ? 'bg-white/20 text-white border border-white/40 shadow-[0_0_15px_rgba(255,255,255,0.1)]' 
                 : 'bg-white/5 text-white/50 border border-white/5 hover:bg-white/10 hover:text-white/80'
             }`}
           >
             {vibe.label}
-          </button>
+          </div>
         ))}
       </div>
 
