@@ -44,10 +44,6 @@ export default function Component() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
 
-  // Neuroscience Vibe Filters
-  type VibeMode = 'studio' | '8d' | 'night_drive' | 'concert_hall'
-  const [currentVibe, setCurrentVibe] = useState<VibeMode>('studio')
-
   const fetchSongs = () => {
     fetch('/api/songs')
       .then(res => {
@@ -100,9 +96,6 @@ export default function Component() {
   const audioContextRef = useRef<AudioContext | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null)
-  const pannerRef = useRef<StereoPannerNode | null>(null)
-  const lowpassFilterRef = useRef<BiquadFilterNode | null>(null)
-  const highpassFilterRef = useRef<BiquadFilterNode | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Cargar audio por defecto al montar el componente
@@ -133,26 +126,12 @@ export default function Component() {
       analyserRef.current.fftSize = 1024
       analyserRef.current.smoothingTimeConstant = 0.2
 
-      // Create vibe filter nodes
-      pannerRef.current = audioContextRef.current.createStereoPanner()
-      
-      lowpassFilterRef.current = audioContextRef.current.createBiquadFilter()
-      lowpassFilterRef.current.type = 'lowpass'
-      lowpassFilterRef.current.frequency.value = 20000 // default open
-      
-      highpassFilterRef.current = audioContextRef.current.createBiquadFilter()
-      highpassFilterRef.current.type = 'highpass'
-      highpassFilterRef.current.frequency.value = 0 // default open
-
       // Create source - only if it doesn't exist
       if (!sourceRef.current) {
         sourceRef.current = audioContextRef.current.createMediaElementSource(audioRef.current)
         
-        // Connect: source -> highpass -> lowpass -> panner -> analyser -> destination
-        sourceRef.current.connect(highpassFilterRef.current)
-        highpassFilterRef.current.connect(lowpassFilterRef.current)
-        lowpassFilterRef.current.connect(pannerRef.current)
-        pannerRef.current.connect(analyserRef.current)
+        // Connect: source -> analyser -> destination
+        sourceRef.current.connect(analyserRef.current)
         analyserRef.current.connect(audioContextRef.current.destination)
       }
 
@@ -289,14 +268,6 @@ export default function Component() {
 
       intervalId = setInterval(() => {
         updateAudioData()
-        
-        // 8D Audio logic
-        if (currentVibe === '8d' && pannerRef.current) {
-          // Pan from -1 (left) to 1 (right) over an 8-second cycle
-          const time = Date.now() / 1000
-          const panValue = Math.sin(time * (Math.PI / 4)) // Adjust speed here (Math.PI / 4 is an 8s cycle)
-          pannerRef.current.pan.value = panValue
-        }
       }, 25) // 40 FPS para fluidez de ola
     } else {
       setIsLooping(false)
@@ -308,38 +279,7 @@ export default function Component() {
         clearInterval(intervalId)
       }
     }
-  }, [isPlaying, isInitialized, currentVibe])
-
-  // Apply static filter changes when vibe changes
-  useEffect(() => {
-    if (!lowpassFilterRef.current || !highpassFilterRef.current || !pannerRef.current) return
-
-    switch (currentVibe) {
-      case 'studio':
-        lowpassFilterRef.current.frequency.value = 20000
-        highpassFilterRef.current.frequency.value = 0
-        pannerRef.current.pan.value = 0
-        break
-      case '8d':
-        // The panning is dynamic, handled in the animation loop
-        lowpassFilterRef.current.frequency.value = 20000
-        highpassFilterRef.current.frequency.value = 0
-        break
-      case 'night_drive':
-        // Muffle the highs, boost the bass feel
-        lowpassFilterRef.current.frequency.value = 800
-        highpassFilterRef.current.frequency.value = 0
-        pannerRef.current.pan.value = 0
-        break
-      case 'concert_hall':
-        // Slight lowpass to mimic distance, slight highpass to remove sub-bass muddiness
-        lowpassFilterRef.current.frequency.value = 3000
-        highpassFilterRef.current.frequency.value = 300
-        pannerRef.current.pan.value = 0
-        // Real concert hall needs an Impulse Response via ConvolverNode, but basic filtering mimics distance well for a quick implementation.
-        break
-    }
-  }, [currentVibe])
+  }, [isPlaying, isInitialized])
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -859,30 +799,8 @@ export default function Component() {
         </motion.div>
       </div>
 
-      {/* Vibe Selector */}
-      <div className="mt-8 mb-4 flex gap-2 overflow-x-auto w-full max-w-2xl px-2 pb-2 scrollbar-hide">
-        {[
-          { id: 'studio', label: 'Studio (Original)' },
-          { id: '8d', label: '8D Spatial' },
-          { id: 'night_drive', label: 'Night Drive' },
-          { id: 'concert_hall', label: 'Stadium' }
-        ].map(vibe => (
-          <div
-            key={vibe.id}
-            onClick={() => setCurrentVibe(vibe.id as VibeMode)}
-            className={`cursor-pointer whitespace-nowrap px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 ${
-              currentVibe === vibe.id 
-                ? 'bg-white/20 text-white border border-white/40 shadow-[0_0_15px_rgba(255,255,255,0.1)]' 
-                : 'bg-white/5 text-white/50 border border-white/5 hover:bg-white/10 hover:text-white/80'
-            }`}
-          >
-            {vibe.label}
-          </div>
-        ))}
-      </div>
-
       {/* Seek Bar */}
-      <div className="w-full max-w-2xl mt-4 mb-4">
+      <div className="w-full max-w-2xl mt-12 mb-4">
         <div className="flex justify-between w-full px-2 text-xs font-medium text-white/40 mb-2">
           <span>{Math.floor(currentTime / 60)}:{(Math.floor(currentTime % 60)).toString().padStart(2, '0')}</span>
           <span>{Math.floor(duration / 60)}:{(Math.floor(duration % 60)).toString().padStart(2, '0')}</span>
