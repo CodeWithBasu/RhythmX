@@ -97,12 +97,37 @@ export default function Component() {
       
       const data = await res.json()
       
-      if (data && data.length > 0 && data[0].syncedLyrics) {
-        const parsed = parseLRC(data[0].syncedLyrics)
-        setLyrics(parsed)
-        console.log("Successfully loaded synced lyrics from LRCLIB!")
+      if (data && data.length > 0) {
+        // Find best match with synced lyrics
+        const bestSynced = data.find((d: any) => d.syncedLyrics)
+        // Find best match with plain lyrics
+        const bestPlain = data.find((d: any) => d.plainLyrics)
+
+        if (bestSynced) {
+          const parsed = parseLRC(bestSynced.syncedLyrics)
+          setLyrics(parsed)
+          console.log("Successfully loaded synced lyrics from LRCLIB!")
+        } else if (bestPlain) {
+          console.log("No synced lyrics found. Falling back to plain lyrics...")
+          const rawLines = bestPlain.plainLyrics
+            .split('\n')
+            .map((l: string) => l.trim())
+            .filter((l: string) => l.length > 0)
+          
+          // Estimate duration (fallback to 3 minutes if API doesn't provide it)
+          const songDuration = bestPlain.duration || 180 
+          
+          // Generate pseudo-synced timestamps evenly distributed across the track
+          const parsed: LyricLine[] = rawLines.map((text: string, index: number) => ({
+            time: (index / Math.max(rawLines.length, 1)) * songDuration,
+            text
+          }))
+          setLyrics(parsed)
+        } else {
+          console.log("No lyrics found for this track.")
+        }
       } else {
-        console.log("No synced lyrics found for this track.")
+        console.log("No lyrics found for this track.")
       }
     } catch (error) {
       console.error("Failed to fetch lyrics:", error)
