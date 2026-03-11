@@ -585,10 +585,21 @@ export default function Component() {
                 const dist = i - currentLyricIndex
                 if (Math.abs(dist) > 3) return null
 
-                // Is this the currently active word?
                 const isActive = i === currentLyricIndex
+                const isPast = dist < 0
+
+                // Calculate progress for karaoke left-to-right fill effect
+                let progress = 0
+                if (isActive) {
+                  const nextTime = lyrics[i + 1]?.time || line.time + 5 // fallback to 5s duration if last line
+                  const duration = nextTime - line.time
+                  progress = Math.max(0, Math.min(100, ((currentTime - line.time) / duration) * 100))
+                } else if (isPast) {
+                  progress = 100
+                }
+
                 // If it's a past line, it floats upwards. If future, it waits below.
-                const offsetZ = isActive ? 150 : (dist < 0 ? -100 + dist * 50 : -100 - dist * 50)
+                const offsetZ = isActive ? 150 : (isPast ? -100 + dist * 50 : -100 - dist * 50)
                 const offsetY = dist * 20 // Move text up/down based on distance from current
 
                 return (
@@ -601,11 +612,13 @@ export default function Component() {
                       scale: isActive ? 1 : 0.8
                     }}
                     transition={{ type: "spring", damping: 20, stiffness: 100 }}
-                    className={`absolute text-2xl sm:text-3xl lg:text-5xl font-black tracking-wider uppercase whitespace-nowrap mix-blend-screen text-center w-full ${isActive ? 'text-white' : 'text-transparent'}`}
+                    className={`absolute text-2xl sm:text-3xl lg:text-5xl font-black tracking-wider uppercase whitespace-nowrap mix-blend-screen text-center w-full`}
                     style={{
-                      WebkitTextStroke: isActive ? "0px" : "1.5px rgba(255,255,255,0.6)",
-                      textShadow: isActive ? "0 0 40px rgba(255,255,255,0.6)" : "none",
-                      filter: isActive ? "none" : `blur(${Math.abs(dist)}px)`
+                      backgroundImage: `linear-gradient(to right, #ffffff ${progress}%, rgba(255,255,255,0.1) ${progress}%)`,
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text",
+                      filter: isActive ? "drop-shadow(0 0 20px rgba(255,255,255,0.4))" : `blur(${Math.abs(dist)}px)`
                     }}
                   >
                     {line.text}
