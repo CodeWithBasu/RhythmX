@@ -544,8 +544,8 @@ export default function Component() {
       <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden z-0" style={{ perspective: '1200px' }}>
         <motion.div
           animate={{
-            rotateX: mousePos.y * -25,
-            rotateY: mousePos.x * 25,
+            rotateX: device !== 'mobile' ? mousePos.y * -25 : 0,
+            rotateY: device !== 'mobile' ? mousePos.x * 25 : 0,
             scale: isPlaying && audioData.length > 5 ? 1 + (audioData[5] * 0.1) : 1
           }}
           transition={{ type: "spring", stiffness: 100, damping: 30 }}
@@ -576,7 +576,7 @@ export default function Component() {
                       scale: isActive ? 1 : 0.8
                     }}
                     transition={{ type: "spring", damping: 20, stiffness: 100 }}
-                    className={`absolute text-[6vw] sm:text-[4vw] font-black tracking-wider uppercase whitespace-nowrap mix-blend-screen text-center w-full ${isActive ? 'text-white' : 'text-transparent'}`}
+                    className={`absolute text-2xl sm:text-3xl lg:text-5xl font-black tracking-wider uppercase whitespace-nowrap mix-blend-screen text-center w-full ${isActive ? 'text-white' : 'text-transparent'}`}
                     style={{
                       WebkitTextStroke: isActive ? "0px" : "1.5px rgba(255,255,255,0.6)",
                       textShadow: isActive ? "0 0 40px rgba(255,255,255,0.6)" : "none",
@@ -594,7 +594,7 @@ export default function Component() {
               {(isFetchingLyrics ? ["SEARCHING SATELLITE DATA...", "DECODING AUDIO FILE...", "SYNCING TIMESTAMPS..."] : ["LOST IN THE NEON LIGHTS", "FEEL THE RHYTHM IN YOUR MIND", "ECHOES OF A CYBER CITY", "WE ARE INFINITE"]).map((line, i) => (
                 <motion.div
                   key={i}
-                  className={`text-[5vw] sm:text-[4vw] font-black tracking-[0.2em] uppercase my-4 whitespace-nowrap opacity-20 mix-blend-screen ${i % 2 === 0 ? 'text-transparent' : 'text-white'}`}
+                  className={`text-xl sm:text-2xl lg:text-4xl font-black tracking-[0.2em] uppercase my-4 whitespace-nowrap opacity-20 mix-blend-screen ${i % 2 === 0 ? 'text-transparent' : 'text-white'}`}
                   style={{
                     WebkitTextStroke: i % 2 === 0 ? "2px rgba(255,255,255,0.8)" : "0px",
                     transform: `translateZ(${(i - 1.5) * 120}px)`,
