@@ -380,10 +380,6 @@ export default function Component() {
 
   const playSong = async (song: any) => {
     if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause()
-      }
-      
       let songUrl = song.url
       if (!songUrl) {
         setIsBuffering(true)
@@ -412,11 +408,20 @@ export default function Component() {
         }
 
         // Start playing
-        await audioRef.current.play()
-        setIsPlaying(true)
-        console.log("Auto-playing:", song.title)
+        const playPromise = audioRef.current.play()
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            setIsPlaying(true)
+            console.log("Auto-playing:", song.title)
+          }).catch(error => {
+            if (error.name !== 'AbortError') {
+              console.error("Error auto-playing song:", error)
+            }
+            setIsPlaying(false)
+          })
+        }
       } catch (error) {
-        console.error("Error auto-playing song:", error)
+        console.error("Error auto-playing song setup:", error)
         setIsPlaying(false)
       }
     }
@@ -435,14 +440,22 @@ export default function Component() {
       }
 
       if (audioRef.current.paused) {
-        await audioRef.current.play()
-        console.log("Playing")
+        const playPromise = audioRef.current.play()
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            console.log("Playing")
+          }).catch(error => {
+            if (error.name !== 'AbortError') {
+              console.error("Error toggling playback:", error)
+            }
+          })
+        }
       } else {
         audioRef.current.pause()
         console.log("Paused")
       }
     } catch (error) {
-      console.error("Error toggling playback:", error)
+      console.error("Error toggling playback state:", error)
     }
   }
 
