@@ -827,9 +827,9 @@ export default function Component() {
 
       {/* Controls */}
       <div className="flex items-center gap-6 text-white">
-        <motion.button
+        <motion.div
           onClick={togglePlayback}
-          className="flex items-center justify-center w-12 h-12 rounded-full"
+          className="flex items-center justify-center w-12 h-12 rounded-full cursor-pointer"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
@@ -847,7 +847,7 @@ export default function Component() {
                 />
             </svg>
           )}
-        </motion.button>
+        </motion.div>
 
         <motion.div
           className="text-2xl font-light tracking-wider"
