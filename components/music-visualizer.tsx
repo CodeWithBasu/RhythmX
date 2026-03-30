@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react"
 
 import { motion } from "framer-motion"
 import { Geist_Mono } from "next/font/google"
-import { Upload, Database } from "lucide-react"
+import { Upload, Database, Share2, Users } from "lucide-react"
 import Link from "next/link"
 import ElasticSlider from "@/components/ui/elastic-slider"
 import TextType from "@/components/ui/TextType"
@@ -14,6 +14,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
   weight: ["400", "500"],
 })
+
+const DEFAULT_TEXT = [
+  "LOST IN THE NEON LIGHTS",
+  "FEEL THE RHYTHM IN YOUR MIND",
+  "ECHOES OF A CYBER CITY",
+  "WE ARE INFINITE"
+];
 
 export default function Component() {
   const device = useDevice()
@@ -45,6 +52,157 @@ export default function Component() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+
+  const [partyId, setPartyId] = useState<string | null>(null)
+  const [isHost, setIsHost] = useState(false)
+  const [currentSongObj, setCurrentSongObj] = useState<any>(null)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const pId = params.get('party')
+      if (pId) {
+        setPartyId(pId)
+        setIsHost(false)
+      }
+    }
+  }, [])
+
+  // Party Guest Sync
+  useEffect(() => {
+    if (!partyId || isHost) return;
+    
+    let isProcessing = false;
+    const interval = setInterval(async () => {
+      if (isProcessing) return;
+      isProcessing = true;
+      try {
+        const res = await fetch(`/api/party?id=${partyId}`);
+        if (res.ok) {
+          const data = await res.json();
+          // Sync song
+          if (data.song && (!currentSongObj || currentSongObj.id !== data.song.id)) {
+            setCurrentSongObj(data.song);
+            
+            let songUrl = data.song.url;
+            if (!songUrl) {
+              songUrl = `/api/songs/${data.song.id}/stream`;
+            }
+            if (audioRef.current) {
+              audioRef.current.src = songUrl;
+              audioRef.current.load();
+              audioRef.current.currentTime = data.currentTime;
+              setIsBuffering(true);
+              
+              if (audioContextRef.current?.state === "suspended") {
+                 await audioContextRef.current.resume();
+              }
+              if (!isInitialized) {
+                 await initializeAudioContext();
+              }
+              
+              if (data.isPlaying) {
+                 const p = audioRef.current.play();
+                 if (p !== undefined) p.catch(() => {});
+                 setIsPlaying(true);
+              }
+              setCurrentTrack(`~/ ${data.song.title}`);
+              setHasAudio(true);
+            }
+          } else if (audioRef.current) {
+             // Same song, sync time
+             const drift = Math.abs(audioRef.current.currentTime - data.currentTime);
+             if (drift > 2) {
+                audioRef.current.currentTime = data.currentTime;
+             }
+             // Sync state
+             if (data.isPlaying && audioRef.current.paused) {
+                const p = audioRef.current.play();
+                if (p !== undefined) p.catch(() => {});
+                setIsPlaying(true);
+             } else if (!data.isPlaying && !audioRef.current.paused) {
+                audioRef.current.pause();
+                setIsPlaying(false);
+             }
+          }
+        }
+      } catch (e) {
+        console.error("Party sync error", e);
+      } finally {
+        isProcessing = false;
+      }
+    }, 2000);
+    
+    return () => clearInterval(interval);
+  }, [partyId, isHost, currentSongObj, isInitialized]);
+
+  // Party Host Sync
+  useEffect(() => {
+    if (!partyId || !isHost) return;
+    
+    let isProcessing = false;
+    const interval = setInterval(async () => {
+      if (!audioRef.current || !currentSongObj || isProcessing) return;
+      isProcessing = true;
+      try {
+        await fetch('/api/party', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: partyId,
+            song: currentSongObj,
+            currentTime: audioRef.current.currentTime,
+            isPlaying: !audioRef.current.paused
+          })
+        });
+      } catch (e) {
+        console.error("Failed to host sync", e);
+      } finally {
+        isProcessing = false;
+      }
+    }, 2000);
+    
+    return () => clearInterval(interval);
+  }, [partyId, isHost, currentSongObj]);
+
+  const startParty = async () => {
+    if (partyId) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('party', partyId);
+      navigator.clipboard.writeText(url.toString());
+      alert("Party link copied to clipboard! Share it with your friends.");
+      return;
+    }
+    
+    if (!currentSongObj) {
+      alert("Please select and play a song from your library first to start a party!");
+      return;
+    }
+    
+    try {
+      const res = await fetch('/api/party', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          song: currentSongObj,
+          currentTime: audioRef.current?.currentTime || 0,
+          isPlaying: audioRef.current ? !audioRef.current.paused : false
+        })
+      });
+      const data = await res.json();
+      setPartyId(data.id);
+      setIsHost(true);
+      
+      const url = new URL(window.location.href);
+      url.searchParams.set('party', data.id);
+      window.history.pushState({}, '', url.toString());
+      
+      navigator.clipboard.writeText(url.toString());
+      alert("Party started! The link has been copied to your clipboard. Share it to sync playback!");
+    } catch (e) {
+      alert("Failed to start party. Please make sure the database is accessible.");
+    }
+  }
 
   // Synced Lyrics State
   interface LyricLine {
@@ -426,6 +584,7 @@ export default function Component() {
   }
 
   const playSong = async (song: any) => {
+    setCurrentSongObj(song);
     if (audioRef.current) {
       let songUrl = song.url
       if (!songUrl) {
@@ -566,114 +725,7 @@ export default function Component() {
       className={`min-h-screen bg-transparent flex flex-col items-center justify-center p-4 sm:p-8 overflow-x-hidden ${geistMono.className}`}
       onMouseMove={handleMouseMove}
     >
-      {/* Holographic 3D Lyrics Background */}
-      <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden z-0" style={{ perspective: '1200px' }}>
-        <motion.div
-          animate={{
-            rotateX: device !== 'mobile' ? mousePos.y * -25 : 0,
-            rotateY: device !== 'mobile' ? mousePos.x * 25 : 0,
-            scale: isPlaying && audioData.length > 5 ? 1 + (audioData[5] * 0.1) : 1
-          }}
-          transition={{ type: "spring", stiffness: 100, damping: 30 }}
-          style={{ transformStyle: "preserve-3d" }}
-          className="flex flex-col items-center justify-center text-center relative w-full h-full"
-        >
-          {lyrics.length > 0 ? (
-            // Animated, Synced LRCLIB Lyrics
-            <div className="relative w-full h-[35vh] sm:h-[40vh] md:h-[50vh] flex flex-col items-center justify-center">
-              {lyrics.map((line, i) => {
-                // Only render lines somewhat near the active line for performance
-                const dist = i - currentLyricIndex
-                if (Math.abs(dist) > 3) return null
 
-                const isActive = i === currentLyricIndex
-                const isPast = dist < 0
-
-                // If it's a past line, it floats upwards. If future, it waits below.
-                const offsetZ = isActive ? 150 : (isPast ? -100 + dist * 50 : -100 - dist * 50)
-                const offsetY = dist * 20 // Move text up/down based on distance from current
-
-                // Calculate typing speed based on the duration of this specific lyric line!
-                const nextTime = lyrics[i + 1]?.time || line.time + 5
-                const durationMs = (nextTime - line.time) * 1000
-                const calculatedTypingSpeed = Math.max(20, Math.min(150, durationMs / (line.text.length || 1)))
-
-                return (
-                  <motion.div
-                    key={i}
-                    animate={{
-                      z: offsetZ,
-                      y: `${offsetY}vh`,
-                      opacity: isActive ? 1 : Math.max(0, 0.4 - Math.abs(dist) * 0.2),
-                      scale: isActive ? 1 : 0.8
-                    }}
-                    transition={{ type: "spring", damping: 20, stiffness: 100 }}
-                    className={`absolute text-2xl sm:text-3xl lg:text-5xl font-black tracking-wider uppercase whitespace-nowrap mix-blend-screen text-center w-full ${isActive ? 'text-white' : 'text-transparent'}`}
-                    style={{
-                      WebkitTextStroke: isActive ? "0px" : "1.5px rgba(255,255,255,0.6)",
-                      textShadow: isActive ? "0 0 40px rgba(255,255,255,0.6)" : "none",
-                      filter: isActive ? "drop-shadow(0 0 20px rgba(255,255,255,0.4))" : `blur(${Math.abs(dist)}px)`
-                    }}
-                  >
-                    {isActive ? (
-                      <TextType 
-                        text={line.text}
-                        showCursor={true}
-                        cursorCharacter="_"
-                        typingSpeed={calculatedTypingSpeed}
-                        loop={false}
-                        className="inline-block"
-                        cursorClassName="text-white/50"
-                      />
-                    ) : (
-                      line.text
-                    )}
-                  </motion.div>
-                )
-              })}
-            </div>
-          ) : (
-            // Default Placeholder Hologram
-            <>
-              {isFetchingLyrics ? (
-                // Hardcoded fallback during loading for aesthetic
-                ["SEARCHING SATELLITE DATA...", "DECODING AUDIO FILE...", "SYNCING TIMESTAMPS..."].map((line, i) => (
-                  <motion.div
-                    key={i}
-                    className={`text-xl sm:text-2xl lg:text-4xl font-black tracking-[0.2em] uppercase my-4 whitespace-nowrap opacity-20 mix-blend-screen ${i % 2 === 0 ? 'text-transparent' : 'text-white'}`}
-                    style={{
-                      WebkitTextStroke: i % 2 === 0 ? "2px rgba(255,255,255,0.8)" : "0px",
-                      transform: `translateZ(${(i - 1.5) * 120}px)`,
-                      textShadow: i % 2 !== 0 ? "0 0 30px rgba(255,255,255,0.3)" : "none"
-                    }}
-                  >
-                    {line}
-                  </motion.div>
-                ))
-              ) : (
-                <div 
-                  style={{
-                    transform: `translateZ(120px)`,
-                    textShadow: "0 0 30px rgba(255,255,255,0.3)" 
-                  }}
-                  className="w-full flex justify-center text-white"
-                >
-                  <TextType 
-                    text={["LOST IN THE NEON LIGHTS", "FEEL THE RHYTHM IN YOUR MIND", "ECHOES OF A CYBER CITY", "WE ARE INFINITE"]}
-                    typingSpeed={75}
-                    pauseDuration={1500}
-                    showCursor
-                    cursorCharacter="_"
-                    deletingSpeed={50}
-                    className="text-xl sm:text-2xl lg:text-4xl font-black tracking-[0.2em] uppercase whitespace-nowrap opacity-20 mix-blend-screen"
-                    cursorBlinkDuration={0.5}
-                  />
-                </div>
-              )}
-            </>
-          )}
-        </motion.div>
-      </div>
 
       {/* Hidden file input */}
       <input ref={fileInputRef} type="file" accept="audio/*" onChange={handleFileUpload} className="hidden" />
@@ -722,8 +774,19 @@ export default function Component() {
         }}
       />
 
-      {/* Actions */}
       <div className="absolute top-4 right-4 sm:top-8 sm:right-8 flex flex-wrap justify-end gap-2 sm:gap-3 z-10 w-full max-w-[calc(100%-80px)] sm:max-w-none">
+        
+        <motion.button
+          className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 ${partyId ? (isHost ? 'bg-pink-500/20 text-pink-300 border-pink-500/40' : 'bg-blue-500/20 text-blue-300 border-blue-500/40') : 'bg-white/5 hover:bg-white/10 text-white/60 hover:text-white border-white/10'} rounded-lg border transition-all duration-200`}
+          onClick={startParty}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          {partyId ? <Users size={14} className="sm:w-4 sm:h-4" /> : <Share2 size={14} className="sm:w-4 sm:h-4" />}
+          <span className="text-[10px] sm:text-sm hidden sm:inline">{partyId ? (isHost ? "Hosting Party" : "In Party") : "Start Party"}</span>
+          <span className="text-[10px] sm:hidden">{partyId ? "Party" : "Share"}</span>
+        </motion.button>
+
         <Link href="/admin">
           <motion.div
             className="flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 hover:text-purple-200 rounded-lg border border-purple-500/20 hover:border-purple-500/40 transition-all duration-200 cursor-pointer"
