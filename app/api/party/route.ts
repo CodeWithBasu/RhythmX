@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     
     if (!party) return new NextResponse(JSON.stringify({ error: "Party not found" }), { status: 404 })
     
-    return NextResponse.json({ ...party, id: party._id.toString() })
+    return NextResponse.json({ ...party, id: party._id.toString(), serverTime: Date.now() })
   } catch (e) {
     console.error("GET Party Error:", e);
     return new NextResponse(JSON.stringify({ error: "Error" }), { status: 500 })

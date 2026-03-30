@@ -56,6 +56,7 @@ export default function Component() {
   const [partyId, setPartyId] = useState<string | null>(null)
   const [isHost, setIsHost] = useState(false)
   const [currentSongObj, setCurrentSongObj] = useState<any>(null)
+  const [hasJoinedMobile, setHasJoinedMobile] = useState(false)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -70,16 +71,25 @@ export default function Component() {
 
   // Party Guest Sync
   useEffect(() => {
-    if (!partyId || isHost) return;
+    if (!partyId || isHost || !hasJoinedMobile) return;
     
     let isProcessing = false;
     const interval = setInterval(async () => {
       if (isProcessing) return;
       isProcessing = true;
+      const startFetch = Date.now();
       try {
         const res = await fetch(`/api/party?id=${partyId}`);
         if (res.ok) {
           const data = await res.json();
+          const latency = (Date.now() - startFetch) / 2000;
+          
+          let timeSinceUpdate = 0;
+          if (data.serverTime && data.updatedAt) {
+            timeSinceUpdate = (data.serverTime - data.updatedAt) / 1000;
+          }
+          const expectedTime = data.isPlaying ? data.currentTime + Math.max(0, timeSinceUpdate) + latency : data.currentTime;
+
           // Sync song
           if (data.song && (!currentSongObj || currentSongObj.id !== data.song.id)) {
             setCurrentSongObj(data.song);
@@ -91,7 +101,7 @@ export default function Component() {
             if (audioRef.current) {
               audioRef.current.src = songUrl;
               audioRef.current.load();
-              audioRef.current.currentTime = data.currentTime;
+              audioRef.current.currentTime = expectedTime;
               setIsBuffering(true);
               
               if (audioContextRef.current?.state === "suspended") {
@@ -111,9 +121,9 @@ export default function Component() {
             }
           } else if (audioRef.current) {
              // Same song, sync time
-             const drift = Math.abs(audioRef.current.currentTime - data.currentTime);
-             if (drift > 2) {
-                audioRef.current.currentTime = data.currentTime;
+             const drift = Math.abs(audioRef.current.currentTime - expectedTime);
+             if (drift > 0.5) {
+                audioRef.current.currentTime = expectedTime;
              }
              // Sync state
              if (data.isPlaying && audioRef.current.paused) {
@@ -134,7 +144,7 @@ export default function Component() {
     }, 2000);
     
     return () => clearInterval(interval);
-  }, [partyId, isHost, currentSongObj, isInitialized]);
+  }, [partyId, isHost, currentSongObj, isInitialized, hasJoinedMobile]);
 
   // Party Host Sync
   useEffect(() => {
@@ -1192,6 +1202,32 @@ export default function Component() {
           </span>
         </div>
       </div>
+
+      {/* Join Party Overlay */}
+      {partyId && !isHost && !hasJoinedMobile && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md px-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex flex-col items-center text-center max-w-sm"
+          >
+            <div className="w-20 h-20 mb-6 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
+              <Users className="w-10 h-10 text-blue-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-2">You've been invited!</h2>
+            <p className="text-white/60 mb-8 text-sm">Join the live listening session to synchronize playback.</p>
+            <button 
+              onClick={async () => {
+                await initializeAudioContext();
+                setHasJoinedMobile(true);
+              }}
+              className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-full transition-all duration-300 hover:scale-105 shadow-[0_0_30px_rgba(37,99,235,0.3)]"
+            >
+              Join Party
+            </button>
+          </motion.div>
+        </div>
+      )}
     </div>
   )
 }
