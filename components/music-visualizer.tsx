@@ -76,6 +76,10 @@ export default function Component() {
   const isInitializedRef = useRef(isInitialized);
   useEffect(() => { isInitializedRef.current = isInitialized; }, [isInitialized]);
 
+  // NTP-style clock sync references
+  const myIdRef = useRef(Math.random().toString(36).substring(7));
+  const clockOffsetRef = useRef(0);
+
   // Party Guest Sync via Pusher
   useEffect(() => {
     if (!partyId || isHost || !hasJoinedMobile) return;
@@ -96,27 +100,52 @@ export default function Component() {
     fetchInitial();
 
     const pusher = getPusherClient();
-    const channel = pusher.subscribe(`private-party-${partyId}`);
+    const channelName = `private-party-${partyId}`;
+    let channel = pusher.channel(channelName);
+    if (!channel) {
+       channel = pusher.subscribe(channelName);
+    }
+
+    // Ping-Pong clock synchronization
+    channel.bind('pusher:subscription_succeeded', () => {
+       // Send pings to establish host-guest time offset
+       channel.trigger('client-ping', { id: myIdRef.current, t1: Date.now() });
+       setTimeout(() => channel.trigger('client-ping', { id: myIdRef.current, t1: Date.now() }), 500);
+       setTimeout(() => channel.trigger('client-ping', { id: myIdRef.current, t1: Date.now() }), 1000);
+    });
+
+    channel.bind('client-pong', (data: any) => {
+       if (data.id === myIdRef.current) {
+          const t3 = Date.now();
+          const rtt = t3 - data.t1;
+          const latency = rtt / 2;
+          const offset = data.t2 - (data.t1 + latency);
+          
+          if (clockOffsetRef.current === 0) {
+             clockOffsetRef.current = offset;
+          } else {
+             clockOffsetRef.current = (clockOffsetRef.current + offset) / 2;
+          }
+       }
+    });
 
     channel.bind('client-sync', (data: any) => {
-      // Direct Client-to-Client latency is incredibly low (<50ms)
-      processSyncEvent(data, 0.05);
+      processSyncEvent(data);
     });
 
     return () => {
       channel.unbind_all();
-      channel.unsubscribe();
+      pusher.unsubscribe(channelName);
     };
   }, [partyId, isHost, hasJoinedMobile]);
 
-  const processSyncEvent = async (data: any, latency: number) => {
+  const processSyncEvent = async (data: any) => {
     const hasNewSong = data.song && (!currentSongObjRef.current || currentSongObjRef.current.id !== data.song.id);
     
-    let timeSinceUpdate = 0;
-    if (data.serverTime && data.updatedAt) {
-      timeSinceUpdate = (data.serverTime - data.updatedAt) / 1000;
-    }
-    const expectedTime = data.isPlaying ? data.currentTime + Math.max(0, timeSinceUpdate) + latency : data.currentTime;
+    // Convert Host's timestamp to Guest's Local Time using NTP offset
+    const localEmissionTime = data.clientTime - clockOffsetRef.current;
+    const exactDelay = Math.max(0, (Date.now() - localEmissionTime) / 1000);
+    const expectedTime = data.isPlaying ? data.currentTime + exactDelay : data.currentTime;
 
     if (hasNewSong) {
       setCurrentSongObj(data.song);
@@ -126,6 +155,7 @@ export default function Component() {
         songUrl = `/api/songs/${data.song.id}/stream`;
       }
       if (audioRef.current) {
+        audioRef.current.playbackRate = 1.0;
         audioRef.current.src = songUrl;
         audioRef.current.load();
         audioRef.current.currentTime = expectedTime;
@@ -147,13 +177,21 @@ export default function Component() {
         setHasAudio(true);
       }
     } else if (audioRef.current) {
-       // Same song, check sync
-       const drift = Math.abs(audioRef.current.currentTime - expectedTime);
-       // Only force a hard jump if the user Scrubbed/Seeked (drift > 1.5s). 
-       // Minor delays (1s) will naturally play without stuttering!
-       if (drift > 1.5) {
+       // Micro-jump audio adjustment (Sonos-Style Multiroom Sync)
+       const drift = expectedTime - audioRef.current.currentTime;
+       
+       if (Math.abs(drift) > 1.0) {
+          // Hard jump for big desyncs (>1s) (Seeked)
           audioRef.current.currentTime = expectedTime;
+          audioRef.current.playbackRate = 1.0;
+       } else if (Math.abs(drift) > 0.05) {
+          // Smooth micro-jump for tiny audio desyncs - imperceptibly stretching audio!
+          audioRef.current.playbackRate = drift > 0 ? 1.05 : 0.95;
+       } else {
+          // Perfect sync
+          audioRef.current.playbackRate = 1.0;
        }
+       
        // Sync state
        if (data.isPlaying && audioRef.current.paused) {
           const p = audioRef.current.play();
@@ -181,6 +219,11 @@ export default function Component() {
        channel = pusher.subscribe(channelName);
     }
     channelRef.current = channel;
+
+    // Listen for Guest PING events and immediately PONG back Host's local time!
+    channel.bind('client-ping', (data: any) => {
+       channel.trigger('client-pong', { id: data.id, t1: data.t1, t2: Date.now() });
+    });
 
     // Broadcast function
     const broadcast = async () => {
