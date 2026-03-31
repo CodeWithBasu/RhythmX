@@ -149,7 +149,9 @@ export default function Component() {
     } else if (audioRef.current) {
        // Same song, check sync
        const drift = Math.abs(audioRef.current.currentTime - expectedTime);
-       if (drift > 0.5) {
+       // Only force a hard jump if the user Scrubbed/Seeked (drift > 1.5s). 
+       // Minor delays (1s) will naturally play without stuttering!
+       if (drift > 1.5) {
           audioRef.current.currentTime = expectedTime;
        }
        // Sync state
@@ -165,13 +167,14 @@ export default function Component() {
   };
 
   // Party Host Sync
+  const pendingSyncRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
-    if (!partyId || !isHost) return;
+    if (!partyId || !isHost || !audioRef.current || !currentSongObj) return;
     
-    let isProcessing = false;
-    const interval = setInterval(async () => {
-      if (!audioRef.current || !currentSongObj || isProcessing) return;
-      isProcessing = true;
+    // Broadcast function
+    const broadcast = async () => {
+      if (!audioRef.current) return;
       try {
         await fetch('/api/party', {
           method: 'PUT',
@@ -180,17 +183,40 @@ export default function Component() {
             id: partyId,
             song: currentSongObj,
             currentTime: audioRef.current.currentTime,
-            isPlaying: !audioRef.current.paused
+            isPlaying: !audioRef.current.paused,
+            clientTime: Date.now()
           })
         });
       } catch (e) {
         console.error("Failed to host sync", e);
-      } finally {
-        isProcessing = false;
       }
-    }, 2000);
+    };
+
+    // 1. Send constant baseline syncs slightly faster (every 1 second instead of 2 seconds)
+    const interval = setInterval(broadcast, 1000);
     
-    return () => clearInterval(interval);
+    // 2. Send INSTANT sync pulses exactly when Host interacts (Play, Pause, Scrubbing)
+    const handleAction = () => {
+       if (pendingSyncRef.current) clearTimeout(pendingSyncRef.current);
+       pendingSyncRef.current = setTimeout(broadcast, 10);
+    };
+
+    const audioEl = audioRef.current;
+    if (audioEl) {
+      audioEl.addEventListener('play', handleAction);
+      audioEl.addEventListener('pause', handleAction);
+      audioEl.addEventListener('seeked', handleAction);
+    }
+    
+    return () => {
+      clearInterval(interval);
+      if (pendingSyncRef.current) clearTimeout(pendingSyncRef.current);
+      if (audioEl) {
+        audioEl.removeEventListener('play', handleAction);
+        audioEl.removeEventListener('pause', handleAction);
+        audioEl.removeEventListener('seeked', handleAction);
+      }
+    };
   }, [partyId, isHost, currentSongObj]);
 
   const startParty = async () => {
