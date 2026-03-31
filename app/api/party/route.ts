@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { MongoClient, ObjectId } from 'mongodb'
 import clientPromise from '@/lib/mongodb'
-import { pusherServer } from '@/lib/pusher'
+import { pusherServer } from '@/lib/pusher-server'
 
 export const dynamic = 'force-dynamic'
 

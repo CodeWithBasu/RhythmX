@@ -9,7 +9,7 @@ import Link from "next/link"
 import ElasticSlider from "@/components/ui/elastic-slider"
 import TextType from "@/components/ui/TextType"
 import { useDevice } from "@/hooks/use-device"
-import { getPusherClient } from "@/lib/pusher"
+import { getPusherClient } from "@/lib/pusher-client"
 
 const geistMono = Geist_Mono({
   subsets: ["latin"],
