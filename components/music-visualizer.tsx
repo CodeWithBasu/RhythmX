@@ -25,8 +25,8 @@ const DEFAULT_TEXT = [
 
 export default function Component() {
   const device = useDevice()
-  // Increased bar counts to make the visualizer span wider on all devices
-  const activeBars = device === 'mobile' ? 56 : device === 'tablet' ? 64 : 80;
+  // Adjust bar counts purely for aesthetic density, not layout fit
+  const activeBars = device === 'mobile' ? 48 : device === 'tablet' ? 64 : 80;
   
   const barsRef = useRef(activeBars)
   
@@ -588,7 +588,7 @@ export default function Component() {
         }
       }
 
-      const final = Math.max(0, Math.min(1.2, normalized)) // Era 2.0, ahora 1.2 (40% menos)
+      const final = Math.max(0, Math.min(1.0, normalized)) // Cap at 1.0 (100% height)
       rawData.push(final)
     }
 
@@ -1108,18 +1108,17 @@ export default function Component() {
       </div>
 
       {/* Audio Visualizer - EFECTO OLA */}
-      <div className={`flex items-end justify-center gap-[2px] sm:gap-1 mb-8 sm:mb-16 w-full max-w-6xl px-1 sm:px-4 overflow-hidden ${device === 'mobile' ? 'h-40' : device === 'tablet' ? 'h-60' : 'h-80'}`}>
+      <div className="flex items-end justify-center gap-[2px] sm:gap-[3px] md:gap-1 mb-6 sm:mb-8 md:mb-12 w-full max-w-6xl px-1 sm:px-4 overflow-hidden h-32 sm:h-48 md:h-64 lg:h-80">
         {audioData.slice(0, activeBars).map((height, index) => (
           <motion.div
             key={index}
-            className="bg-white rounded-t-sm"
+            className="bg-white rounded-t-sm flex-1 max-w-[3px] sm:max-w-[4px] md:max-w-[6px] lg:max-w-[8px]"
             style={{
-              width: device === 'mobile' ? '5px' : device === 'tablet' ? '6px' : '8px',
               opacity: height > 0 ? 1 : 0,
             }}
             initial={{ scaleX: 0 }}
             animate={{
-              height: `${height * 150}px`,
+              height: `${height * 100}%`,
               opacity: height > 0 ? 1 : 0,
               scaleX: showInitialAnimation ? 1 : 1,
             }}
