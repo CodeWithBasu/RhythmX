@@ -9,6 +9,7 @@ import Link from "next/link"
 import ElasticSlider from "@/components/ui/elastic-slider"
 import TextType from "@/components/ui/TextType"
 import { useDevice } from "@/hooks/use-device"
+import { getPusherClient } from "@/lib/pusher"
 
 const geistMono = Geist_Mono({
   subsets: ["latin"],
@@ -69,82 +70,99 @@ export default function Component() {
     }
   }, [])
 
-  // Party Guest Sync
+  const currentSongObjRef = useRef(currentSongObj);
+  useEffect(() => { currentSongObjRef.current = currentSongObj; }, [currentSongObj]);
+
+  const isInitializedRef = useRef(isInitialized);
+  useEffect(() => { isInitializedRef.current = isInitialized; }, [isInitialized]);
+
+  // Party Guest Sync via Pusher
   useEffect(() => {
     if (!partyId || isHost || !hasJoinedMobile) return;
     
-    let isProcessing = false;
-    const interval = setInterval(async () => {
-      if (isProcessing) return;
-      isProcessing = true;
+    // Initial fetch to get current state before websocket connects
+    const fetchInitial = async () => {
       const startFetch = Date.now();
       try {
         const res = await fetch(`/api/party?id=${partyId}`);
         if (res.ok) {
           const data = await res.json();
-          const latency = (Date.now() - startFetch) / 2000;
-          
-          let timeSinceUpdate = 0;
-          if (data.serverTime && data.updatedAt) {
-            timeSinceUpdate = (data.serverTime - data.updatedAt) / 1000;
-          }
-          const expectedTime = data.isPlaying ? data.currentTime + Math.max(0, timeSinceUpdate) + latency : data.currentTime;
-
-          // Sync song
-          if (data.song && (!currentSongObj || currentSongObj.id !== data.song.id)) {
-            setCurrentSongObj(data.song);
-            
-            let songUrl = data.song.url;
-            if (!songUrl) {
-              songUrl = `/api/songs/${data.song.id}/stream`;
-            }
-            if (audioRef.current) {
-              audioRef.current.src = songUrl;
-              audioRef.current.load();
-              audioRef.current.currentTime = expectedTime;
-              setIsBuffering(true);
-              
-              if (audioContextRef.current?.state === "suspended") {
-                 await audioContextRef.current.resume();
-              }
-              if (!isInitialized) {
-                 await initializeAudioContext();
-              }
-              
-              if (data.isPlaying) {
-                 const p = audioRef.current.play();
-                 if (p !== undefined) p.catch(() => {});
-                 setIsPlaying(true);
-              }
-              setCurrentTrack(`~/ ${data.song.title}`);
-              setHasAudio(true);
-            }
-          } else if (audioRef.current) {
-             // Same song, sync time
-             const drift = Math.abs(audioRef.current.currentTime - expectedTime);
-             if (drift > 0.5) {
-                audioRef.current.currentTime = expectedTime;
-             }
-             // Sync state
-             if (data.isPlaying && audioRef.current.paused) {
-                const p = audioRef.current.play();
-                if (p !== undefined) p.catch(() => {});
-                setIsPlaying(true);
-             } else if (!data.isPlaying && !audioRef.current.paused) {
-                audioRef.current.pause();
-                setIsPlaying(false);
-             }
-          }
+          processSyncEvent(data, (Date.now() - startFetch) / 2000);
         }
       } catch (e) {
-        console.error("Party sync error", e);
-      } finally {
-        isProcessing = false;
+        console.error("Initial sync error", e);
       }
-    }, 2000);
+    };
+    fetchInitial();
+
+    const pusher = getPusherClient();
+    const channel = pusher.subscribe(`party-${partyId}`);
+
+    channel.bind('sync', (data: any) => {
+      // With Pusher, latency is virtually ~0.1s
+      processSyncEvent(data, 0.1);
+    });
+
+    return () => {
+      channel.unbind_all();
+      channel.unsubscribe();
+    };
+  }, [partyId, isHost, hasJoinedMobile]);
+
+  const processSyncEvent = async (data: any, latency: number) => {
+    const hasNewSong = data.song && (!currentSongObjRef.current || currentSongObjRef.current.id !== data.song.id);
     
-    return () => clearInterval(interval);
-  }, [partyId, isHost, currentSongObj, isInitialized, hasJoinedMobile]);
+    let timeSinceUpdate = 0;
+    if (data.serverTime && data.updatedAt) {
+      timeSinceUpdate = (data.serverTime - data.updatedAt) / 1000;
+    }
+    const expectedTime = data.isPlaying ? data.currentTime + Math.max(0, timeSinceUpdate) + latency : data.currentTime;
+
+    if (hasNewSong) {
+      setCurrentSongObj(data.song);
+      
+      let songUrl = data.song.url;
+      if (!songUrl) {
+        songUrl = `/api/songs/${data.song.id}/stream`;
+      }
+      if (audioRef.current) {
+        audioRef.current.src = songUrl;
+        audioRef.current.load();
+        audioRef.current.currentTime = expectedTime;
+        setIsBuffering(true);
+        
+        if (audioContextRef.current?.state === "suspended") {
+           await audioContextRef.current.resume();
+        }
+        if (!isInitializedRef.current) {
+           await initializeAudioContext();
+        }
+        
+        if (data.isPlaying) {
+           const p = audioRef.current.play();
+           if (p !== undefined) p.catch(() => {});
+           setIsPlaying(true);
+        }
+        setCurrentTrack(`~/ ${data.song.title}`);
+        setHasAudio(true);
+      }
+    } else if (audioRef.current) {
+       // Same song, check sync
+       const drift = Math.abs(audioRef.current.currentTime - expectedTime);
+       if (drift > 0.5) {
+          audioRef.current.currentTime = expectedTime;
+       }
+       // Sync state
+       if (data.isPlaying && audioRef.current.paused) {
+          const p = audioRef.current.play();
+          if (p !== undefined) p.catch(() => {});
+          setIsPlaying(true);
+       } else if (!data.isPlaying && !audioRef.current.paused) {
+          audioRef.current.pause();
+          setIsPlaying(false);
+       }
+    }
+  };
 
   // Party Host Sync
   useEffect(() => {

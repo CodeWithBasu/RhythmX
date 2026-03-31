@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { MongoClient, ObjectId } from 'mongodb'
 import clientPromise from '@/lib/mongodb'
+import { pusherServer } from '@/lib/pusher'
 
 export const dynamic = 'force-dynamic'
 
@@ -57,6 +58,18 @@ export async function PUT(request: Request) {
       { _id: new ObjectId(id) },
       { $set: { song, currentTime, isPlaying, updatedAt: Date.now() } }
     )
+    
+    try {
+      await pusherServer.trigger(`party-${id}`, 'sync', {
+        song,
+        currentTime,
+        isPlaying,
+        updatedAt: Date.now(),
+        serverTime: Date.now()
+      })
+    } catch (err) {
+      console.error("Pusher trigger error:", err)
+    }
     
     return NextResponse.json({ success: true })
   } catch (e) {
