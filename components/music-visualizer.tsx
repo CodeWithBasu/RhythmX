@@ -96,11 +96,11 @@ export default function Component() {
     fetchInitial();
 
     const pusher = getPusherClient();
-    const channel = pusher.subscribe(`party-${partyId}`);
+    const channel = pusher.subscribe(`private-party-${partyId}`);
 
-    channel.bind('sync', (data: any) => {
-      // With Pusher, latency is virtually ~0.1s
-      processSyncEvent(data, 0.1);
+    channel.bind('client-sync', (data: any) => {
+      // Direct Client-to-Client latency is incredibly low (<50ms)
+      processSyncEvent(data, 0.05);
     });
 
     return () => {
@@ -167,25 +167,42 @@ export default function Component() {
   };
 
   // Party Host Sync
+  const channelRef = useRef<any>(null);
   const pendingSyncRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!partyId || !isHost || !audioRef.current || !currentSongObj) return;
     
+    // Connect Host to private channel for Client Events
+    const pusher = getPusherClient();
+    const channelName = `private-party-${partyId}`;
+    let channel = pusher.channel(channelName);
+    if (!channel) {
+       channel = pusher.subscribe(channelName);
+    }
+    channelRef.current = channel;
+
     // Broadcast function
     const broadcast = async () => {
       if (!audioRef.current) return;
+      
+      const payload = {
+        id: partyId,
+        song: currentSongObj,
+        currentTime: audioRef.current.currentTime,
+        isPlaying: !audioRef.current.paused,
+        clientTime: Date.now()
+      };
+
+      // 1. Instantly ping all guests without waiting for server response!
+      channelRef.current?.trigger('client-sync', payload);
+
+      // 2. Async save to database
       try {
         await fetch('/api/party', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: partyId,
-            song: currentSongObj,
-            currentTime: audioRef.current.currentTime,
-            isPlaying: !audioRef.current.paused,
-            clientTime: Date.now()
-          })
+          body: JSON.stringify(payload)
         });
       } catch (e) {
         console.error("Failed to host sync", e);
@@ -216,6 +233,7 @@ export default function Component() {
         audioEl.removeEventListener('pause', handleAction);
         audioEl.removeEventListener('seeked', handleAction);
       }
+      pusher.unsubscribe(channelName);
     };
   }, [partyId, isHost, currentSongObj]);
 
