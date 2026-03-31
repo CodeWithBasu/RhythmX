@@ -48,6 +48,7 @@ export default function Component() {
   const [error, setError] = useState<string | null>(null)
   const [isAddingSong, setIsAddingSong] = useState(false)
   const [isBuffering, setIsBuffering] = useState(false)
+  const [syncOffset, setSyncOffset] = useState(0)
   const [dragActive, setDragActive] = useState(false)
   const [newSongMeta, setNewSongMeta] = useState({ title: '', url: '', language: 'English' })
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -76,10 +77,6 @@ export default function Component() {
   const isInitializedRef = useRef(isInitialized);
   useEffect(() => { isInitializedRef.current = isInitialized; }, [isInitialized]);
 
-  // NTP-style clock sync references
-  const myIdRef = useRef(Math.random().toString(36).substring(7));
-  const clockOffsetRef = useRef(0);
-
   // Party Guest Sync via Pusher
   useEffect(() => {
     if (!partyId || isHost || !hasJoinedMobile) return;
@@ -106,31 +103,9 @@ export default function Component() {
        channel = pusher.subscribe(channelName);
     }
 
-    // Ping-Pong clock synchronization
-    channel.bind('pusher:subscription_succeeded', () => {
-       // Send pings to establish host-guest time offset
-       channel.trigger('client-ping', { id: myIdRef.current, t1: Date.now() });
-       setTimeout(() => channel.trigger('client-ping', { id: myIdRef.current, t1: Date.now() }), 500);
-       setTimeout(() => channel.trigger('client-ping', { id: myIdRef.current, t1: Date.now() }), 1000);
-    });
-
-    channel.bind('client-pong', (data: any) => {
-       if (data.id === myIdRef.current) {
-          const t3 = Date.now();
-          const rtt = t3 - data.t1;
-          const latency = rtt / 2;
-          const offset = data.t2 - (data.t1 + latency);
-          
-          if (clockOffsetRef.current === 0) {
-             clockOffsetRef.current = offset;
-          } else {
-             clockOffsetRef.current = (clockOffsetRef.current + offset) / 2;
-          }
-       }
-    });
-
     channel.bind('client-sync', (data: any) => {
-      processSyncEvent(data);
+      // Direct client-to-client transmission bypasses API delays perfectly. Use 50ms default transmission latency.
+      processSyncEvent(data, 0.05);
     });
 
     return () => {
@@ -139,13 +114,15 @@ export default function Component() {
     };
   }, [partyId, isHost, hasJoinedMobile]);
 
-  const processSyncEvent = async (data: any) => {
+  const processSyncEvent = async (data: any, latency = 0) => {
     const hasNewSong = data.song && (!currentSongObjRef.current || currentSongObjRef.current.id !== data.song.id);
     
-    // Convert Host's timestamp to Guest's Local Time using NTP offset
-    const localEmissionTime = data.clientTime - clockOffsetRef.current;
-    const exactDelay = Math.max(0, (Date.now() - localEmissionTime) / 1000);
-    const expectedTime = data.isPlaying ? data.currentTime + exactDelay : data.currentTime;
+    let timeSinceUpdate = 0;
+    if (data.serverTime && data.updatedAt) {
+      timeSinceUpdate = (data.serverTime - data.updatedAt) / 1000;
+    }
+    // Apply manual user sync adjustment offset to eliminate hardware/bluetooth latency
+    const expectedTime = data.isPlaying ? data.currentTime + Math.max(0, timeSinceUpdate) + latency + syncOffset : data.currentTime;
 
     if (hasNewSong) {
       setCurrentSongObj(data.song);
@@ -155,7 +132,6 @@ export default function Component() {
         songUrl = `/api/songs/${data.song.id}/stream`;
       }
       if (audioRef.current) {
-        audioRef.current.playbackRate = 1.0;
         audioRef.current.src = songUrl;
         audioRef.current.load();
         audioRef.current.currentTime = expectedTime;
@@ -177,19 +153,11 @@ export default function Component() {
         setHasAudio(true);
       }
     } else if (audioRef.current) {
-       // Micro-jump audio adjustment (Sonos-Style Multiroom Sync)
        const drift = expectedTime - audioRef.current.currentTime;
        
-       if (Math.abs(drift) > 1.0) {
-          // Hard jump for big desyncs (>1s) (Seeked)
+       // Tighter strict jump without playbackRate artifacts
+       if (Math.abs(drift) > 0.2) {
           audioRef.current.currentTime = expectedTime;
-          audioRef.current.playbackRate = 1.0;
-       } else if (Math.abs(drift) > 0.05) {
-          // Smooth micro-jump for tiny audio desyncs - imperceptibly stretching audio!
-          audioRef.current.playbackRate = drift > 0 ? 1.05 : 0.95;
-       } else {
-          // Perfect sync
-          audioRef.current.playbackRate = 1.0;
        }
        
        // Sync state
@@ -219,11 +187,6 @@ export default function Component() {
        channel = pusher.subscribe(channelName);
     }
     channelRef.current = channel;
-
-    // Listen for Guest PING events and immediately PONG back Host's local time!
-    channel.bind('client-ping', (data: any) => {
-       channel.trigger('client-pong', { id: data.id, t1: data.t1, t2: Date.now() });
-    });
 
     // Broadcast function
     const broadcast = async () => {
@@ -1233,6 +1196,23 @@ export default function Component() {
           rightIcon={null}
           className="w-full"
         />
+
+        {/* Manual Sync Offset Calibration for Guests */}
+        {partyId && !isHost && (
+          <div className="flex flex-col items-center gap-1 sm:gap-2 mt-4 sm:mt-6 max-w-xs mx-auto opacity-60 hover:opacity-100 transition-opacity">
+              <span className="text-white/40 text-[10px] font-mono tracking-widest uppercase">Sync Adjustment: {(syncOffset > 0 ? "+" : "") + (syncOffset * 1000).toFixed(0)} ms</span>
+              <input 
+                type="range" 
+                min="-0.5" 
+                max="0.5" 
+                step="0.01" 
+                value={syncOffset}
+                onChange={(e) => setSyncOffset(parseFloat(e.target.value))}
+                className="w-full h-1 bg-white/10 rounded-full appearance-none outline-none cursor-pointer" 
+              />
+              <span className="text-white/30 text-[8px]">Slide to fix echo/hardware lag</span>
+          </div>
+        )}
       </div>
 
       {/* Playlist */}
