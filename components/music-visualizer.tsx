@@ -41,8 +41,8 @@ const getBarColors = (index: number, total: number, height: number, isPlaying: b
 
 export default function Component() {
   const device = useDevice()
-  // Adjust bar counts purely for aesthetic density, not layout fit
-  const activeBars = device === 'mobile' ? 48 : device === 'tablet' ? 64 : 80;
+  // 64 bars on mobile is the sweet spot—wider than before, but not edge-to-edge
+  const activeBars = device === 'mobile' ? 64 : device === 'tablet' ? 72 : 80;
   
   const barsRef = useRef(activeBars)
   
@@ -1168,13 +1168,13 @@ export default function Component() {
       </div>
 
       {/* Audio Visualizer - EFECTO OLA */}
-      <div className="flex items-end justify-center gap-[2px] sm:gap-[3px] md:gap-1 mb-6 sm:mb-8 md:mb-12 w-full max-w-6xl px-1 sm:px-4 overflow-hidden h-32 sm:h-48 md:h-60 lg:h-72">
+      <div className="flex items-end justify-center gap-[1px] sm:gap-[2px] md:gap-1 mb-6 sm:mb-8 md:mb-12 w-full max-w-6xl px-2 sm:px-4 overflow-hidden h-32 sm:h-48 md:h-60 lg:h-72">
         {audioData.slice(0, activeBars).map((height, index) => {
           const colors = getBarColors(index, activeBars, height, isPlaying);
           return (
             <motion.div
               key={index}
-              className="rounded-t-sm flex-1 max-w-[3px] sm:max-w-[4px] md:max-w-[6px] lg:max-w-[8px]"
+              className="rounded-t-sm flex-1 max-w-[4px] sm:max-w-[5px] md:max-w-[6px] lg:max-w-[8px]"
               style={{
                 backgroundColor: colors.bg,
                 opacity: height > 0 ? 1 : 0,
