@@ -114,6 +114,18 @@ export default function Component() {
     };
   }, [partyId, isHost, hasJoinedMobile]);
 
+  // Immediately apply Manual Sync Calibration to audio playback when slider is moved
+  const prevSyncOffsetRef = useRef(syncOffset);
+  useEffect(() => {
+    if (audioRef.current && !isHost && partyId) {
+      const diff = syncOffset - prevSyncOffsetRef.current;
+      if (diff !== 0) {
+        audioRef.current.currentTime += diff;
+        prevSyncOffsetRef.current = syncOffset;
+      }
+    }
+  }, [syncOffset, isHost, partyId]);
+
   const processSyncEvent = async (data: any, latency = 0) => {
     const hasNewSong = data.song && (!currentSongObjRef.current || currentSongObjRef.current.id !== data.song.id);
     
@@ -155,13 +167,16 @@ export default function Component() {
     } else if (audioRef.current) {
        const drift = expectedTime - audioRef.current.currentTime;
        
-       // Tighter strict jump without playbackRate artifacts
-       if (Math.abs(drift) > 0.2) {
+       // Higher drift threshold (1.5s) prevents normal network connection jitter from causing microscopic stutters and lagginess every second.
+       // Only scrub jumps (like Host seeking) will trigger this snap!
+       if (Math.abs(drift) > 1.5) {
           audioRef.current.currentTime = expectedTime;
        }
        
        // Sync state
        if (data.isPlaying && audioRef.current.paused) {
+          // Absolute synchronization snap upon Resume Action!
+          audioRef.current.currentTime = expectedTime;
           const p = audioRef.current.play();
           if (p !== undefined) p.catch(() => {});
           setIsPlaying(true);
