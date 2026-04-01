@@ -1,8 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useRef } from "react"
-
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { Geist_Mono } from "next/font/google"
 import { Upload, Database, Share2, Users } from "lucide-react"
 import Link from "next/link"
@@ -22,6 +21,15 @@ const DEFAULT_TEXT = [
   "ECHOES OF A CYBER CITY",
   "WE ARE INFINITE"
 ];
+
+// Dynamic Bar Color Generator
+const getBarColor = (index: number, total: number, height: number, isPlaying: boolean) => {
+  if (!isPlaying) return 'rgba(255, 255, 255, 0.4)';
+  const hue = 320 - ((index / total) * 160); // Magenta down to Cyan
+  const saturation = 80 + (height * 20); // 80% to 100%
+  const lightness = 50 + (height * 30); // 50% to 80%
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+};
 
 export default function Component() {
   const device = useDevice()
@@ -59,6 +67,24 @@ export default function Component() {
   const [isHost, setIsHost] = useState(false)
   const [currentSongObj, setCurrentSongObj] = useState<any>(null)
   const [hasJoinedMobile, setHasJoinedMobile] = useState(false)
+
+  // Real-Time Social Reactions
+  const sharedChannelRef = useRef<any>(null);
+  const [reactions, setReactions] = useState<{id: string, emoji: string, x: number}[]>([]);
+  
+  const addReaction = (emoji: string) => {
+    const id = Date.now().toString() + Math.random().toString();
+    const x = Math.random() * 80 + 10; // Random X from 10vw to 90vw
+    setReactions(prev => [...prev, { id, emoji, x }]);
+    setTimeout(() => setReactions(prev => prev.filter(r => r.id !== id)), 2500);
+  };
+
+  const handleSendReaction = (emoji: string) => {
+    addReaction(emoji);
+    if (sharedChannelRef.current) {
+      sharedChannelRef.current.trigger('client-reaction', { emoji });
+    }
+  };
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -107,6 +133,12 @@ export default function Component() {
       // Direct client-to-client transmission bypasses API delays perfectly. Use 50ms default transmission latency.
       processSyncEvent(data, 0.05);
     });
+
+    channel.bind('client-reaction', (data: any) => {
+      addReaction(data.emoji);
+    });
+
+    sharedChannelRef.current = channel;
 
     return () => {
       channel.unbind_all();
@@ -202,6 +234,11 @@ export default function Component() {
        channel = pusher.subscribe(channelName);
     }
     channelRef.current = channel;
+    sharedChannelRef.current = channel;
+
+    channel.bind('client-reaction', (data: any) => {
+      addReaction(data.emoji);
+    });
 
     // Broadcast function
     const broadcast = async () => {
@@ -1124,38 +1161,43 @@ export default function Component() {
 
       {/* Audio Visualizer - EFECTO OLA */}
       <div className="flex items-end justify-center gap-[2px] sm:gap-[3px] md:gap-1 mb-6 sm:mb-8 md:mb-12 w-full max-w-6xl px-1 sm:px-4 overflow-hidden h-32 sm:h-48 md:h-64 lg:h-80">
-        {audioData.slice(0, activeBars).map((height, index) => (
-          <motion.div
-            key={index}
-            className="bg-white rounded-t-sm flex-1 max-w-[3px] sm:max-w-[4px] md:max-w-[6px] lg:max-w-[8px]"
-            style={{
-              opacity: height > 0 ? 1 : 0,
-            }}
-            initial={{ scaleX: 0 }}
-            animate={{
-              height: `${height * 100}%`,
-              opacity: height > 0 ? 1 : 0,
-              scaleX: showInitialAnimation ? 1 : 1,
-            }}
-            transition={{
-              height: {
-                type: "spring",
-                stiffness: height > 0 ? 400 : 200,
-                damping: height > 0 ? 25 : 35,
-                mass: 0.2,
-              },
-              opacity: {
-                duration: height > 0 ? 0.1 : 0.8,
-                ease: "easeOut",
-              },
-              scaleX: {
-                duration: 2,
-                delay: Math.abs(index - 40) * 0.015,
-                ease: "easeOut",
-              },
-            }}
-          />
-        ))}
+        {audioData.slice(0, activeBars).map((height, index) => {
+          const barColor = getBarColor(index, activeBars, height, isPlaying);
+          return (
+            <motion.div
+              key={index}
+              className="rounded-t-sm flex-1 max-w-[3px] sm:max-w-[4px] md:max-w-[6px] lg:max-w-[8px]"
+              style={{
+                backgroundColor: barColor,
+                opacity: height > 0 ? 1 : 0,
+                boxShadow: isPlaying && height > 0.3 ? `0 0 ${Math.floor(height * 20)}px ${barColor}` : 'none'
+              }}
+              initial={{ scaleX: 0 }}
+              animate={{
+                height: `${height * 100}%`,
+                opacity: height > 0 ? 1 : 0,
+                scaleX: showInitialAnimation ? 1 : 1,
+              }}
+              transition={{
+                height: {
+                  type: "spring",
+                  stiffness: height > 0 ? 400 : 200,
+                  damping: height > 0 ? 25 : 35,
+                  mass: 0.2,
+                },
+                opacity: {
+                  duration: height > 0 ? 0.1 : 0.8,
+                  ease: "easeOut",
+                },
+                scaleX: {
+                  duration: 2,
+                  delay: Math.abs(index - 40) * 0.015,
+                  ease: "easeOut",
+                },
+              }}
+            />
+          );
+        })}
       </div>
 
       {/* Controls */}
@@ -1325,6 +1367,39 @@ export default function Component() {
               Join Party
             </button>
           </motion.div>
+        </div>
+      )}
+
+      {/* Floating Reactions Render Layer */}
+      <div className="pointer-events-none fixed inset-0 z-[100] overflow-hidden">
+        <AnimatePresence>
+          {reactions.map((r) => (
+            <motion.div
+              key={r.id}
+              initial={{ y: "100vh", opacity: 0, scale: 0.5, x: `${r.x}vw` }}
+              animate={{ y: "-10vh", opacity: [0, 1, 1, 0], scale: 1.5 + Math.random(), rotate: Math.random() * 60 - 30 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 2.5, ease: "easeOut" }}
+              className="absolute text-5xl drop-shadow-2xl"
+            >
+              {r.emoji}
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+
+      {/* Social Emoji Reaction Buttons */}
+      {partyId && (hasJoinedMobile || isHost) && (
+        <div className="fixed right-4 sm:right-8 bottom-24 sm:bottom-1/2 sm:translate-y-1/2 z-50 flex flex-col gap-3">
+          {["🔥", "❤️", "🎉", "🕺"].map((emoji) => (
+            <button
+              key={emoji}
+              onClick={() => handleSendReaction(emoji)}
+              className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-2xl transition-transform hover:scale-110 active:scale-95 shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+            >
+              {emoji}
+            </button>
+          ))}
         </div>
       )}
     </div>
