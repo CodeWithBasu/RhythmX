@@ -198,8 +198,15 @@ const Slider: React.FC<SliderProps> = ({
             }}
             className="flex flex-grow"
           >
-            <div className="relative h-full flex-grow overflow-hidden rounded-full bg-gray-600">
-              <div className="absolute h-full bg-white rounded-full" style={{ width: `${getRangePercentage()}%` }} />
+            <div className="relative h-full flex-grow overflow-hidden rounded-full bg-white/10 border border-white/5">
+              <div 
+                className="absolute h-full rounded-full transition-all duration-75 ease-out" 
+                style={{ 
+                  width: `${getRangePercentage()}%`,
+                  background: 'linear-gradient(90deg, #a855f7 0%, #ec4899 50%, #f97316 100%)',
+                  boxShadow: '0 0 15px rgba(149, 198, 25, 0.3)'
+                }} 
+              />
             </div>
           </motion.div>
         </div>
