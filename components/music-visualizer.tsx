@@ -860,7 +860,7 @@ export default function Component() {
 
   return (
     <div 
-      className={`min-h-screen bg-transparent flex flex-col items-center justify-center p-4 sm:p-8 overflow-x-hidden ${geistMono.className}`}
+      className={`min-h-screen bg-transparent flex flex-col items-center justify-start p-4 sm:p-8 pt-32 sm:pt-40 overflow-x-hidden ${geistMono.className}`}
       onMouseMove={handleMouseMove}
     >
 
@@ -912,7 +912,7 @@ export default function Component() {
         }}
       />
 
-      <div className="absolute top-4 right-4 sm:top-8 sm:right-8 flex flex-wrap justify-end gap-2 sm:gap-3 z-10 w-full max-w-[calc(100%-80px)] sm:max-w-none">
+      <div className="absolute top-4 right-4 sm:top-8 sm:right-8 flex flex-wrap justify-end gap-2 sm:gap-3 z-50 w-full max-w-[calc(100%-80px)] sm:max-w-none">
         
         <motion.button
           className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 ${partyId ? (isHost ? 'bg-pink-500/20 text-pink-300 border-pink-500/40' : 'bg-blue-500/20 text-blue-300 border-blue-500/40') : 'bg-white/5 hover:bg-white/10 text-white/60 hover:text-white border-white/10'} rounded-lg border transition-all duration-200`}
@@ -1168,7 +1168,7 @@ export default function Component() {
       </div>
 
       {/* Audio Visualizer - EFECTO OLA */}
-      <div className="flex items-end justify-center gap-[2px] sm:gap-[3px] md:gap-1 mb-6 sm:mb-8 md:mb-12 w-full max-w-6xl px-1 sm:px-4 overflow-hidden h-32 sm:h-48 md:h-64 lg:h-80">
+      <div className="flex items-end justify-center gap-[2px] sm:gap-[3px] md:gap-1 mb-6 sm:mb-8 md:mb-12 w-full max-w-6xl px-1 sm:px-4 overflow-hidden h-32 sm:h-48 md:h-60 lg:h-72">
         {audioData.slice(0, activeBars).map((height, index) => {
           const colors = getBarColors(index, activeBars, height, isPlaying);
           return (

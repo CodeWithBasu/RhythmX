@@ -90,3 +90,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+::selection {
+  background: #a855f7; /* Vibrant Purple */
+  color: white;
+}
+
+::-moz-selection {
+  background: #a855f7;
+  color: white;
+}
