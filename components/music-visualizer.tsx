@@ -23,12 +23,20 @@ const DEFAULT_TEXT = [
 ];
 
 // Dynamic Bar Color Generator
-const getBarColor = (index: number, total: number, height: number, isPlaying: boolean) => {
-  if (!isPlaying) return 'rgba(255, 255, 255, 0.4)';
-  const hue = 320 - ((index / total) * 160); // Magenta down to Cyan
-  const saturation = 80 + (height * 20); // 80% to 100%
-  const lightness = 50 + (height * 30); // 50% to 80%
-  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+const getBarColors = (index: number, total: number, height: number, isPlaying: boolean) => {
+  if (!isPlaying) return { bg: 'rgba(255, 255, 255, 0.2)', glow: 'transparent' };
+  
+  // Smooth gradient mapping: Violet (280) -> Pink (330) -> Red -> Orange (30)
+  // We use stable lightness so the color gradient blends continuously across bars
+  // instead of becoming jagged wildly when heights differ.
+  const hue = 280 - ((index / total) * 250); 
+  const saturation = 90;
+  const lightness = 60 + (height * 5); // Just a tiny lightness pop for tall peaks
+  
+  return {
+    bg: `hsl(${hue}, ${saturation}%, ${lightness}%)`,
+    glow: `hsla(${hue}, ${saturation}%, ${lightness}%, ${Math.min(0.25, height * 0.25)})` // Very subtle transparent glow
+  };
 };
 
 export default function Component() {
@@ -1162,15 +1170,15 @@ export default function Component() {
       {/* Audio Visualizer - EFECTO OLA */}
       <div className="flex items-end justify-center gap-[2px] sm:gap-[3px] md:gap-1 mb-6 sm:mb-8 md:mb-12 w-full max-w-6xl px-1 sm:px-4 overflow-hidden h-32 sm:h-48 md:h-64 lg:h-80">
         {audioData.slice(0, activeBars).map((height, index) => {
-          const barColor = getBarColor(index, activeBars, height, isPlaying);
+          const colors = getBarColors(index, activeBars, height, isPlaying);
           return (
             <motion.div
               key={index}
               className="rounded-t-sm flex-1 max-w-[3px] sm:max-w-[4px] md:max-w-[6px] lg:max-w-[8px]"
               style={{
-                backgroundColor: barColor,
+                backgroundColor: colors.bg,
                 opacity: height > 0 ? 1 : 0,
-                boxShadow: isPlaying && height > 0.3 ? `0 0 ${Math.floor(height * 20)}px ${barColor}` : 'none'
+                boxShadow: isPlaying ? `0 0 ${Math.floor(height * 6)}px ${colors.glow}` : 'none'
               }}
               initial={{ scaleX: 0 }}
               animate={{
