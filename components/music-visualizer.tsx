@@ -951,14 +951,12 @@ export default function Component() {
         )}
 
         <motion.button
-          className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded-lg border border-white/20 hover:border-white/40 transition-all duration-200"
-          onClick={() => fileInputRef.current?.click()}
+          className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white rounded-lg border border-white/10 hover:border-white/30 transition-all duration-200"
+          onClick={() => setIsAddingSong(true)}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          <Upload size={14} className="sm:w-4 sm:h-4" />
-          <span className="text-[10px] sm:text-sm hidden sm:inline">Upload MP3</span>
-          <span className="text-[10px] sm:hidden">Upload</span>
+          <span className="text-[10px] sm:text-sm font-bold">+ Music</span>
         </motion.button>
       </div>
 
