@@ -71,6 +71,17 @@ export default function Component() {
   const [uploadProgress, setUploadProgress] = useState(0)
   const [searchQuery, setSearchQuery] = useState("")
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  const handleAdminLogin = () => {
+    const password = prompt("Enter Security Key to unlock Admin Panel:");
+    if (password === "rhythmxadmin") {
+      setIsAdmin(true);
+      alert("Admin Access Granted.");
+    } else if (password !== null) {
+      alert("Invalid Security Key.");
+    }
+  };
 
   const [partyId, setPartyId] = useState<string | null>(null)
   const [isHost, setIsHost] = useState(false)
@@ -926,36 +937,31 @@ export default function Component() {
           <span className="text-[10px] sm:hidden">{partyId ? "Party" : "Share"}</span>
         </motion.button>
 
-        <Link href="/admin">
-          <motion.div
-            className="flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 hover:text-purple-200 rounded-lg border border-purple-500/20 hover:border-purple-500/40 transition-all duration-200 cursor-pointer"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Database size={14} className="sm:w-4 sm:h-4" />
-            <span className="text-[10px] sm:text-sm">Admin</span>
-          </motion.div>
-        </Link>
+        {isAdmin && (
+          <>
+            <Link href="/admin">
+              <motion.div
+                className="flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 hover:text-purple-200 rounded-lg border border-purple-500/20 hover:border-purple-500/40 transition-all duration-200 cursor-pointer"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Database size={14} className="sm:w-4 sm:h-4" />
+                <span className="text-[10px] sm:text-sm">Admin</span>
+              </motion.div>
+            </Link>
 
-        <motion.button
-          className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white rounded-lg border border-white/10 transition-all duration-200"
-          onClick={() => setIsAddingSong(true)}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <span className="text-[10px] sm:text-sm">+ Library</span>
-        </motion.button>
-
-        <motion.button
-          className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded-lg border border-white/20 hover:border-white/40 transition-all duration-200"
-          onClick={() => fileInputRef.current?.click()}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <Upload size={14} className="sm:w-4 sm:h-4" />
-          <span className="text-[10px] sm:text-sm hidden sm:inline">Upload MP3</span>
-          <span className="text-[10px] sm:hidden">Upload</span>
-        </motion.button>
+            <motion.button
+              className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded-lg border border-white/20 hover:border-white/40 transition-all duration-200"
+              onClick={() => fileInputRef.current?.click()}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Upload size={14} className="sm:w-4 sm:h-4" />
+              <span className="text-[10px] sm:text-sm hidden sm:inline">Upload MP3</span>
+              <span className="text-[10px] sm:hidden">Upload</span>
+            </motion.button>
+          </>
+        )}
       </div>
 
 
