@@ -68,6 +68,7 @@ export default function Component() {
   const [dragActive, setDragActive] = useState(false)
   const [newSongMeta, setNewSongMeta] = useState({ title: '', url: '', language: 'English' })
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [uploadProgress, setUploadProgress] = useState(0)
   const [searchQuery, setSearchQuery] = useState("")
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
 
@@ -985,56 +986,73 @@ export default function Component() {
                     URL.revokeObjectURL(blobUrl)
                     
                     try {
-                      // 2. Prepare Cloudinary Upload
-                      // We use Unsigned Uploads to bypass Serverless payload limits completely.
-                      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'drxaym06i'; // Example Cloud Name
+                      // 2. Prepare Cloudinary Upload (XHR for Progress tracking)
+                      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dlmpk5juu'; 
                       const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'rhythmx_unsigned'; 
                       
                       const formData = new FormData();
                       formData.append('file', selectedFile);
                       formData.append('upload_preset', uploadPreset);
                       
-                      console.log('Uploading to Cloudinary...');
-                      const cloudResponse = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
-                        method: 'POST',
-                        body: formData
+                      setUploadProgress(0);
+                      
+                      await new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`);
+                        
+                        xhr.upload.onprogress = (event) => {
+                          if (event.lengthComputable) {
+                            const progress = Math.round((event.loaded / event.total) * 95); // Map to 0-95% (save last 5 for database)
+                            setUploadProgress(progress);
+                          }
+                        };
+                        
+                        xhr.onload = async () => {
+                          const res = JSON.parse(xhr.responseText);
+                          if (xhr.status >= 200 && xhr.status < 300) {
+                            const uploadedUrl = res.secure_url;
+                            setUploadProgress(96);
+                            
+                            // 3. Save the permanent Cloud URL to your MongoDB
+                            const songData = {
+                              ...newSongMeta,
+                              url: uploadedUrl,
+                              duration: duration
+                            }
+                            
+                            const dbRes = await fetch('/api/songs', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify(songData),
+                            });
+                            
+                            if (dbRes.ok) {
+                              setUploadProgress(100);
+                              resolve(null);
+                            } else {
+                              const data = await dbRes.json();
+                              reject(new Error(`Database Error: ${data.error || 'Failed to save metadata.'}`));
+                            }
+                          } else {
+                            reject(new Error(res.error?.message || 'Cloudinary upload failed'));
+                          }
+                        };
+                        
+                        xhr.onerror = () => reject(new Error('Network error during upload.'));
+                        xhr.send(formData);
                       });
-                      
-                      if (!cloudResponse.ok) {
-                        const errData = await cloudResponse.json();
-                        throw new Error(errData.error?.message || 'Cloudinary upload failed');
-                      }
-                      
-                      const cloudData = await cloudResponse.json();
-                      const uploadedUrl = cloudData.secure_url;
-                      
-                      // 3. Save the permanent Cloud URL to your MongoDB
-                      const songData = {
-                        ...newSongMeta,
-                        url: uploadedUrl,
-                        duration: duration
-                      }
-                      
-                      const response = await fetch('/api/songs', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(songData),
-                      })
 
                       setIsBuffering(false)
-                      if (response.ok) {
-                        setIsAddingSong(false)
-                        setSelectedFile(null)
-                        setNewSongMeta({ title: '', url: '', language: 'English' })
-                        fetchSongs()
-                      } else {
-                        const data = await response.json()
-                        alert(`Database Error: ${data.error || 'Failed to save song metadata.'}`)
-                      }
+                      setUploadProgress(0)
+                      setIsAddingSong(false)
+                      setSelectedFile(null)
+                      setNewSongMeta({ title: '', url: '', language: 'English' })
+                      fetchSongs()
                     } catch (err: any) {
                       setIsBuffering(false)
+                      setUploadProgress(0)
                       alert(`Upload Error: ${err.message || 'Check your Cloudinary settings.'}`)
-                      console.error('Cloudinary Error:', err);
+                      console.error('Upload Error:', err);
                     }
                   }
                   
@@ -1171,7 +1189,7 @@ export default function Component() {
                   disabled={!newSongMeta.title || (!newSongMeta.url && !selectedFile) || isBuffering}
                   className="flex-1 py-3 bg-white text-black font-bold rounded-lg hover:bg-white/90 disabled:opacity-50 transition-colors"
                 >
-                  {isBuffering ? "Processing..." : "Save to Library"}
+                  {isBuffering ? (uploadProgress > 0 ? `Uploading (${uploadProgress}%)...` : "Processing...") : "Save to Library"}
                 </button>
               </div>
             </form>
