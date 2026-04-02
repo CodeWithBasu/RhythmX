@@ -72,6 +72,7 @@ export default function Component() {
   const [searchQuery, setSearchQuery] = useState("")
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const [isAdmin, setIsAdmin] = useState(false)
+  const localFileRef = useRef<HTMLInputElement>(null)
 
   const handleAdminLogin = () => {
     const password = prompt("Enter Security Key to unlock Admin Panel:");
@@ -952,11 +953,40 @@ export default function Component() {
 
         <motion.button
           className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white rounded-lg border border-white/10 hover:border-white/30 transition-all duration-200"
+          onClick={() => localFileRef.current?.click()}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Upload size={14} className="sm:w-4 sm:h-4 text-purple-400" />
+          <span className="text-[10px] sm:text-sm hidden sm:inline">Play Local</span>
+          <span className="text-[10px] sm:hidden">Play</span>
+          <input 
+            type="file" 
+            ref={localFileRef}
+            className="hidden" 
+            accept="audio/*" 
+            onChange={async (e) => {
+              const file = e.target.files?.[0]
+              if (file) {
+                const localUrl = URL.createObjectURL(file)
+                setCurrentTrack(`~/ ${file.name.replace(/\.[^/.]+$/, "")}`)
+                if (audioRef.current) {
+                  audioRef.current.src = localUrl
+                  audioRef.current.play()
+                  setIsPlaying(true)
+                }
+              }
+            }}
+          />
+        </motion.button>
+
+        <motion.button
+          className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-purple-600/20 hover:bg-purple-600/40 text-white rounded-lg border border-purple-500/40 transition-all duration-200"
           onClick={() => setIsAddingSong(true)}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          <span className="text-[10px] sm:text-sm font-bold">+ Music</span>
+          <span className="text-[10px] sm:text-sm font-bold tracking-tight">+ Library</span>
         </motion.button>
       </div>
 
