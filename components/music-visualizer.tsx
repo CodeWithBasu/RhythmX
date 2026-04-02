@@ -973,56 +973,77 @@ export default function Component() {
                 e.preventDefault()
                 
                 if (selectedFile) {
-                  if (selectedFile.size > 4 * 1024 * 1024) {
-                    alert("Error: File is too large. Vercel limits uploads to 4.5MB. Please use a smaller MP3 or a direct URL.")
-                    return
-                  }
-
-                  setIsBuffering(true) // Use buffering state as loading
+                  setIsBuffering(true) // Loading State
+                  
+                  // 1. Get Audio Duration First (Local Analysis)
                   const audio = new Audio()
-                  const url = URL.createObjectURL(selectedFile)
-                  audio.src = url
-                  audio.onloadedmetadata = () => {
+                  const blobUrl = URL.createObjectURL(selectedFile)
+                  audio.src = blobUrl
+                  
+                  audio.onloadedmetadata = async () => {
                     const duration = Math.floor(audio.duration)
-                    URL.revokeObjectURL(url)
+                    URL.revokeObjectURL(blobUrl)
                     
-                    const reader = new FileReader()
-                    reader.readAsDataURL(selectedFile)
-                    reader.onload = async () => {
-                      try {
-                        const songData = {
-                          ...newSongMeta,
-                          url: reader.result as string,
-                          duration: duration
-                        }
-                        
-                        const response = await fetch('/api/songs', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify(songData),
-                        })
-
-                        setIsBuffering(false)
-                        if (response.ok) {
-                          setIsAddingSong(false)
-                          setSelectedFile(null)
-                          setNewSongMeta({ title: '', url: '', language: 'English' })
-                          fetchSongs()
-                        } else {
-                          const data = await response.json()
-                          alert(`Error: ${data.error || 'Failed to save song.'}`)
-                        }
-                      } catch (err) {
-                        setIsBuffering(false)
-                        alert("Network error: Could not connect to the server.")
+                    try {
+                      // 2. Prepare Cloudinary Upload
+                      // We use Unsigned Uploads to bypass Serverless payload limits completely.
+                      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'drxaym06i'; // Example Cloud Name
+                      const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'rhythmx_unsigned'; 
+                      
+                      const formData = new FormData();
+                      formData.append('file', selectedFile);
+                      formData.append('upload_preset', uploadPreset);
+                      
+                      console.log('Uploading to Cloudinary...');
+                      const cloudResponse = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
+                        method: 'POST',
+                        body: formData
+                      });
+                      
+                      if (!cloudResponse.ok) {
+                        const errData = await cloudResponse.json();
+                        throw new Error(errData.error?.message || 'Cloudinary upload failed');
                       }
+                      
+                      const cloudData = await cloudResponse.json();
+                      const uploadedUrl = cloudData.secure_url;
+                      
+                      // 3. Save the permanent Cloud URL to your MongoDB
+                      const songData = {
+                        ...newSongMeta,
+                        url: uploadedUrl,
+                        duration: duration
+                      }
+                      
+                      const response = await fetch('/api/songs', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(songData),
+                      })
+
+                      setIsBuffering(false)
+                      if (response.ok) {
+                        setIsAddingSong(false)
+                        setSelectedFile(null)
+                        setNewSongMeta({ title: '', url: '', language: 'English' })
+                        fetchSongs()
+                      } else {
+                        const data = await response.json()
+                        alert(`Database Error: ${data.error || 'Failed to save song metadata.'}`)
+                      }
+                    } catch (err: any) {
+                      setIsBuffering(false)
+                      alert(`Upload Error: ${err.message || 'Check your Cloudinary settings.'}`)
+                      console.error('Cloudinary Error:', err);
                     }
                   }
+                  
                   audio.onerror = () => {
                     setIsBuffering(false)
-                    alert("Failed to read audio file duration. The file might be corrupted.")
+                    alert("Failed to analyze audio file. The file might be corrupted.")
                   }
                 } else {
+                  // Direct URL logic (already bypasses 4.5MB limit)
                   try {
                     const response = await fetch('/api/songs', {
                       method: 'POST',
