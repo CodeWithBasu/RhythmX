@@ -6,10 +6,29 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'RhythmX',
-  description: 'A stunning cloud-connected music visualizer and library player.',
+  title: 'RhythmX — Perfect Zero-Latency Music Sync & Visualizer',
+  description: 'Experience stunning real-time neon visualizers and perfect multi-device synchronization. Host a party, listen together, and interact with live social reactions. The ultimate way to share your music!',
   generator: 'Next.js',
   manifest: '/manifest.json',
+  openGraph: {
+    type: 'website',
+    url: 'https://rhythm-x.vercel.app',
+    title: 'RhythmX — Synchronized Music Visualizer Party',
+    description: 'Zero-latency multi-device audio alignment with interactive social reactions and high-velocity neon visuals.',
+    siteName: 'RhythmX',
+    images: [{
+      url: '/hero-banner.png',
+      width: 1200,
+      height: 630,
+      alt: 'RhythmX Music Visualizer Preview',
+    }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'RhythmX — Feel the Beat Together',
+    description: 'Listen to music in perfect sync with friends across any device.',
+    images: ['/hero-banner.png'],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
