@@ -873,9 +873,32 @@ export default function Component() {
 
   return (
     <div 
-      className={`min-h-screen bg-transparent flex flex-col items-center justify-start p-4 sm:p-8 pt-32 sm:pt-40 overflow-x-hidden ${geistMono.className}`}
+      className={`min-h-screen bg-transparent flex flex-col items-center justify-start p-4 sm:p-8 pt-24 sm:pt-32 overflow-x-hidden ${geistMono.className}`}
       onMouseMove={handleMouseMove}
     >
+      {/* Premium Brand Header */}
+      <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-8 py-4 sm:py-6 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-md">
+        <motion.div 
+          className="flex items-center gap-3 cursor-pointer group"
+          onClick={handleAdminLogin}
+          whileHover={{ scale: 1.02 }}
+        >
+          <div className="relative">
+            <img 
+              src="/rhythmx-logo.png" 
+              alt="RhythmX Logo" 
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shadow-lg shadow-purple-500/20 group-hover:shadow-purple-500/40 transition-all duration-300" 
+            />
+            <div className="absolute inset-0 rounded-lg bg-purple-500/10 group-hover:bg-purple-500/0 transition-colors" />
+          </div>
+          <div className="flex flex-col">
+            <h1 className="text-lg sm:text-2xl font-black tracking-tighter text-white">
+              RHYTHM<span className="text-purple-500 underline decoration-2 underline-offset-4">X</span>
+            </h1>
+            <p className="text-[8px] sm:text-[10px] text-white/40 font-mono tracking-widest uppercase">Sonic Reality Engine</p>
+          </div>
+        </motion.div>
+      </div>
 
 
       {/* Hidden file input */}
