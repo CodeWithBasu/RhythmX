@@ -816,6 +816,18 @@ export default function Component() {
     }
   }
 
+  const skipForward = () => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = Math.min(audioRef.current.currentTime + 10, duration)
+    }
+  }
+
+  const skipBackward = () => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = Math.max(audioRef.current.currentTime - 10, 0)
+    }
+  }
+
   // Handle audio events
   useEffect(() => {
     const audio = audioRef.current
