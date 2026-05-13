@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Geist_Mono } from "next/font/google"
-import { Upload, Database, Share2, Users, SkipBack, SkipForward } from "lucide-react"
+import { Upload, Database, Share2, Users, SkipBack, SkipForward, Shuffle, Repeat, Headphones } from "lucide-react"
 import Link from "next/link"
 import ElasticSlider from "@/components/ui/elastic-slider"
 import TextType from "@/components/ui/TextType"
@@ -73,6 +73,10 @@ export default function Component() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const [isAdmin, setIsAdmin] = useState(false)
   const localFileRef = useRef<HTMLInputElement>(null)
+  const [isShuffle, setIsShuffle] = useState(false)
+  const [isRepeat, setIsRepeat] = useState(false)
+  const [is8DMode, setIs8DMode] = useState(false)
+  const [albumArtUrl, setAlbumArtUrl] = useState<string | null>(null)
 
   const handleAdminLogin = () => {
     const password = prompt("Enter Security Key to unlock Admin Panel:");
@@ -446,10 +450,30 @@ export default function Component() {
     }
   }
 
-  // Listen for track changes to refetch lyrics
+  // Fetch Album Art
+  const fetchAlbumArt = async (title: string) => {
+    try {
+      const cleanTitle = title.replace('~/', '').trim();
+      const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(cleanTitle)}&entity=song&limit=1`);
+      const data = await res.json();
+      if (data.results && data.results.length > 0) {
+        // Get high-res version of the artwork
+        const highResUrl = data.results[0].artworkUrl100.replace('100x100', '600x600');
+        setAlbumArtUrl(highResUrl);
+      } else {
+        setAlbumArtUrl(null);
+      }
+    } catch (e) {
+      console.error('Failed to fetch album art', e);
+      setAlbumArtUrl(null);
+    }
+  }
+
+  // Listen for track changes to refetch lyrics and album art
   useEffect(() => {
     if (currentTrack && currentTrack !== "~/ 2 Million") {
       fetchSyncedLyrics(currentTrack)
+      fetchAlbumArt(currentTrack)
     }
   }, [currentTrack])
 
@@ -512,6 +536,7 @@ export default function Component() {
   const audioContextRef = useRef<AudioContext | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null)
+  const pannerRef = useRef<StereoPannerNode | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Cargar audio por defecto al montar el componente
@@ -545,10 +570,12 @@ export default function Component() {
       // Create source - only if it doesn't exist
       if (!sourceRef.current) {
         sourceRef.current = audioContextRef.current.createMediaElementSource(audioRef.current)
+        pannerRef.current = audioContextRef.current.createStereoPanner()
         
-        // Connect: source -> analyser -> destination
+        // Connect: source -> analyser -> panner -> destination
         sourceRef.current.connect(analyserRef.current)
-        analyserRef.current.connect(audioContextRef.current.destination)
+        analyserRef.current.connect(pannerRef.current)
+        pannerRef.current.connect(audioContextRef.current.destination)
       }
 
       setIsInitialized(true)
@@ -697,6 +724,26 @@ export default function Component() {
     }
   }, [isPlaying, isInitialized])
 
+  // 8D Audio Animation Loop
+  useEffect(() => {
+    let animationFrame: number;
+    const animate8D = () => {
+      if (is8DMode && pannerRef.current && isPlaying) {
+        const time = Date.now() / 1500;
+        pannerRef.current.pan.value = Math.sin(time) * 0.8;
+      } else if (pannerRef.current) {
+        pannerRef.current.pan.value = 0;
+      }
+      animationFrame = requestAnimationFrame(animate8D);
+    };
+    if (is8DMode) {
+      animate8D();
+    } else if (pannerRef.current) {
+      pannerRef.current.pan.value = 0;
+    }
+    return () => cancelAnimationFrame(animationFrame);
+  }, [is8DMode, isPlaying]);
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
@@ -818,6 +865,11 @@ export default function Component() {
 
   const skipForward = () => {
     if (currentSongObj && songs.length > 0) {
+      if (isShuffle) {
+        const randomIndex = Math.floor(Math.random() * songs.length);
+        playSong(songs[randomIndex]);
+        return;
+      }
       const currentIndex = songs.findIndex(s => s.id === currentSongObj.id)
       if (currentIndex !== -1 && currentIndex < songs.length - 1) {
         playSong(songs[currentIndex + 1])
@@ -827,6 +879,11 @@ export default function Component() {
 
   const skipBackward = () => {
     if (currentSongObj && songs.length > 0) {
+      if (isShuffle) {
+        const randomIndex = Math.floor(Math.random() * songs.length);
+        playSong(songs[randomIndex]);
+        return;
+      }
       const currentIndex = songs.findIndex(s => s.id === currentSongObj.id)
       if (currentIndex > 0) {
         playSong(songs[currentIndex - 1])
@@ -922,6 +979,20 @@ export default function Component() {
       className={`min-h-screen bg-transparent flex flex-col items-center justify-start p-4 sm:p-8 pt-24 sm:pt-32 overflow-x-hidden ${geistMono.className}`}
       onMouseMove={handleMouseMove}
     >
+      {/* Dynamic Album Art Background */}
+      {albumArtUrl && (
+        <div 
+          className="fixed inset-0 z-[-1] transition-opacity duration-1000 ease-in-out"
+          style={{
+            backgroundImage: `url(${albumArtUrl})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            filter: 'blur(100px) brightness(0.4) saturate(1.5)',
+            transform: 'scale(1.2)'
+          }}
+        />
+      )}
+
       {/* Premium Brand Header */}
       <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-8 py-4 sm:py-6 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-md">
         <motion.div 
@@ -967,15 +1038,26 @@ export default function Component() {
           setIsPlaying(false)
         }}
         onEnded={() => {
+          if (isRepeat && audioRef.current) {
+            audioRef.current.currentTime = 0;
+            audioRef.current.play();
+            return;
+          }
+          
           setIsPlaying(false)
           
           // Auto-play next song in the playlist
           if (currentSongObj && songs.length > 0) {
-            const currentIndex = songs.findIndex(s => s.id === currentSongObj.id)
-            if (currentIndex !== -1 && currentIndex < songs.length - 1) {
-              // Not the last song, play the next one
-              const nextSong = songs[currentIndex + 1]
-              playSong(nextSong)
+            if (isShuffle) {
+              const randomIndex = Math.floor(Math.random() * songs.length);
+              playSong(songs[randomIndex]);
+            } else {
+              const currentIndex = songs.findIndex(s => s.id === currentSongObj.id)
+              if (currentIndex !== -1 && currentIndex < songs.length - 1) {
+                // Not the last song, play the next one
+                const nextSong = songs[currentIndex + 1]
+                playSong(nextSong)
+              }
             }
           }
         }}
@@ -1361,26 +1443,35 @@ export default function Component() {
       </div>
 
       {/* Controls */}
-      <div className="flex items-center gap-6 text-white mt-4 sm:mt-6">
+      <div className="flex items-center gap-4 sm:gap-6 text-white mt-4 sm:mt-6">
+        <motion.button
+          onClick={() => setIsShuffle(!isShuffle)}
+          className={`p-2 transition-colors ${isShuffle ? 'text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]' : 'text-white/30 hover:text-white'}`}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          <Shuffle size={18} />
+        </motion.button>
+
         <motion.button
           onClick={skipBackward}
           className="p-2 text-white/50 hover:text-white transition-colors"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
         >
-          <SkipBack size={20} />
+          <SkipBack size={24} />
         </motion.button>
 
         <motion.div
           onClick={togglePlayback}
-          className="flex items-center justify-center w-14 h-14 bg-white text-black rounded-full cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] transition-shadow"
+          className="flex items-center justify-center w-16 h-16 bg-white text-black rounded-full cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] transition-shadow"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
           {isBuffering ? (
-              <div className="w-6 h-6 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-black/20 border-t-black rounded-full animate-spin" />
           ) : (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-black ml-1">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-black ml-1">
                 <motion.path
                 d={isPlaying ? "M6 4h4v16H6V4zm8 0h4v16h-4V4z" : "M8 5v14l11-7z"}
                 fill="currentColor"
@@ -1399,9 +1490,28 @@ export default function Component() {
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
         >
-          <SkipForward size={20} />
+          <SkipForward size={24} />
+        </motion.button>
+
+        <motion.button
+          onClick={() => setIsRepeat(!isRepeat)}
+          className={`p-2 transition-colors ${isRepeat ? 'text-pink-400 drop-shadow-[0_0_8px_rgba(244,114,182,0.8)]' : 'text-white/30 hover:text-white'}`}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          <Repeat size={18} />
         </motion.button>
       </div>
+
+      <motion.button
+        onClick={() => setIs8DMode(!is8DMode)}
+        className={`mt-6 flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${is8DMode ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.4)]' : 'bg-white/5 text-white/40 border border-white/10 hover:bg-white/10 hover:text-white'}`}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        <Headphones size={14} />
+        8D Audio {is8DMode ? 'ON' : 'OFF'}
+      </motion.button>
 
         <motion.div
           className="text-2xl font-light tracking-wider mt-4 sm:mt-6"
