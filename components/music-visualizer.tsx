@@ -987,8 +987,8 @@ export default function Component() {
             backgroundImage: `url(${albumArtUrl})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            filter: 'blur(40px) brightness(0.5) saturate(1.2)',
-            transform: 'scale(1.1)'
+            filter: 'blur(10px) brightness(0.6) saturate(1.2)',
+            transform: 'scale(1.05)'
           }}
         />
       )}
