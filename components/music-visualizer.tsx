@@ -838,6 +838,30 @@ export default function Component() {
     }
   }
 
+  // Hardware Media Controls (Earbuds, Bluetooth, Lockscreen)
+  useEffect(() => {
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.setActionHandler('previoustrack', () => skipBackward())
+      navigator.mediaSession.setActionHandler('nexttrack', () => skipForward())
+      navigator.mediaSession.setActionHandler('play', () => {
+        if (audioRef.current) audioRef.current.play()
+      })
+      navigator.mediaSession.setActionHandler('pause', () => {
+        if (audioRef.current) audioRef.current.pause()
+      })
+
+      if (currentSongObj) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: currentSongObj.title || 'Unknown Track',
+          artist: 'RhythmX',
+          artwork: [
+            { src: '/rhythmx-logo.png', sizes: '512x512', type: 'image/png' }
+          ]
+        })
+      }
+    }
+  }, [currentSongObj, songs])
+
   // Handle audio events
   useEffect(() => {
     const audio = audioRef.current
