@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Geist_Mono } from "next/font/google"
-import { Upload, Database, Share2, Users } from "lucide-react"
+import { Upload, Database, Share2, Users, SkipBack, SkipForward } from "lucide-react"
 import Link from "next/link"
 import ElasticSlider from "@/components/ui/elastic-slider"
 import TextType from "@/components/ui/TextType"
@@ -1315,17 +1315,26 @@ export default function Component() {
       </div>
 
       {/* Controls */}
-      <div className="flex items-center gap-6 text-white">
+      <div className="flex items-center gap-6 text-white mt-4 sm:mt-6">
+        <motion.button
+          onClick={skipBackward}
+          className="p-2 text-white/50 hover:text-white transition-colors"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          <SkipBack size={20} />
+        </motion.button>
+
         <motion.div
           onClick={togglePlayback}
-          className="flex items-center justify-center w-12 h-12 rounded-full cursor-pointer"
+          className="flex items-center justify-center w-14 h-14 bg-white text-black rounded-full cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] transition-shadow"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
           {isBuffering ? (
-              <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-black/20 border-t-black rounded-full animate-spin" />
           ) : (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-white">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-black ml-1">
                 <motion.path
                 d={isPlaying ? "M6 4h4v16H6V4zm8 0h4v16h-4V4z" : "M8 5v14l11-7z"}
                 fill="currentColor"
@@ -1337,6 +1346,16 @@ export default function Component() {
             </svg>
           )}
         </motion.div>
+
+        <motion.button
+          onClick={skipForward}
+          className="p-2 text-white/50 hover:text-white transition-colors"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          <SkipForward size={20} />
+        </motion.button>
+      </div>
 
         <motion.div
           className="text-2xl font-light tracking-wider"
