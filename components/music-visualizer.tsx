@@ -1591,6 +1591,7 @@ export default function Component() {
           leftIcon={null}
           rightIcon={null}
           className="w-full"
+          theme={theme}
         />
 
         {/* Manual Sync Offset Calibration for Guests */}

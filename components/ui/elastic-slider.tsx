@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react';
-import { animate, motion, useMotionValue, useMotionValueEvent, useTransform } from 'framer-motion';
+import { animate, motion, useMotionValue, useMotionValueEvent, useTransform, AnimatePresence } from 'framer-motion';
 
 const MAX_OVERFLOW = 50;
 
@@ -17,6 +17,7 @@ interface ElasticSliderProps {
   rightIcon?: React.ReactNode;
   onChange?: (value: number) => void;
   onDragEnd?: (value: number) => void;
+  theme?: string;
 }
 
 const ElasticSlider: React.FC<ElasticSliderProps> = ({
@@ -27,10 +28,11 @@ const ElasticSlider: React.FC<ElasticSliderProps> = ({
   className = '',
   isStepped = false,
   stepSize = 1,
-  leftIcon = <>-</>,
-  rightIcon = <>+</>,
+  leftIcon = null,
+  rightIcon = null,
   onChange,
-  onDragEnd
+  onDragEnd,
+  theme = "neon"
 }) => {
   return (
     <div className={`flex flex-col items-center justify-center gap-4 w-full ${className}`}>
@@ -45,6 +47,7 @@ const ElasticSlider: React.FC<ElasticSliderProps> = ({
         rightIcon={rightIcon}
         onChange={onChange}
         onDragEnd={onDragEnd}
+        theme={theme}
       />
     </div>
   );
@@ -61,6 +64,7 @@ interface SliderProps {
   rightIcon: React.ReactNode;
   onChange?: (value: number) => void;
   onDragEnd?: (value: number) => void;
+  theme: string;
 }
 
 const Slider: React.FC<SliderProps> = ({
@@ -73,7 +77,8 @@ const Slider: React.FC<SliderProps> = ({
   leftIcon,
   rightIcon,
   onChange,
-  onDragEnd
+  onDragEnd,
+  theme
 }) => {
   const [value, setValue] = useState<number>(externalValue ?? defaultValue);
   const sliderRef = useRef<HTMLDivElement>(null);
@@ -143,19 +148,45 @@ const Slider: React.FC<SliderProps> = ({
     return ((value - startingValue) / totalRange) * 100;
   };
 
+  const getThemeStyles = () => {
+    switch (theme) {
+      case "synthwave":
+        return {
+          gradient: 'linear-gradient(90deg, #ff00ff 0%, #ff7700 50%, #ffff00 100%)',
+          glow: 'rgba(255, 0, 255, 0.6)'
+        };
+      case "matrix":
+        return {
+          gradient: 'linear-gradient(90deg, #003300 0%, #00ff00 50%, #ccffcc 100%)',
+          glow: 'rgba(0, 255, 0, 0.6)'
+        };
+      case "ocean":
+        return {
+          gradient: 'linear-gradient(90deg, #000033 0%, #00ffff 50%, #ffffff 100%)',
+          glow: 'rgba(0, 255, 255, 0.6)'
+        };
+      default:
+        return {
+          gradient: 'linear-gradient(90deg, #a855f7 0%, #ec4899 50%, #f97316 100%)',
+          glow: 'rgba(168, 85, 247, 0.6)'
+        };
+    }
+  };
+
+  const styles = getThemeStyles();
+
   return (
-    <>
-      <motion.div
-        onHoverStart={() => animate(scale, 1.2)}
-        onHoverEnd={() => animate(scale, 1)}
-        onTouchStart={() => animate(scale, 1.2)}
-        onTouchEnd={() => animate(scale, 1)}
-        style={{
-          scale,
-          opacity: useTransform(scale, [1, 1.2], [0.7, 1])
-        }}
-        className="flex w-full touch-none select-none items-center justify-center gap-4"
-      >
+    <motion.div
+      onHoverStart={() => animate(scale, 1.1)}
+      onHoverEnd={() => animate(scale, 1)}
+      onTouchStart={() => animate(scale, 1.1)}
+      onTouchEnd={() => animate(scale, 1)}
+      style={{
+        scale,
+      }}
+      className="flex w-full touch-none select-none items-center justify-center gap-4 px-2"
+    >
+      {leftIcon && (
         <motion.div
           animate={{
             scale: region === 'left' ? [1, 1.4, 1] : 1,
@@ -167,50 +198,71 @@ const Slider: React.FC<SliderProps> = ({
         >
           {leftIcon}
         </motion.div>
+      )}
 
-        <div
-          ref={sliderRef}
-          className="relative flex w-full flex-grow cursor-grab touch-none select-none items-center py-4"
-          onPointerMove={handlePointerMove}
-          onPointerDown={handlePointerDown}
-          onPointerUp={handlePointerUp}
+      <div
+        ref={sliderRef}
+        className="relative flex w-full flex-grow cursor-grab active:cursor-grabbing touch-none select-none items-center py-4"
+        onPointerMove={handlePointerMove}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+      >
+        <motion.div
+          style={{
+            scaleX: useTransform(() => {
+              if (sliderRef.current) {
+                const { width } = sliderRef.current.getBoundingClientRect();
+                return 1 + overflow.get() / width;
+              }
+              return 1;
+            }),
+            scaleY: useTransform(overflow, [0, MAX_OVERFLOW], [1, 0.8]),
+            transformOrigin: useTransform(() => {
+              if (sliderRef.current) {
+                const { left, width } = sliderRef.current.getBoundingClientRect();
+                return clientX.get() < left + width / 2 ? 'right' : 'left';
+              }
+              return 'center';
+            }),
+            height: useTransform(scale, [1, 1.1], [4, 8]),
+          }}
+          className="flex flex-grow"
         >
-          <motion.div
-            style={{
-              scaleX: useTransform(() => {
-                if (sliderRef.current) {
-                  const { width } = sliderRef.current.getBoundingClientRect();
-                  return 1 + overflow.get() / width;
-                }
-                return 1;
-              }),
-              scaleY: useTransform(overflow, [0, MAX_OVERFLOW], [1, 0.8]),
-              transformOrigin: useTransform(() => {
-                if (sliderRef.current) {
-                  const { left, width } = sliderRef.current.getBoundingClientRect();
-                  return clientX.get() < left + width / 2 ? 'right' : 'left';
-                }
-                return 'center';
-              }),
-              height: useTransform(scale, [1, 1.2], [6, 12]),
-              marginTop: useTransform(scale, [1, 1.2], [0, -3]),
-              marginBottom: useTransform(scale, [1, 1.2], [0, -3])
-            }}
-            className="flex flex-grow"
-          >
-            <div className="relative h-full flex-grow overflow-hidden rounded-full bg-white/10 border border-white/5">
-              <div 
-                className="absolute h-full rounded-full transition-all duration-75 ease-out" 
-                style={{ 
-                  width: `${getRangePercentage()}%`,
-                  background: 'linear-gradient(90deg, #a855f7 0%, #ec4899 50%, #f97316 100%)',
-                  boxShadow: '0 0 15px rgba(149, 198, 25, 0.3)'
-                }} 
-              />
-            </div>
-          </motion.div>
-        </div>
+          <div className="relative h-full flex-grow overflow-hidden rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+            {/* Progress Track */}
+            <div 
+              className="absolute h-full rounded-full transition-all duration-150 ease-out" 
+              style={{ 
+                width: `${getRangePercentage()}%`,
+                background: styles.gradient,
+                boxShadow: `0 0 25px ${styles.glow}`
+              }} 
+            />
+            
+            {/* Glossy Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+            
+            {/* Head / Thumb Indicator */}
+            <motion.div 
+              className="absolute top-1/2 -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-white shadow-[0_0_20px_white] transition-all duration-150 ease-out z-10"
+              style={{ 
+                left: `calc(${getRangePercentage()}% - 8px)`,
+                opacity: getRangePercentage() > 0 ? 1 : 0
+              }}
+              animate={{
+                scale: [1, 1.2, 1],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+          </div>
+        </motion.div>
+      </div>
 
+      {rightIcon && (
         <motion.div
           animate={{
             scale: region === 'right' ? [1, 1.4, 1] : 1,
@@ -222,8 +274,8 @@ const Slider: React.FC<SliderProps> = ({
         >
           {rightIcon}
         </motion.div>
-      </motion.div>
-    </>
+      )}
+    </motion.div>
   );
 };
 
