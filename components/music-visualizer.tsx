@@ -817,14 +817,24 @@ export default function Component() {
   }
 
   const skipForward = () => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = Math.min(audioRef.current.currentTime + 10, duration)
+    if (currentSongObj && songs.length > 0) {
+      const currentIndex = songs.findIndex(s => s.id === currentSongObj.id)
+      if (currentIndex !== -1 && currentIndex < songs.length - 1) {
+        playSong(songs[currentIndex + 1])
+      }
     }
   }
 
   const skipBackward = () => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = Math.max(audioRef.current.currentTime - 10, 0)
+    if (currentSongObj && songs.length > 0) {
+      const currentIndex = songs.findIndex(s => s.id === currentSongObj.id)
+      if (currentIndex > 0) {
+        playSong(songs[currentIndex - 1])
+      } else if (audioRef.current) {
+        audioRef.current.currentTime = 0
+      }
+    } else if (audioRef.current) {
+      audioRef.current.currentTime = 0
     }
   }
 
