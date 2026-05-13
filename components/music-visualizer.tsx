@@ -23,19 +23,29 @@ const DEFAULT_TEXT = [
 ];
 
 // Dynamic Bar Color Generator
-const getBarColors = (index: number, total: number, height: number, isPlaying: boolean) => {
+const getBarColors = (index: number, total: number, height: number, isPlaying: boolean, theme: string = "neon") => {
   if (!isPlaying) return { bg: 'rgba(255, 255, 255, 0.2)', glow: 'transparent' };
   
-  // Smooth gradient mapping: Violet (280) -> Pink (330) -> Red -> Orange (30)
-  // We use stable lightness so the color gradient blends continuously across bars
-  // instead of becoming jagged wildly when heights differ.
-  const hue = 280 - ((index / total) * 250); 
-  const saturation = 90;
-  const lightness = 60 + (height * 5); // Just a tiny lightness pop for tall peaks
+  let hue, saturation = 90, lightness = 60 + (height * 5);
+
+  if (theme === "synthwave") {
+    // Hot Pink (320) -> Orange (30) -> Yellow (60)
+    hue = (320 + ((index / total) * 100)) % 360; 
+  } else if (theme === "matrix") {
+    // Pure Hacker Green
+    hue = 120;
+    saturation = 100;
+  } else if (theme === "ocean") {
+    // Deep Blue to Bright Cyan
+    hue = 220 - ((index / total) * 60); 
+  } else {
+    // default: neon (Violet to Pink to Orange)
+    hue = 280 - ((index / total) * 250); 
+  }
   
   return {
     bg: `hsl(${hue}, ${saturation}%, ${lightness}%)`,
-    glow: `hsla(${hue}, ${saturation}%, ${lightness}%, ${Math.min(0.25, height * 0.25)})` // Very subtle transparent glow
+    glow: `hsla(${hue}, ${saturation}%, ${lightness}%, ${Math.min(0.25, height * 0.25)})`
   };
 };
 
@@ -73,6 +83,7 @@ export default function Component() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const [isAdmin, setIsAdmin] = useState(false)
   const localFileRef = useRef<HTMLInputElement>(null)
+  const [theme, setTheme] = useState("neon")
   const [isShuffle, setIsShuffle] = useState(false)
   const [isRepeat, setIsRepeat] = useState(false)
   const [is8DMode, setIs8DMode] = useState(false)
@@ -1090,6 +1101,17 @@ export default function Component() {
 
       <div className="absolute top-4 right-4 sm:top-8 sm:right-8 flex flex-wrap justify-end gap-2 sm:gap-3 z-50 w-full max-w-[calc(100%-80px)] sm:max-w-none">
         
+        <select 
+          value={theme}
+          onChange={(e) => setTheme(e.target.value)}
+          className="bg-white/5 border border-white/10 text-white/70 text-[10px] sm:text-xs rounded-lg px-2 sm:px-3 py-1.5 outline-none hover:bg-white/10 transition-colors cursor-pointer"
+        >
+          <option value="neon" className="bg-neutral-900">Neon Pulse</option>
+          <option value="synthwave" className="bg-neutral-900">Synthwave</option>
+          <option value="matrix" className="bg-neutral-900">Cyber Matrix</option>
+          <option value="ocean" className="bg-neutral-900">Deep Ocean</option>
+        </select>
+
         <motion.button
           className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 ${partyId ? (isHost ? 'bg-pink-500/20 text-pink-300 border-pink-500/40' : 'bg-blue-500/20 text-blue-300 border-blue-500/40') : 'bg-white/5 hover:bg-white/10 text-white/60 hover:text-white border-white/10'} rounded-lg border transition-all duration-200`}
           onClick={startParty}
@@ -1404,7 +1426,7 @@ export default function Component() {
       {/* Audio Visualizer - EFECTO OLA */}
       <div className="flex items-end justify-center gap-[1px] sm:gap-[2px] md:gap-1 mb-6 sm:mb-8 md:mb-12 w-full max-w-6xl px-2 sm:px-4 overflow-hidden h-32 sm:h-48 md:h-60 lg:h-72">
         {audioData.slice(0, activeBars).map((height, index) => {
-          const colors = getBarColors(index, activeBars, height, isPlaying);
+          const colors = getBarColors(index, activeBars, height, isPlaying, theme);
           return (
             <motion.div
               key={index}
