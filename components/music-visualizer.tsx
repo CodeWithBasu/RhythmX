@@ -1085,18 +1085,20 @@ export default function Component() {
         }}
       />
 
-      <div className="absolute top-4 right-4 sm:top-8 sm:right-8 flex flex-wrap justify-end gap-2 sm:gap-3 z-50 w-full max-w-[calc(100%-80px)] sm:max-w-none">
+      <div className="absolute top-4 right-4 sm:top-8 sm:right-8 flex flex-wrap justify-end gap-2 sm:gap-3 z-50 w-full max-w-[calc(100%-140px)] sm:max-w-none">
         
-        <select 
-          value={theme}
-          onChange={(e) => setTheme(e.target.value)}
-          className="bg-white/5 border border-white/10 text-white/70 text-[10px] sm:text-xs rounded-lg px-2 sm:px-3 py-1.5 outline-none hover:bg-white/10 transition-colors cursor-pointer"
-        >
-          <option value="neon" className="bg-neutral-900">Neon Pulse</option>
-          <option value="synthwave" className="bg-neutral-900">Synthwave</option>
-          <option value="matrix" className="bg-neutral-900">Cyber Matrix</option>
-          <option value="ocean" className="bg-neutral-900">Deep Ocean</option>
-        </select>
+        {device !== 'mobile' && (
+          <select 
+            value={theme}
+            onChange={(e) => setTheme(e.target.value)}
+            className="bg-white/5 border border-white/10 text-white/70 text-[10px] sm:text-xs rounded-lg px-2 sm:px-3 py-1.5 outline-none hover:bg-white/10 transition-colors cursor-pointer"
+          >
+            <option value="neon" className="bg-neutral-900">Neon Pulse</option>
+            <option value="synthwave" className="bg-neutral-900">Synthwave</option>
+            <option value="matrix" className="bg-neutral-900">Cyber Matrix</option>
+            <option value="ocean" className="bg-neutral-900">Deep Ocean</option>
+          </select>
+        )}
 
         <motion.button
           className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 ${partyId ? (isHost ? 'bg-pink-500/20 text-pink-300 border-pink-500/40' : 'bg-blue-500/20 text-blue-300 border-blue-500/40') : 'bg-white/5 hover:bg-white/10 text-white/60 hover:text-white border-white/10'} rounded-lg border transition-all duration-200`}
@@ -1511,15 +1513,30 @@ export default function Component() {
         </motion.button>
       </div>
 
-      <motion.button
-        onClick={() => setIs8DMode(!is8DMode)}
-        className={`mt-6 flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${is8DMode ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.4)]' : 'bg-white/5 text-white/40 border border-white/10 hover:bg-white/10 hover:text-white'}`}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        <Headphones size={14} />
-        8D Audio {is8DMode ? 'ON' : 'OFF'}
-      </motion.button>
+      <div className="flex flex-col items-center gap-3 mt-6">
+        <motion.button
+          onClick={() => setIs8DMode(!is8DMode)}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${is8DMode ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.4)]' : 'bg-white/5 text-white/40 border border-white/10 hover:bg-white/10 hover:text-white'}`}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Headphones size={14} />
+          8D Audio {is8DMode ? 'ON' : 'OFF'}
+        </motion.button>
+
+        {device === 'mobile' && (
+          <select 
+            value={theme}
+            onChange={(e) => setTheme(e.target.value)}
+            className="bg-white/5 border border-white/10 text-white/70 text-xs rounded-full px-4 py-2 outline-none hover:bg-white/10 transition-colors cursor-pointer text-center appearance-none"
+          >
+            <option value="neon" className="bg-neutral-900">Theme: Neon Pulse</option>
+            <option value="synthwave" className="bg-neutral-900">Theme: Synthwave</option>
+            <option value="matrix" className="bg-neutral-900">Theme: Cyber Matrix</option>
+            <option value="ocean" className="bg-neutral-900">Theme: Deep Ocean</option>
+          </select>
+        )}
+      </div>
 
         <motion.div
           className="flex items-center gap-4 mt-4 sm:mt-6"
