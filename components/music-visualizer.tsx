@@ -920,7 +920,19 @@ export default function Component() {
           console.log("Audio paused")
           setIsPlaying(false)
         }}
-        onEnded={() => setIsPlaying(false)}
+        onEnded={() => {
+          setIsPlaying(false)
+          
+          // Auto-play next song in the playlist
+          if (currentSongObj && songs.length > 0) {
+            const currentIndex = songs.findIndex(s => s.id === currentSongObj.id)
+            if (currentIndex !== -1 && currentIndex < songs.length - 1) {
+              // Not the last song, play the next one
+              const nextSong = songs[currentIndex + 1]
+              playSong(nextSong)
+            }
+          }
+        }}
         onTimeUpdate={() => {
           if (audioRef.current) {
             const time = audioRef.current.currentTime
