@@ -1370,14 +1370,13 @@ export default function Component() {
       </div>
 
         <motion.div
-          className="text-2xl font-light tracking-wider"
+          className="text-2xl font-light tracking-wider mt-4 sm:mt-6"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
           {currentTrack}
         </motion.div>
-      </div>
 
       {/* Seek Bar */}
       <div className="w-full max-w-2xl mt-12 mb-4">
