@@ -990,20 +990,6 @@ export default function Component() {
       className={`min-h-screen bg-transparent flex flex-col items-center justify-start p-4 sm:p-8 pt-24 sm:pt-32 overflow-x-hidden ${geistMono.className}`}
       onMouseMove={handleMouseMove}
     >
-      {/* Dynamic Album Art Background */}
-      {albumArtUrl && (
-        <div 
-          className="fixed inset-0 z-[-1] transition-opacity duration-1000 ease-in-out"
-          style={{
-            backgroundImage: `url(${albumArtUrl})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            filter: 'blur(12px) brightness(0.6) saturate(1.2)',
-            transform: 'scale(1.05)'
-          }}
-        />
-      )}
-
       {/* Premium Brand Header */}
       <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-8 py-4 sm:py-6 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-md">
         <motion.div 
@@ -1536,12 +1522,21 @@ export default function Component() {
       </motion.button>
 
         <motion.div
-          className="text-2xl font-light tracking-wider mt-4 sm:mt-6"
+          className="flex items-center gap-4 mt-4 sm:mt-6"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          {currentTrack}
+          {albumArtUrl && (
+            <img 
+              src={albumArtUrl} 
+              alt="Album Art" 
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-md shadow-[0_0_15px_rgba(255,255,255,0.1)] object-cover" 
+            />
+          )}
+          <div className="text-xl sm:text-2xl font-light tracking-wider">
+            {currentTrack}
+          </div>
         </motion.div>
 
       {/* Seek Bar */}
