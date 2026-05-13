@@ -1538,6 +1538,24 @@ export default function Component() {
         )}
       </div>
 
+      {/* Dynamic Synced Lyrics Display */}
+      <AnimatePresence mode="wait">
+        {lyrics.length > 0 && currentLyricIndex !== -1 && (
+          <motion.div
+            key={`lyric-${currentLyricIndex}`}
+            initial={{ opacity: 0, scale: 0.95, filter: "blur(8px)" }}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, scale: 1.05, filter: "blur(8px)" }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            className="text-center px-6 mt-8 mb-2 max-w-2xl min-h-[60px] flex items-center justify-center"
+          >
+            <span className="text-xl sm:text-3xl font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.4)] bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70 leading-tight">
+              {lyrics[currentLyricIndex].text}
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
         <motion.div
           className="flex items-center gap-4 mt-4 sm:mt-6"
           initial={{ opacity: 0, y: 10 }}
