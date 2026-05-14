@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react';
-import { animate, motion, useMotionValue, useMotionValueEvent, useTransform, AnimatePresence } from 'framer-motion';
+import { animate, motion, useMotionValue, useMotionValueEvent, useTransform, useSpring } from 'framer-motion';
 
 const MAX_OVERFLOW = 50;
 
@@ -87,12 +87,19 @@ const Slider: React.FC<SliderProps> = ({
   const overflow = useMotionValue(0);
   const scale = useMotionValue(1);
 
+  // Smooth progress spring
+  const progressPercent = useSpring(0, { stiffness: 300, damping: 30, restDelta: 0.001 });
+
   // Sync with external value if not currently dragging
   useEffect(() => {
     if (externalValue !== undefined) {
       setValue(externalValue);
+      const totalRange = maxValue - startingValue;
+      if (totalRange > 0) {
+        progressPercent.set(((externalValue - startingValue) / totalRange) * 100);
+      }
     }
-  }, [externalValue]);
+  }, [externalValue, maxValue, startingValue]);
 
   useMotionValueEvent(clientX, 'change', (latest: number) => {
     if (sliderRef.current) {
@@ -122,6 +129,10 @@ const Slider: React.FC<SliderProps> = ({
       newValue = Math.min(Math.max(newValue, startingValue), maxValue);
       
       setValue(newValue);
+      const totalRange = maxValue - startingValue;
+      if (totalRange > 0) {
+        progressPercent.set(((newValue - startingValue) / totalRange) * 100);
+      }
       clientX.jump(e.clientX);
 
       if (onChange) {
@@ -140,12 +151,6 @@ const Slider: React.FC<SliderProps> = ({
     if (onDragEnd) {
       onDragEnd(value);
     }
-  };
-
-  const getRangePercentage = (): number => {
-    const totalRange = maxValue - startingValue;
-    if (totalRange === 0) return 0;
-    return ((value - startingValue) / totalRange) * 100;
   };
 
   const getThemeStyles = () => {
@@ -224,38 +229,37 @@ const Slider: React.FC<SliderProps> = ({
               }
               return 'center';
             }),
-            height: useTransform(scale, [1, 1.1], [4, 8]),
+            height: useTransform(scale, [1, 1.1], [6, 10]),
           }}
           className="flex flex-grow"
         >
-          <div className="relative h-full flex-grow overflow-hidden rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+          <div className="relative h-full flex-grow rounded-full bg-white/5 border border-white/10 backdrop-blur-md overflow-visible">
             {/* Progress Track */}
-            <div 
-              className="absolute h-full rounded-full transition-all duration-150 ease-out" 
+            <motion.div 
+              className="absolute h-full rounded-full" 
               style={{ 
-                width: `${getRangePercentage()}%`,
+                width: useTransform(progressPercent, (v) => `${v}%`),
                 background: styles.gradient,
                 boxShadow: `0 0 25px ${styles.glow}`
               }} 
             />
             
             {/* Glossy Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none rounded-full" />
             
-            {/* Head / Thumb Indicator */}
+            {/* Head / Thumb Indicator (Circle Point) */}
             <motion.div 
-              className="absolute top-1/2 -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-white shadow-[0_0_20px_white] transition-all duration-150 ease-out z-10"
+              className="absolute top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-white border-2 border-white shadow-[0_0_20px_white] z-20 cursor-pointer"
               style={{ 
-                left: `calc(${getRangePercentage()}% - 8px)`,
-                opacity: getRangePercentage() > 0 ? 1 : 0
+                left: useTransform(progressPercent, (v) => `calc(${v}% - 10px)`),
               }}
+              whileHover={{ scale: 1.2 }}
+              whileTap={{ scale: 0.9 }}
               animate={{
-                scale: [1, 1.2, 1],
+                boxShadow: ["0 0 10px white", "0 0 25px white", "0 0 10px white"],
               }}
               transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut"
+                boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" }
               }}
             />
           </div>
