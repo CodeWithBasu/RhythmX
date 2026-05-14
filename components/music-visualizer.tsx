@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Geist_Mono } from "next/font/google"
-import { Upload, Database, Share2, Users, SkipBack, SkipForward, Shuffle, Repeat, Headphones } from "lucide-react"
+import { Upload, Database, Share2, Users, SkipBack, SkipForward, Shuffle, Repeat, Headphones, Github, Linkedin, Globe } from "lucide-react"
 import Link from "next/link"
 import ElasticSlider from "@/components/ui/elastic-slider"
 import TextType from "@/components/ui/TextType"
@@ -1675,7 +1675,41 @@ export default function Component() {
       </div>
 
       {/* Footer */}
-      <div className="mt-16 mb-8 flex flex-col items-center justify-center gap-4 opacity-60 hover:opacity-100 transition-opacity duration-300">
+      <div className="mt-16 mb-8 flex flex-col items-center justify-center gap-6 opacity-60 hover:opacity-100 transition-opacity duration-300">
+        {/* Social Links */}
+        <div className="flex items-center gap-5">
+          <motion.a 
+            href="https://github.com/CodeWithBasu" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-white/50 hover:text-white transition-all shadow-[0_0_10px_rgba(255,255,255,0.02)]"
+            whileHover={{ scale: 1.1, y: -2 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <Github size={18} />
+          </motion.a>
+          <motion.a 
+            href="https://www.linkedin.com/in/basudev-muna-3b1b1b1b1" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-blue-500/20 hover:border-blue-500/40 text-white/50 hover:text-blue-400 transition-all shadow-[0_0_10px_rgba(59,130,246,0.05)]"
+            whileHover={{ scale: 1.1, y: -2 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <Linkedin size={18} />
+          </motion.a>
+          <motion.a 
+            href="https://basudev.vercel.app" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-green-500/20 hover:border-green-500/40 text-white/50 hover:text-green-400 transition-all shadow-[0_0_10px_rgba(34,197,94,0.05)]"
+            whileHover={{ scale: 1.1, y: -2 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <Globe size={18} />
+          </motion.a>
+        </div>
+
         <div className="flex items-center gap-6 text-[10px] sm:text-xs text-white/50 tracking-[0.2em] font-light uppercase">
           <span className="flex items-center gap-1">
             <span className="w-1 h-1 rounded-full bg-green-500 animate-pulse" />
@@ -1690,8 +1724,9 @@ export default function Component() {
             Powered by Cloudinary & MongoDB
           </span>
         </div>
-        <div className="text-[8px] text-white/10 tracking-[0.4em] uppercase">
-          &copy; 2026 RhythmX // Beyond Visualization
+        <div className="text-[8px] text-white/10 tracking-[0.4em] uppercase text-center">
+          &copy; 2026 RhythmX // Designed by Basudev <br/>
+          <span className="opacity-50 mt-1 block">Beyond Visualization</span>
         </div>
       </div>
 
