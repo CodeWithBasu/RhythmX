@@ -1675,15 +1675,23 @@ export default function Component() {
       </div>
 
       {/* Footer */}
-      <div className="mt-16 mb-8 flex flex-col items-center justify-center gap-2 opacity-60 hover:opacity-100 transition-opacity duration-300">
-        <div className="flex items-center gap-3 text-[10px] sm:text-xs text-white/50 tracking-[0.2em] font-light uppercase">
+      <div className="mt-16 mb-8 flex flex-col items-center justify-center gap-4 opacity-60 hover:opacity-100 transition-opacity duration-300">
+        <div className="flex items-center gap-6 text-[10px] sm:text-xs text-white/50 tracking-[0.2em] font-light uppercase">
           <span className="flex items-center gap-1">
-            &copy; {new Date().getFullYear()} RhythmX
+            <span className="w-1 h-1 rounded-full bg-green-500 animate-pulse" />
+            V0.1 Alpha
           </span>
-          <span className="w-1 h-1 rounded-full bg-purple-500/50"></span>
-          <span className="flex items-center gap-1.5">
-            Designed with <span className="text-red-500/80 animate-pulse text-xs">❤️</span> by <span className="text-white/90 font-medium tracking-widest text-[#a855f7] mix-blend-screen">Basudev</span> ☕
+          <span className="text-white/20">|</span>
+          <Link href="/privacy" className="hover:text-green-500 transition-colors">
+            Privacy Policy
+          </Link>
+          <span className="text-white/20">|</span>
+          <span className="flex items-center gap-1">
+            Powered by Cloudinary & MongoDB
           </span>
+        </div>
+        <div className="text-[8px] text-white/10 tracking-[0.4em] uppercase">
+          &copy; 2026 RhythmX // Beyond Visualization
         </div>
       </div>
 
