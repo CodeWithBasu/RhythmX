@@ -207,7 +207,7 @@ const Slider: React.FC<SliderProps> = ({
 
       <div
         ref={sliderRef}
-        className="relative flex w-full flex-grow cursor-grab active:cursor-grabbing touch-none select-none items-center py-4"
+        className="relative flex w-full flex-grow cursor-grab active:cursor-grabbing touch-none select-none items-center py-6"
         onPointerMove={handlePointerMove}
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
@@ -231,12 +231,12 @@ const Slider: React.FC<SliderProps> = ({
             }),
             height: useTransform(scale, [1, 1.1], [6, 10]),
           }}
-          className="flex flex-grow"
+          className="flex flex-grow items-center"
         >
-          <div className="relative h-full flex-grow rounded-full bg-white/5 border border-white/10 backdrop-blur-md overflow-visible">
+          <div className="relative w-full h-full rounded-full bg-white/5 border border-white/10 backdrop-blur-md overflow-visible flex items-center">
             {/* Progress Track */}
             <motion.div 
-              className="absolute h-full rounded-full" 
+              className="h-full rounded-full" 
               style={{ 
                 width: useTransform(progressPercent, (v) => `${v}%`),
                 background: styles.gradient,
@@ -249,9 +249,11 @@ const Slider: React.FC<SliderProps> = ({
             
             {/* Head / Thumb Indicator (Circle Point) */}
             <motion.div 
-              className="absolute top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-white border-2 border-white shadow-[0_0_20px_white] z-20 cursor-pointer"
+              className="absolute w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-white border-2 border-white shadow-[0_0_20px_white] z-20 cursor-pointer left-0"
               style={{ 
                 left: useTransform(progressPercent, (v) => `calc(${v}% - 10px)`),
+                top: '50%',
+                y: '-50%'
               }}
               whileHover={{ scale: 1.2 }}
               whileTap={{ scale: 0.9 }}
