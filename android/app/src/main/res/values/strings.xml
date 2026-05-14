@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">RhythmX</string>
+    <string name="title_activity_main">RhythmX</string>
+    <string name="package_name">com.rhythmx.app</string>
+    <string name="custom_url_scheme">com.rhythmx.app</string>
+</resources>

@@ -22,6 +22,8 @@ const DEFAULT_TEXT = [
   "WE ARE INFINITE"
 ];
 
+const API_BASE = process.env.NEXT_PUBLIC_BASE_URL || '';
+
 // Dynamic Bar Color Generator
 const getBarColors = (index: number, total: number, height: number, isPlaying: boolean, theme: string = "neon") => {
   if (!isPlaying) return { bg: 'rgba(255, 255, 255, 0.2)', glow: 'transparent' };
@@ -147,7 +149,7 @@ export default function Component() {
     const fetchInitial = async () => {
       const startFetch = Date.now();
       try {
-        const res = await fetch(`/api/party?id=${partyId}`);
+        const res = await fetch(`${API_BASE}/api/party?id=${partyId}`);
         if (res.ok) {
           const data = await res.json();
           processSyncEvent(data, (Date.now() - startFetch) / 2000);
@@ -209,7 +211,7 @@ export default function Component() {
       
       let songUrl = data.song.url;
       if (!songUrl) {
-        songUrl = `/api/songs/${data.song.id}/stream`;
+        songUrl = `${API_BASE}/api/songs/${data.song.id}/stream`;
       }
       if (audioRef.current) {
         audioRef.current.src = songUrl;
@@ -293,7 +295,7 @@ export default function Component() {
 
       // 2. Async save to database
       try {
-        await fetch('/api/party', {
+        await fetch(`${API_BASE}/api/party`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -346,7 +348,7 @@ export default function Component() {
     }
     
     try {
-      const res = await fetch('/api/party', {
+      const res = await fetch(`${API_BASE}/api/party`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -496,7 +498,7 @@ export default function Component() {
   }
 
   const fetchSongs = () => {
-    fetch('/api/songs')
+    fetch(`${API_BASE}/api/songs`)
       .then(res => {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
         return res.json()
@@ -798,7 +800,7 @@ export default function Component() {
       let songUrl = song.url
       if (!songUrl) {
         setIsBuffering(true)
-        songUrl = `/api/songs/${song.id}/stream`
+        songUrl = `${API_BASE}/api/songs/${song.id}/stream`
       }
 
       // Update track info
@@ -1225,7 +1227,7 @@ export default function Component() {
                               duration: duration
                             }
                             
-                            const dbRes = await fetch('/api/songs', {
+                            const dbRes = await fetch(`${API_BASE}/api/songs`, {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json' },
                               body: JSON.stringify(songData),
@@ -1268,7 +1270,7 @@ export default function Component() {
                 } else {
                   // Direct URL logic (already bypasses 4.5MB limit)
                   try {
-                    const response = await fetch('/api/songs', {
+                    const response = await fetch(`${API_BASE}/api/songs`, {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify(newSongMeta),
