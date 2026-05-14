@@ -1689,7 +1689,7 @@ export default function Component() {
             <Github size={18} />
           </motion.a>
           <motion.a 
-            href="https://www.linkedin.com/in/basudev-muna-3b1b1b1b1" 
+            href="www.linkedin.com/in/basudev-moharana" 
             target="_blank" 
             rel="noopener noreferrer"
             className="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-blue-500/20 hover:border-blue-500/40 text-white/50 hover:text-blue-400 transition-all shadow-[0_0_10px_rgba(59,130,246,0.05)]"
