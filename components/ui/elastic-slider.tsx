@@ -17,7 +17,7 @@ interface ElasticSliderProps {
   rightIcon?: React.ReactNode;
   onChange?: (value: number) => void;
   onDragEnd?: (value: number) => void;
-  theme?: string;
+  theme?: string; // Kept for prop compatibility but ignored for permanent color
 }
 
 const ElasticSlider: React.FC<ElasticSliderProps> = ({
@@ -32,7 +32,6 @@ const ElasticSlider: React.FC<ElasticSliderProps> = ({
   rightIcon = null,
   onChange,
   onDragEnd,
-  theme = "neon"
 }) => {
   return (
     <div className={`flex flex-col items-center justify-center gap-4 w-full ${className}`}>
@@ -47,7 +46,6 @@ const ElasticSlider: React.FC<ElasticSliderProps> = ({
         rightIcon={rightIcon}
         onChange={onChange}
         onDragEnd={onDragEnd}
-        theme={theme}
       />
     </div>
   );
@@ -64,7 +62,6 @@ interface SliderProps {
   rightIcon: React.ReactNode;
   onChange?: (value: number) => void;
   onDragEnd?: (value: number) => void;
-  theme: string;
 }
 
 const Slider: React.FC<SliderProps> = ({
@@ -78,7 +75,6 @@ const Slider: React.FC<SliderProps> = ({
   rightIcon,
   onChange,
   onDragEnd,
-  theme
 }) => {
   const [value, setValue] = useState<number>(externalValue ?? defaultValue);
   const sliderRef = useRef<HTMLDivElement>(null);
@@ -154,28 +150,11 @@ const Slider: React.FC<SliderProps> = ({
   };
 
   const getThemeStyles = () => {
-    switch (theme) {
-      case "synthwave":
-        return {
-          gradient: 'linear-gradient(90deg, #ff00ff 0%, #ff7700 50%, #ffff00 100%)',
-          glow: 'rgba(255, 0, 255, 0.6)'
-        };
-      case "matrix":
-        return {
-          gradient: 'linear-gradient(90deg, #003300 0%, #00ff00 50%, #ccffcc 100%)',
-          glow: 'rgba(0, 255, 0, 0.6)'
-        };
-      case "ocean":
-        return {
-          gradient: 'linear-gradient(90deg, #000033 0%, #00ffff 50%, #ffffff 100%)',
-          glow: 'rgba(0, 255, 255, 0.6)'
-        };
-      default:
-        return {
-          gradient: 'linear-gradient(90deg, #a855f7 0%, #ec4899 50%, #f97316 100%)',
-          glow: 'rgba(168, 85, 247, 0.6)'
-        };
-    }
+    // PERMANENT CYBER MATRIX THEME
+    return {
+      gradient: 'linear-gradient(90deg, #003300 0%, #00ff00 50%, #ccffcc 100%)',
+      glow: 'rgba(0, 255, 0, 0.6)'
+    };
   };
 
   const styles = getThemeStyles();
@@ -233,7 +212,7 @@ const Slider: React.FC<SliderProps> = ({
           }}
           className="flex flex-grow items-center"
         >
-          <div className="relative w-full h-full rounded-full bg-white/5 border border-white/10 backdrop-blur-md overflow-visible flex items-center">
+          <div className="relative w-full h-full rounded-full bg-black border border-green-900/30 backdrop-blur-md overflow-visible flex items-center shadow-[inset_0_0_10px_rgba(0,255,0,0.1)]">
             {/* Progress Track */}
             <motion.div 
               className="h-full rounded-full" 
@@ -244,24 +223,24 @@ const Slider: React.FC<SliderProps> = ({
               }} 
             />
             
-            {/* Glossy Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none rounded-full" />
+            {/* Cyber Grid / Texture Overlay */}
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(0,255,0,0.05)_1px,transparent_1px)] bg-[length:100%_2px] pointer-events-none rounded-full" />
             
             {/* Head / Thumb Indicator (Circle Point) */}
             <motion.div 
-              className="absolute w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-white border-2 border-white shadow-[0_0_20px_white] z-20 cursor-pointer left-0"
+              className="absolute w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-white border-2 border-green-400 shadow-[0_0_25px_#00ff00] z-20 cursor-pointer left-0"
               style={{ 
                 left: useTransform(progressPercent, (v) => `calc(${v}% - 10px)`),
                 top: '50%',
                 y: '-50%'
               }}
-              whileHover={{ scale: 1.2 }}
+              whileHover={{ scale: 1.25, boxShadow: "0 0 35px #00ff00" }}
               whileTap={{ scale: 0.9 }}
               animate={{
-                boxShadow: ["0 0 10px white", "0 0 25px white", "0 0 10px white"],
+                boxShadow: ["0 0 15px #00ff00", "0 0 35px #00ff00", "0 0 15px #00ff00"],
               }}
               transition={{
-                boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+                boxShadow: { duration: 1.5, repeat: Infinity, ease: "easeInOut" }
               }}
             />
           </div>
