@@ -2,18 +2,12 @@
 
 import React, { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Geist_Mono } from "next/font/google"
 import { Upload, Database, Share2, Users, SkipBack, SkipForward, Shuffle, Repeat, Headphones, Github, Linkedin, Globe } from "lucide-react"
 import Link from "next/link"
 import ElasticSlider from "@/components/ui/elastic-slider"
 import TextType from "@/components/ui/TextType"
 import { useDevice } from "@/hooks/use-device"
 import { getPusherClient } from "@/lib/pusher-client"
-
-const geistMono = Geist_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-})
 
 const DEFAULT_TEXT = [
   "LOST IN THE NEON LIGHTS",
@@ -989,7 +983,7 @@ export default function Component() {
 
   return (
     <div 
-      className={`min-h-screen bg-transparent flex flex-col items-center justify-start p-4 sm:p-8 pt-24 sm:pt-32 overflow-x-hidden ${geistMono.className}`}
+      className="min-h-screen bg-transparent flex flex-col items-center justify-start p-4 sm:p-8 pt-24 sm:pt-32 overflow-x-hidden font-mono"
       onMouseMove={handleMouseMove}
     >
       {/* Premium Brand Header */}
