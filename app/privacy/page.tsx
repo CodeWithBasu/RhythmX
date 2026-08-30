@@ -12,7 +12,7 @@ export default function PrivacyPolicy() {
       </div>
 
       <div className="max-w-4xl mx-auto px-6 py-20 relative z-10">
-        <Link href="/" className="inline-flex items-center gap-2 text-green-500 hover:text-green-400 transition-colors mb-12 group">
+        <Link href="/player" className="inline-flex items-center gap-2 text-green-500 hover:text-green-400 transition-colors mb-12 group">
           <svg className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
