@@ -11,9 +11,10 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1121.0",
     "@aws-sdk/s3-request-presigner": "^3.1121.0",
+    "@capacitor-firebase/authentication": "^8.5.0",
     "@capacitor/android": "^8.3.4",
     "@capacitor/cli": "^8.3.4",
-    "@capacitor/core": "^8.3.4",
+    "@capacitor/core": "^8.5.0",
     "@capacitor/ios": "^8.3.4",
     "@emotion/is-prop-valid": "latest",
     "@hookform/resolvers": "^3.10.0",
