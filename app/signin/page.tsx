@@ -11,7 +11,14 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 export default function SignInPage() {
-  const { user, signInWithGoogle } = useAuth();`n  const router = useRouter();`n`n  useEffect(() => {`n    if (user) {`n      router.push("/player");`n    }`n  }, [user, router]);
+  const { user, signInWithGoogle } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user) {
+      router.push("/player");
+    }
+  }, [user, router]);
   return (
     <div className="min-h-screen flex flex-col bg-[#0C0414]">
       <Header />
