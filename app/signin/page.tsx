@@ -1,3 +1,4 @@
+"use client";
 import React from 'react';
 import Link from 'next/link';
 import AnimatedForm from '@/components/ui/animated-form';
@@ -108,3 +109,4 @@ export default function SignInPage() {
     </div>
   );
 }
+
