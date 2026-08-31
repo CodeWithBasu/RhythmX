@@ -116,10 +116,21 @@ export function Header() {
 					</NavigationMenu>
 				</div>
 
-				<div className="hidden items-center gap-4 md:flex">
-					<Button variant="ghost" className="text-white hover:bg-white/10 hover:text-white" asChild>
-						<Link href="/privacy">Privacy</Link>
-					</Button>
+				<div className="hidden items-center gap-2 md:flex">
+					<Link href="/signin" className="relative group px-4 py-2 text-sm font-medium text-white/80 hover:text-white transition-colors">
+						<span>Sign In</span>
+						<span className="absolute bottom-1 left-4 right-4 h-[2px] bg-[#C084FC] scale-x-0 group-hover:scale-x-100 transition-transform origin-center duration-300 rounded-full"></span>
+					</Link>
+					
+					<Link href="/signup" className="relative inline-flex h-9 overflow-hidden rounded-full p-[1px] focus:outline-none hover:scale-105 transition-transform duration-300 shadow-[0_0_15px_rgba(192,132,252,0.2)] hover:shadow-[0_0_25px_rgba(192,132,252,0.4)]">
+						<span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#0C0414_0%,#C084FC_50%,#0C0414_100%)]" />
+						<span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-[#130820] px-5 py-1 text-sm font-medium text-white backdrop-blur-3xl transition-colors hover:bg-white/5">
+							Sign Up
+						</span>
+					</Link>
+					
+					<div className="w-px h-5 bg-white/10 mx-2"></div>
+
 					<Button className="bg-[#C084FC] hover:bg-[#A855F7] text-white font-semibold tracking-wide transition-all shadow-[0_0_15px_rgba(192,132,252,0.4)]" asChild>
 						<Link href="/player">Launch Player</Link>
 					</Button>
@@ -154,10 +165,18 @@ export function Header() {
 					))}
 				</div>
 				<div className="flex flex-col gap-3 mt-8">
-					<Button variant="outline" className="w-full border-white/20 bg-transparent text-white hover:bg-white/5" asChild>
-						<Link href="https://github.com/CodeWithBasu/RhythmX">GitHub</Link>
-					</Button>
-					<Button className="w-full bg-[#C084FC] hover:bg-[#A855F7] text-white" asChild>
+					<div className="grid grid-cols-2 gap-3">
+						<Button variant="outline" className="w-full border-white/20 bg-transparent text-white hover:bg-white/5" asChild>
+							<Link href="/signin">Sign In</Link>
+						</Button>
+						<Link href="/signup" className="relative inline-flex h-10 w-full overflow-hidden rounded-md p-[1px] focus:outline-none hover:scale-[1.02] transition-transform duration-300">
+							<span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#0C0414_0%,#C084FC_50%,#0C0414_100%)]" />
+							<span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-md bg-[#130820] px-3 py-1 text-sm font-medium text-white backdrop-blur-3xl transition-colors hover:bg-[#1A0B2E]">
+								Sign Up
+							</span>
+						</Link>
+					</div>
+					<Button className="w-full bg-[#C084FC] hover:bg-[#A855F7] text-white mt-1 shadow-[0_0_15px_rgba(192,132,252,0.4)]" asChild>
 						<Link href="/player">Launch Player</Link>
 					</Button>
 				</div>
@@ -289,3 +308,4 @@ function useScroll(threshold: number) {
 
 	return scrolled;
 }
+
