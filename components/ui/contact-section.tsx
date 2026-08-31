@@ -44,15 +44,15 @@ export function ContactSection() {
 					<form action="" className="w-full space-y-5">
 						<div className="flex flex-col gap-2">
 							<Label className="text-white/80">Name</Label>
-							<Input type="text" className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus-visible:ring-[#C084FC]" placeholder="John Doe" />
+							<Input type="text" className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus-visible:ring-[#C084FC]" placeholder="Write your name" />
 						</div>
 						<div className="flex flex-col gap-2">
 							<Label className="text-white/80">Email</Label>
-							<Input type="email" className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus-visible:ring-[#C084FC]" placeholder="john@example.com" />
+							<Input type="email" className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus-visible:ring-[#C084FC]" placeholder="Your email" />
 						</div>
 						<div className="flex flex-col gap-2">
 							<Label className="text-white/80">Message</Label>
-							<Textarea className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus-visible:ring-[#C084FC] min-h-[120px]" placeholder="How can we help you?" />
+							<Textarea className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus-visible:ring-[#C084FC] min-h-[120px]" placeholder="Your message" />
 						</div>
 						<Button className="w-full bg-[#C084FC] text-white hover:bg-[#A855F7] font-semibold tracking-wide transition-colors mt-2" type="button">
 							Send Message
@@ -63,3 +63,4 @@ export function ContactSection() {
 		</main>
 	);
 }
+
