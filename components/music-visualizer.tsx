@@ -77,7 +77,6 @@ export default function Component() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [searchQuery, setSearchQuery] = useState("")
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const [isAdmin, setIsAdmin] = useState(false)
   const localFileRef = useRef<HTMLInputElement>(null)
   const [theme, setTheme] = useState("neon")
@@ -485,12 +484,7 @@ export default function Component() {
     }
   }, [currentTrack])
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    // Normalize mouse position between -1 and 1
-    const x = (e.clientX / window.innerWidth) * 2 - 1
-    const y = (e.clientY / window.innerHeight) * 2 - 1
-    setMousePos({ x, y })
-  }
+
 
   const fetchSongs = () => {
     fetch(`${API_BASE}/api/songs`)
@@ -985,7 +979,6 @@ export default function Component() {
   return (
     <div 
       className="min-h-screen bg-transparent flex flex-col items-center justify-start p-4 sm:p-8 pt-24 sm:pt-32 overflow-x-hidden font-mono"
-      onMouseMove={handleMouseMove}
     >
       {/* Premium Brand Header */}
       <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-8 py-4 sm:py-6 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-md">
@@ -1792,5 +1785,7 @@ export default function Component() {
     </div>
   )
 }
+
+
 
 
