@@ -108,7 +108,7 @@ export function ProfileDropdown({
                                         className="flex items-center p-2 hover:bg-white/10 rounded-xl transition-all duration-200 cursor-pointer group border border-transparent"
                                     >
                                         <div className="flex items-center gap-2 flex-1">
-                                            {React.cloneElement(item.icon as React.ReactElement, { className: "w-4 h-4 text-white/70 group-hover:text-white" })}
+                                            {React.cloneElement(item.icon as React.ReactElement<any>, { className: "w-4 h-4 text-white/70 group-hover:text-white" })}
                                             <span className="text-xs font-medium text-white/80 tracking-tight leading-tight whitespace-nowrap group-hover:text-white transition-colors">
                                                 {item.label}
                                             </span>
@@ -138,3 +138,4 @@ export function ProfileDropdown({
         </div>
     );
 }
+

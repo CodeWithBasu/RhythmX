@@ -186,15 +186,15 @@ export function Header() {
 				</div>
 				<div className="flex flex-col gap-3 mt-8">
 					{user ? (
-						<Button variant="outline" onClick={() => { logout(); setMobileMenuOpen(false); }} className="w-full border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300">
+						<Button variant="outline" onClick={() => { logout(); setOpen(false); }} className="w-full border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300">
 							<LogOut className="w-4 h-4 mr-2" /> Log Out
 						</Button>
 					) : (
 						<div className="grid grid-cols-2 gap-3">
-							<Button variant="outline" className="w-full border-white/20 bg-transparent text-white hover:bg-white/5" onClick={() => setMobileMenuOpen(false)} asChild>
+							<Button variant="outline" className="w-full border-white/20 bg-transparent text-white hover:bg-white/5" onClick={() => setOpen(false)} asChild>
 								<Link href="/signin">Sign In</Link>
 							</Button>
-							<Link href="/signup" onClick={() => setMobileMenuOpen(false)} className="relative inline-flex h-10 w-full overflow-hidden rounded-md p-[1px] focus:outline-none hover:scale-[1.02] transition-transform duration-300">
+							<Link href="/signup" onClick={() => setOpen(false)} className="relative inline-flex h-10 w-full overflow-hidden rounded-md p-[1px] focus:outline-none hover:scale-[1.02] transition-transform duration-300">
 								<span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#0C0414_0%,#C084FC_50%,#0C0414_100%)]" />
 								<span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-md bg-[#130820] px-3 py-1 text-sm font-medium text-white backdrop-blur-3xl transition-colors hover:bg-[#1A0B2E]">
 									Sign Up
@@ -334,4 +334,5 @@ function useScroll(threshold: number) {
 
 	return scrolled;
 }
+
 
