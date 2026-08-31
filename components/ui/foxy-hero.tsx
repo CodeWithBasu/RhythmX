@@ -269,67 +269,7 @@ export function FoxyHero({
         />
       ))}
 
-      {/* Header */}
-      <motion.header
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="relative z-10 flex flex-row justify-center items-center px-4"
-        style={{
-          width: "min(1196px, 95vw)",
-          gap: "clamp(20px, 10vw, 217px)",
-          marginTop: "28px",
-        }}
-      >
-        {/* Logo */}
-        <div className="flex flex-row justify-center items-center" style={{ gap: "7px" }}>
-          {logo.icon}
-          <span className="flex items-center">
-            {logo.text}
-          </span>
-        </div>
-
-        {/* Navigation */}
-        <nav className="hidden lg:flex flex-row items-center" style={{ gap: "28px" }} aria-label="Main navigation">
-          {navigation.map((item, index) => (
-            <button
-              key={index}
-              onClick={item.onClick}
-              className="transition-opacity hover:opacity-100"
-              style={{
-                fontFamily: "Inter, sans-serif",
-                fontStyle: "normal",
-                fontWeight: 500,
-                fontSize: "18px", lineHeight: "24px",
-                color: item.isActive ? "#FFFFFF" : "rgba(255, 255, 255, 0.5)",
-                opacity: item.isActive ? 1 : 0.5,
-              }}
-            >
-              {item.label}
-            </button>
-          ))}
-        </nav>
-
-        {/* Header CTA */}
-        {headerCta && (
-          <button
-            onClick={headerCta.onClick}
-            className="flex flex-row justify-center items-center transition-all hover:scale-105"
-            style={{
-              padding: "0 24px", height: "46px", whiteSpace: "nowrap",
-              background:
-                "radial-gradient(50% 50% at 50% 50%, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.2) 100%), #551A94",
-              borderRadius: "100px",
-              fontFamily: "Inter, sans-serif",
-              fontWeight: 500,
-              fontSize: "18px", lineHeight: "24px",
-              color: "#FFFFFF",
-            }}
-          >
-            {headerCta.label}
-          </button>
-        )}
-      </motion.header>
+      {/* Header removed from FoxyHero in favor of global Header component */}
 
       {/* Center Content */}
       {children ? (
