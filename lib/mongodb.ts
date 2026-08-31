@@ -1,3 +1,5 @@
+import dns from 'dns';
+dns.setDefaultResultOrder('ipv4first');
 import { MongoClient, ServerApiVersion } from 'mongodb'
 
 const uri = process.env.DATABASE_URL
@@ -10,6 +12,7 @@ const options = {
   connectTimeoutMS: 10000, // 10 seconds
   socketTimeoutMS: 45000,  // 45 seconds
   maxPoolSize: 10,         // Limit connections in serverless
+  family: 4,               // Force IPv4 for Next.js DNS resolution bug
 }
 
 let client: MongoClient
@@ -20,24 +23,10 @@ if (!uri) {
   // Instead, we return a rejected promise that will only throw when awaited at runtime.
   clientPromise = Promise.reject(new Error('DATABASE_URL is missing in environment variables. Please add it to Vercel/Local .env'))
 } else {
-
-if (process.env.NODE_ENV === 'development') {
-  // In development mode, use a global variable so that the value
-  // is preserved across module reloads caused by HMR (Hot Module Replacement).
-  let globalWithMongo = global as typeof globalThis & {
-    _mongoClientPromise?: Promise<MongoClient>
-  }
-
-  if (!globalWithMongo._mongoClientPromise) {
-    client = new MongoClient(uri, options)
-    globalWithMongo._mongoClientPromise = client.connect()
-  }
-  clientPromise = globalWithMongo._mongoClientPromise
-} else {
-  // In production mode, it's best to not use a global variable.
+  // Bypass global caching completely in development to avoid stuck failed promises
   client = new MongoClient(uri, options)
   clientPromise = client.connect()
 }
-}
 
 export default clientPromise
+
