@@ -19,16 +19,16 @@ export default function SignUpPage() {
         <div className="w-full max-w-[1000px] grid lg:grid-cols-2 gap-12 lg:gap-24 items-center z-10">
           
           {/* Left Column: Animated Form Component (Reversed order for sign up) */}
-          <div className="hidden lg:flex flex-col items-center justify-center p-8 order-2 lg:order-1">
-            <div className="mb-10 text-center space-y-4 max-w-sm">
-              <h2 className="text-2xl font-bold text-white leading-tight">Create your sonic profile</h2>
-              <p className="text-white/60 text-sm">Join a community of audio enthusiasts and sync your experience across all your devices.</p>
+          <div className="hidden lg:flex flex-col items-start justify-center p-0 lg:pr-12 order-2 lg:order-1">
+            <div className="mb-12 text-left space-y-4 max-w-md">
+              <h2 className="text-4xl font-bold text-white leading-tight">Create your sonic profile</h2>
+              <p className="text-white/60 text-base">Join a community of audio enthusiasts and sync your experience across all your devices seamlessly.</p>
             </div>
             
-            <div className="relative">
+            <div className="relative w-full max-w-[400px]">
               {/* Outer decorative glow for the animated form */}
-              <div className="absolute -inset-4 bg-gradient-to-l from-[#C084FC]/20 to-transparent blur-2xl rounded-full opacity-50" />
-              <div className="relative shadow-2xl rounded-2xl transform hover:scale-[1.02] transition-transform duration-500">
+              <div className="absolute -inset-4 bg-gradient-to-l from-[#C084FC]/30 to-transparent blur-3xl rounded-full opacity-60" />
+              <div className="relative shadow-[0_0_50px_rgba(192,132,252,0.15)] rounded-2xl transform hover:scale-[1.02] transition-transform duration-500 bg-[#0C0414] scale-110 origin-left">
                 <AnimatedForm delay={7000} name="Alex Morgan" />
               </div>
             </div>
