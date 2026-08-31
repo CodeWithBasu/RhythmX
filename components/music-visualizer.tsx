@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Upload, Database, Share2, Users, SkipBack, SkipForward, Shuffle, Repeat, Headphones, Github, Linkedin, Globe } from "lucide-react"
 import Link from "next/link"
+import { ProfileDropdown } from "@/components/ui/profile-dropdown"
 import ElasticSlider from "@/components/ui/elastic-slider"
 import TextType from "@/components/ui/TextType"
 import { useDevice } from "@/hooks/use-device"
@@ -1162,6 +1163,7 @@ export default function Component() {
         >
           <span className="text-[10px] sm:text-sm font-bold tracking-tight">+ Library</span>
         </motion.button>
+        <ProfileDropdown className="ml-1 sm:ml-2" />
       </div>
 
 
@@ -1790,3 +1792,5 @@ export default function Component() {
     </div>
   )
 }
+
+
