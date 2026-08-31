@@ -104,11 +104,9 @@ export function Header() {
 								</NavigationMenuContent>
 							</NavigationMenuItem>
 							<NavigationMenuItem>
-								<Link href="https://github.com/CodeWithBasu/RhythmX" passHref legacyBehavior>
-									<NavigationMenuLink className="bg-transparent px-4 py-2 text-sm font-medium text-white/80 hover:text-white hover:bg-white/5 rounded-md transition-colors">
-										GitHub
-									</NavigationMenuLink>
-								</Link>
+								<NavigationMenuLink asChild className="bg-transparent px-4 py-2 text-sm font-medium text-white/80 hover:text-white hover:bg-white/5 rounded-md transition-colors">
+									<Link href="https://github.com/CodeWithBasu/RhythmX">GitHub</Link>
+								</NavigationMenuLink>
 							</NavigationMenuItem>
 						</NavigationMenuList>
 					</NavigationMenu>
@@ -287,3 +285,4 @@ function useScroll(threshold: number) {
 
 	return scrolled;
 }
+
