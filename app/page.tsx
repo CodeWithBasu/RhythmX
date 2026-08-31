@@ -4,6 +4,7 @@ import React from "react";
 import { FaqSection } from "@/components/ui/faq-scroller";
 import { Footer } from "@/components/ui/footer";
 import { ContactSection } from "@/components/ui/contact-section";
+import { Header } from "@/components/ui/header";
 import { FoxyHero } from "@/components/ui/foxy-hero";
 import { Zap, Cpu, Fingerprint, Pencil, Settings2, Sparkles } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
@@ -218,6 +219,7 @@ const faqData = {
 export default function Home() {
   return (
     <div style={{ background: "#0C0414" }}>
+      <Header />
       <FoxyHero
         logo={{
           icon: (
@@ -242,16 +244,8 @@ export default function Home() {
             </div>
           ),
         }}
-        navigation={[
-          { label: "Home", isActive: true, onClick: () => window.location.href = "/" },
-          { label: "Player", onClick: () => window.location.href = "/player" },
-          { label: "Privacy Policy", onClick: () => window.location.href = "/privacy" },
-          { label: "GitHub", onClick: () => window.open("https://github.com/CodeWithBasu/RhythmX", "_blank") },
-        ]}
-        headerCta={{
-          label: "Launch Player",
-          onClick: () => window.location.href = "/player",
-        }}
+        navigation={[]}
+        headerCta={undefined}
         title="Smarter Music Visualizer Powered by Advanced Audio Engine"
         subtitle="Where Sonic Reality Meets Visual Precision. Experience zero-latency multi-device sync, atmospheric HSL visualizer gradients, and immersive 8D spatial soundscapes."
         ctaButtons={{
@@ -301,3 +295,5 @@ export default function Home() {
     </div>
   );
 }
+
+
