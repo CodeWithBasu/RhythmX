@@ -11,8 +11,9 @@ import {
 	NavigationMenuList,
 	NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
-import { LucideIcon, Menu, X, PlayCircle, Smartphone, AudioWaveform, Wifi, Github, FileText, MessageSquare, Shield, HelpCircle, ChevronRight } from 'lucide-react';
+import { LucideIcon, Menu, X, PlayCircle, Smartphone, AudioWaveform, Wifi, Github, FileText, MessageSquare, Shield, HelpCircle, ChevronRight, LogOut, User } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
 
 type LinkItem = {
 	title: string;
@@ -22,6 +23,7 @@ type LinkItem = {
 };
 
 export function Header() {
+	const { user, logout } = useAuth();
 	const [open, setOpen] = useState(false);
 	const scrolled = useScroll(10);
 
@@ -117,17 +119,35 @@ export function Header() {
 				</div>
 
 				<div className="hidden items-center gap-2 md:flex">
-					<Link href="/signin" className="relative group px-4 py-2 text-sm font-medium text-white/80 hover:text-white transition-colors">
-						<span>Sign In</span>
-						<span className="absolute bottom-1 left-4 right-4 h-[2px] bg-[#C084FC] scale-x-0 group-hover:scale-x-100 transition-transform origin-center duration-300 rounded-full"></span>
-					</Link>
-					
-					<Link href="/signup" className="relative inline-flex h-9 overflow-hidden rounded-full p-[1px] focus:outline-none hover:scale-105 transition-transform duration-300 shadow-[0_0_15px_rgba(192,132,252,0.2)] hover:shadow-[0_0_25px_rgba(192,132,252,0.4)]">
-						<span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#0C0414_0%,#C084FC_50%,#0C0414_100%)]" />
-						<span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-[#130820] px-5 py-1 text-sm font-medium text-white backdrop-blur-3xl transition-colors hover:bg-white/5">
-							Sign Up
-						</span>
-					</Link>
+					{user ? (
+						<div className="flex items-center gap-4">
+							<div className="flex items-center gap-2 text-sm text-white/80">
+								{user.photoURL ? (
+									<img src={user.photoURL} alt="avatar" className="w-8 h-8 rounded-full border border-white/10" />
+								) : (
+									<div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><User className="w-4 h-4" /></div>
+								)}
+								<span className="hidden lg:block">{user.displayName || user.email}</span>
+							</div>
+							<Button variant="ghost" size="icon" onClick={logout} className="text-white/60 hover:text-white hover:bg-white/10" title="Log Out">
+								<LogOut className="w-4 h-4" />
+							</Button>
+						</div>
+					) : (
+						<>
+							<Link href="/signin" className="relative group px-4 py-2 text-sm font-medium text-white/80 hover:text-white transition-colors">
+								<span>Sign In</span>
+								<span className="absolute bottom-1 left-4 right-4 h-[2px] bg-[#C084FC] scale-x-0 group-hover:scale-x-100 transition-transform origin-center duration-300 rounded-full"></span>
+							</Link>
+							
+							<Link href="/signup" className="relative inline-flex h-9 overflow-hidden rounded-full p-[1px] focus:outline-none hover:scale-105 transition-transform duration-300 shadow-[0_0_15px_rgba(192,132,252,0.2)] hover:shadow-[0_0_25px_rgba(192,132,252,0.4)]">
+								<span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#0C0414_0%,#C084FC_50%,#0C0414_100%)]" />
+								<span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-[#130820] px-5 py-1 text-sm font-medium text-white backdrop-blur-3xl transition-colors hover:bg-white/5">
+									Sign Up
+								</span>
+							</Link>
+						</>
+					)}
 					
 					<div className="w-px h-5 bg-white/10 mx-2"></div>
 
@@ -165,17 +185,23 @@ export function Header() {
 					))}
 				</div>
 				<div className="flex flex-col gap-3 mt-8">
-					<div className="grid grid-cols-2 gap-3">
-						<Button variant="outline" className="w-full border-white/20 bg-transparent text-white hover:bg-white/5" asChild>
-							<Link href="/signin">Sign In</Link>
+					{user ? (
+						<Button variant="outline" onClick={() => { logout(); setMobileMenuOpen(false); }} className="w-full border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300">
+							<LogOut className="w-4 h-4 mr-2" /> Log Out
 						</Button>
-						<Link href="/signup" className="relative inline-flex h-10 w-full overflow-hidden rounded-md p-[1px] focus:outline-none hover:scale-[1.02] transition-transform duration-300">
-							<span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#0C0414_0%,#C084FC_50%,#0C0414_100%)]" />
-							<span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-md bg-[#130820] px-3 py-1 text-sm font-medium text-white backdrop-blur-3xl transition-colors hover:bg-[#1A0B2E]">
-								Sign Up
-							</span>
-						</Link>
-					</div>
+					) : (
+						<div className="grid grid-cols-2 gap-3">
+							<Button variant="outline" className="w-full border-white/20 bg-transparent text-white hover:bg-white/5" onClick={() => setMobileMenuOpen(false)} asChild>
+								<Link href="/signin">Sign In</Link>
+							</Button>
+							<Link href="/signup" onClick={() => setMobileMenuOpen(false)} className="relative inline-flex h-10 w-full overflow-hidden rounded-md p-[1px] focus:outline-none hover:scale-[1.02] transition-transform duration-300">
+								<span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#0C0414_0%,#C084FC_50%,#0C0414_100%)]" />
+								<span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-md bg-[#130820] px-3 py-1 text-sm font-medium text-white backdrop-blur-3xl transition-colors hover:bg-[#1A0B2E]">
+									Sign Up
+								</span>
+							</Link>
+						</div>
+					)}
 					<Button className="w-full bg-[#C084FC] hover:bg-[#A855F7] text-white mt-1 shadow-[0_0_15px_rgba(192,132,252,0.4)]" asChild>
 						<Link href="/player">Launch Player</Link>
 					</Button>

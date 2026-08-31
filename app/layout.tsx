@@ -43,6 +43,7 @@ export const viewport: Viewport = {
 
 import Background from '@/components/background'
 import Providers from '@/components/providers'
+import { AuthProvider } from '@/contexts/AuthContext'
 
 export default function RootLayout({
   children,
@@ -65,11 +66,14 @@ export default function RootLayout({
             gtag('config', 'G-WZCBC7DNZ3');
           `}
         </Script>
-        <Providers>
-          <Background />
-          {children}
-        </Providers>
+        <AuthProvider>
+          <Providers>
+            <Background />
+            {children}
+          </Providers>
+        </AuthProvider>
       </body>
     </html>
   )
 }
+

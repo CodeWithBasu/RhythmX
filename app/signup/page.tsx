@@ -6,8 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Header } from '@/components/ui/header';
 import { Footer } from '@/components/ui/footer';
 import { Github, Mail, Lock, User, ArrowRight } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function SignUpPage() {
+  const { user, signInWithGoogle } = useAuth();`n  const router = useRouter();`n`n  useEffect(() => {`n    if (user) {`n      router.push("/player");`n    }`n  }, [user, router]);
+
   return (
     <div className="min-h-screen flex flex-col bg-[#0C0414]">
       <Header />
@@ -93,7 +98,7 @@ export default function SignUpPage() {
               <Button variant="outline" className="bg-transparent border-white/10 text-white hover:bg-white/5 h-12">
                 <Github className="w-5 h-5 mr-2" /> GitHub
               </Button>
-              <Button variant="outline" className="bg-transparent border-white/10 text-white hover:bg-white/5 h-12">
+              <Button type="button" onClick={signInWithGoogle} variant="outline" className="bg-transparent border-white/10 text-white hover:bg-white/5 h-12">
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                   <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                   <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -118,4 +123,5 @@ export default function SignUpPage() {
     </div>
   );
 }
+
 
