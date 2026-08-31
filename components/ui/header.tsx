@@ -11,7 +11,7 @@ import {
 	NavigationMenuList,
 	NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
-import { LucideIcon, Menu, X, PlayCircle, Smartphone, AudioWaveform, Wifi, Github, FileText, MessageSquare, Shield, HelpCircle } from 'lucide-react';
+import { LucideIcon, Menu, X, PlayCircle, Smartphone, AudioWaveform, Wifi, Github, FileText, MessageSquare, Shield, HelpCircle, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
 type LinkItem = {
@@ -39,7 +39,7 @@ export function Header() {
 	return (
 		<header
 			className={cn('fixed top-0 left-0 right-0 z-50 w-full border-b border-transparent transition-all duration-300', {
-				'bg-[#0C0414]/80 backdrop-blur-lg border-white/10 shadow-lg': scrolled,
+				'bg-[#0C0414]/80 backdrop-blur-md border-white/10 shadow-lg': scrolled,
 				'bg-transparent': !scrolled
 			})}
 		>
@@ -59,43 +59,47 @@ export function Header() {
 							<NavigationMenuItem>
 								<NavigationMenuTrigger className="bg-transparent text-white/80 hover:text-white hover:bg-white/5 data-[state=open]:bg-white/10 transition-colors">Platform</NavigationMenuTrigger>
 								<NavigationMenuContent>
-									<ul className="bg-[#130820] border border-white/10 grid w-[400px] gap-3 p-4 shadow-xl rounded-xl">
-										{productLinks.map((item, i) => (
-											<li key={i}>
-												<ListItem {...item} />
-											</li>
-										))}
-									</ul>
-									<div className="p-4 bg-[#1A0B2E] border-t border-white/10 rounded-b-xl">
-										<p className="text-white/60 text-sm">
-											Ready to experience the engine?{' '}
-											<Link href="/player" className="text-[#C084FC] font-medium hover:underline">
-												Launch Player
+									<div className="flex flex-col bg-[#0C0414]/95 backdrop-blur-2xl border border-white/10 shadow-[0_10px_40px_-10px_rgba(192,132,252,0.3)] w-[400px] rounded-xl overflow-hidden">
+										<ul className="grid gap-2 p-4">
+											{productLinks.map((item, i) => (
+												<li key={i}>
+													<ListItem {...item} />
+												</li>
+											))}
+										</ul>
+										<div className="p-4 bg-gradient-to-r from-[#C084FC]/10 to-transparent border-t border-white/5 group/cta cursor-pointer transition-colors hover:from-[#C084FC]/20">
+											<Link href="/player" className="flex items-center justify-between">
+												<div className="flex flex-col">
+													<span className="text-white font-medium text-sm">Ready to experience the engine?</span>
+													<span className="text-[#C084FC] text-xs font-semibold mt-0.5">Launch Player</span>
+												</div>
+												<div className="w-8 h-8 rounded-full bg-[#C084FC]/20 flex items-center justify-center group-hover/cta:bg-[#C084FC] transition-colors">
+													<ChevronRight className="w-4 h-4 text-[#C084FC] group-hover/cta:text-white transition-colors" />
+												</div>
 											</Link>
-										</p>
+										</div>
 									</div>
 								</NavigationMenuContent>
 							</NavigationMenuItem>
 							<NavigationMenuItem>
 								<NavigationMenuTrigger className="bg-transparent text-white/80 hover:text-white hover:bg-white/5 data-[state=open]:bg-white/10 transition-colors">Resources</NavigationMenuTrigger>
 								<NavigationMenuContent>
-									<div className="grid w-[500px] grid-cols-2 bg-[#130820] border border-white/10 shadow-xl rounded-xl overflow-hidden">
-										<ul className="p-4 space-y-3 bg-[#130820]">
+									<div className="grid w-[500px] grid-cols-2 bg-[#0C0414]/95 backdrop-blur-2xl border border-white/10 shadow-[0_10px_40px_-10px_rgba(192,132,252,0.3)] rounded-xl overflow-hidden">
+										<ul className="p-4 space-y-2">
 											{companyLinks.map((item, i) => (
 												<li key={i}>
 													<ListItem {...item} />
 												</li>
 											))}
 										</ul>
-										<ul className="p-4 space-y-2 bg-[#1A0B2E] border-l border-white/10">
+										<ul className="p-4 space-y-1 bg-white/[0.02] border-l border-white/5">
 											{companyLinks2.map((item, i) => (
 												<li key={i}>
-													<NavigationMenuLink
-														href={item.href}
-														className="flex p-2 hover:bg-white/10 text-white/70 hover:text-white rounded-md items-center gap-3 transition-colors"
-													>
-														<item.icon className="size-4 text-[#C084FC]" />
-														<span className="font-medium text-sm">{item.title}</span>
+													<NavigationMenuLink asChild className="flex p-3 hover:bg-[#C084FC]/10 text-white/70 hover:text-white rounded-lg items-center gap-3 transition-colors group cursor-pointer">
+														<Link href={item.href}>
+															<item.icon className="size-4 text-white/50 group-hover:text-[#C084FC] transition-colors" />
+															<span className="font-medium text-sm">{item.title}</span>
+														</Link>
 													</NavigationMenuLink>
 												</li>
 											))}
@@ -104,7 +108,7 @@ export function Header() {
 								</NavigationMenuContent>
 							</NavigationMenuItem>
 							<NavigationMenuItem>
-								<NavigationMenuLink asChild className="bg-transparent px-4 py-2 text-sm font-medium text-white/80 hover:text-white hover:bg-white/5 rounded-md transition-colors">
+								<NavigationMenuLink asChild className="bg-transparent px-4 py-2 text-sm font-medium text-white/80 hover:text-white hover:bg-white/5 rounded-md transition-colors cursor-pointer">
 									<Link href="https://github.com/CodeWithBasu/RhythmX">GitHub</Link>
 								</NavigationMenuLink>
 							</NavigationMenuItem>
@@ -150,11 +154,11 @@ export function Header() {
 					))}
 				</div>
 				<div className="flex flex-col gap-3 mt-8">
-					<Button variant="outline" className="w-full border-white/20 bg-transparent text-white hover:bg-white/5">
-						GitHub
+					<Button variant="outline" className="w-full border-white/20 bg-transparent text-white hover:bg-white/5" asChild>
+						<Link href="https://github.com/CodeWithBasu/RhythmX">GitHub</Link>
 					</Button>
-					<Button className="w-full bg-[#C084FC] hover:bg-[#A855F7] text-white">
-						Launch Player
+					<Button className="w-full bg-[#C084FC] hover:bg-[#A855F7] text-white" asChild>
+						<Link href="/player">Launch Player</Link>
 					</Button>
 				</div>
 			</MobileMenu>
@@ -193,10 +197,10 @@ function ListItem({
 	...props
 }: React.ComponentProps<typeof NavigationMenuLink> & LinkItem) {
 	return (
-		<NavigationMenuLink className={cn('w-full flex flex-row gap-4 hover:bg-white/5 rounded-lg p-3 transition-colors group cursor-pointer', className)} {...props} asChild>
+		<NavigationMenuLink className={cn('w-full flex flex-row gap-4 hover:bg-[#C084FC]/10 rounded-lg p-3 transition-colors group cursor-pointer', className)} {...props} asChild>
 			<Link href={href}>
-				<div className="bg-white/5 border border-white/10 flex aspect-square size-12 items-center justify-center rounded-xl shadow-sm group-hover:bg-[#C084FC]/20 group-hover:border-[#C084FC]/30 transition-all duration-300">
-					<Icon className="text-white/70 group-hover:text-[#C084FC] size-5 transition-colors" />
+				<div className="bg-white/5 border border-white/10 flex aspect-square size-12 items-center justify-center rounded-xl shadow-sm group-hover:bg-[#C084FC] group-hover:border-[#C084FC] group-hover:shadow-[0_0_15px_rgba(192,132,252,0.4)] transition-all duration-300">
+					<Icon className="text-white/70 group-hover:text-white size-5 transition-colors" />
 				</div>
 				<div className="flex flex-col items-start justify-center flex-1">
 					<span className="font-semibold text-white/90 group-hover:text-white transition-colors">{title}</span>
@@ -285,4 +289,3 @@ function useScroll(threshold: number) {
 
 	return scrolled;
 }
-
