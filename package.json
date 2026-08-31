@@ -9,6 +9,8 @@
     "start": "next start"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1121.0",
+    "@aws-sdk/s3-request-presigner": "^3.1121.0",
     "@capacitor/android": "^8.3.4",
     "@capacitor/cli": "^8.3.4",
     "@capacitor/core": "^8.3.4",
@@ -47,6 +49,7 @@
     "clsx": "^2.1.1",
     "cmdk": "1.0.4",
     "date-fns": "4.1.0",
+    "dicons": "^1.1.7",
     "dotenv": "^17.3.1",
     "embla-carousel-react": "8.5.1",
     "framer-motion": "latest",

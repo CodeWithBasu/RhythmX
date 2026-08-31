@@ -28,7 +28,7 @@ export async function GET() {
     return NextResponse.json(formattedSongs)
   } catch (error) {
     console.error('[API] Critical Error:', error)
-    return new NextResponse(JSON.stringify({ error: 'Failed to fetch songs' }), { 
+    return new NextResponse(JSON.stringify({ error: 'MongoDB Connection Blocked. Please whitelist your IP in MongoDB Atlas (Network Access -> Add IP Address -> Allow Access From Anywhere).' }), { 
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     })
@@ -92,3 +92,5 @@ export async function DELETE(request: Request) {
     return new NextResponse(JSON.stringify({ error: 'Failed to delete song' }), { status: 500 })
   }
 }
+
+

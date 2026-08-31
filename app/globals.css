@@ -1,3 +1,17 @@
+@font-face {
+  font-family: 'Pixer';
+  src: url('/pixer/Pixer/Commercial/WEB/Pixer-Regular.woff2') format('woff2'), url('/pixer/Pixer/Commercial/WEB/Pixer-Regular.woff') format('woff'), url('/pixer/Pixer/Commercial/TTF/Pixer-Regular.ttf') format('truetype'), url('/pixer/Pixer/Commercial/OTF/Pixer-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Nexium';
+  src: url('/nexium/Nexium.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -99,4 +113,31 @@
 ::-moz-selection {
   background: #a855f7;
   color: white;
+}
+
+
+
+@keyframes scroll-horizontal {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes scroll-horizontal-reverse {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-scroll-horizontal {
+  animation: scroll-horizontal var(--scroll-duration, 40s) linear infinite;
+  width: max-content;
+}
+
+.animate-scroll-horizontal-reverse {
+  animation: scroll-horizontal-reverse var(--scroll-duration, 40s) linear infinite;
+  width: max-content;
 }

@@ -1001,11 +1001,16 @@ export default function Component() {
             />
             <div className="absolute inset-0 rounded-lg bg-purple-500/10 group-hover:bg-purple-500/0 transition-colors" />
           </div>
-          <div className="flex flex-col">
-            <h1 className="text-lg sm:text-2xl font-black tracking-tighter text-white">
-              RHYTHM<span className="text-purple-500 underline decoration-2 underline-offset-4">X</span>
-            </h1>
-            <p className="text-[8px] sm:text-[10px] text-white/40 font-mono tracking-widest uppercase">Sonic Reality Engine</p>
+          <div className="flex flex-col justify-center ml-1">
+            <div className="flex items-center text-xl sm:text-3xl tracking-tight uppercase text-white leading-none mb-1" style={{ fontFamily: "'Pixer', monospace" }}>
+              RHYTHM<span className="text-[#C084FC] ml-[1px] relative">
+                X
+                <span className="absolute -bottom-1 left-0 right-0 h-[2px] sm:h-[3px] bg-[#C084FC]"></span>
+              </span>
+            </div>
+            <div className="text-[#888888] text-[8px] sm:text-[10px] tracking-[0.2em]" style={{ fontFamily: "'Pixer', monospace" }}>
+              SONIC REALITY ENGINE
+            </div>
           </div>
         </motion.div>
       </div>
