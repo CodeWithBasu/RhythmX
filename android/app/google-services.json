@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "726045183628",
+    "project_id": "rhythmx-39fcd",
+    "storage_bucket": "rhythmx-39fcd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:726045183628:android:8b127d5507347551a6f5a9",
+        "android_client_info": {
+          "package_name": "com.rhythmx.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "726045183628-e41faml74bgci08qhog4gkc3eedhiq68.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUEV3JLt0qrJHhJfS3LhShjA39mIBSeCg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "726045183628-e41faml74bgci08qhog4gkc3eedhiq68.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
