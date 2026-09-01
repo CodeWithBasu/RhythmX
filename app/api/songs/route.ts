@@ -13,7 +13,6 @@ export async function GET() {
     const songs = await db
       .collection('songs')
       .find({})
-      .project({ url: 0 })
       .sort({ createdAt: 1 })
       .toArray()
     
