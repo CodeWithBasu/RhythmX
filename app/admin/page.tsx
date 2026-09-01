@@ -69,7 +69,10 @@ export default function AdminPage() {
     
     setDeletingId(id)
     try {
-      const res = await fetch(`/api/songs?id=${id}`, { method: 'DELETE' })
+      const res = await fetch(`/api/songs?id=${id}`, { 
+        method: 'DELETE',
+        headers: { 'x-admin-key': password }
+      })
       if (res.ok) {
         setSongs(songs.filter(s => s.id !== id))
       } else {

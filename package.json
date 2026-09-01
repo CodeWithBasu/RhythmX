@@ -57,6 +57,7 @@
     "framer-motion": "latest",
     "gsap": "^3.14.2",
     "input-otp": "1.4.1",
+    "jose": "^6.2.10",
     "lru-cache": "^11.2.6",
     "lucide-react": "^0.454.0",
     "mongodb": "^7.1.0",

@@ -1221,9 +1221,13 @@ export default function Component() {
                               duration: duration
                             }
                             
+                            const token = await user?.getIdToken();
                             const dbRes = await fetch(`${API_BASE}/api/songs`, {
                               method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
+                              headers: { 
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                              },
                               body: JSON.stringify(songData),
                             });
                             
@@ -1264,9 +1268,13 @@ export default function Component() {
                 } else {
                   // Direct URL logic (already bypasses 4.5MB limit)
                   try {
+                    const token = await user?.getIdToken();
                     const response = await fetch(`${API_BASE}/api/songs`, {
                       method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
+                      headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                      },
                       body: JSON.stringify(newSongMeta),
                     })
                     if (response.ok) {
@@ -1785,6 +1793,7 @@ export default function Component() {
     </div>
   )
 }
+
 
 
 
