@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, User, signInWithPopup, signOut, signInWithCredential, GoogleAuthProvider } from 'firebase/auth';
+import { onAuthStateChanged, User, signInWithPopup, signInWithRedirect, signOut, signInWithCredential, GoogleAuthProvider } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase';
 import { Capacitor } from '@capacitor/core';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
@@ -43,7 +43,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       } else {
         // Use Web Popup Google Sign In
-        await signInWithPopup(auth, googleProvider);
+        try {
+          await signInWithPopup(auth, googleProvider);
+        } catch (popupError: any) {
+          console.warn("Popup blocked or closed, falling back to redirect...", popupError);
+          // If the browser blocks the popup or closes it instantly, fallback to full page redirect
+          await signInWithRedirect(auth, googleProvider);
+        }
       }
     } catch (error) {
       console.error("Error signing in with Google", error);
@@ -70,3 +76,4 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
+
