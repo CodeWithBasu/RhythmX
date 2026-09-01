@@ -4,7 +4,8 @@ import React, { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Upload, Database, Share2, Users, SkipBack, SkipForward, Shuffle, Repeat, Headphones, Github, Linkedin, Globe } from "lucide-react"
 import Link from "next/link"
-import { ProfileDropdown } from "@/components/ui/profile-dropdown"
+import { ProfileDropdown } from "@/components/ui/profile-dropdown";
+import { useAuth } from "@/contexts/AuthContext";
 import ElasticSlider from "@/components/ui/elastic-slider"
 import TextType from "@/components/ui/TextType"
 import { useDevice } from "@/hooks/use-device"
@@ -47,6 +48,7 @@ const getBarColors = (index: number, total: number, height: number, isPlaying: b
 };
 
 export default function Component() {
+  const { user } = useAuth();
   const device = useDevice()
   // 64 bars on mobile is the sweet spot—wider than before, but not edge-to-edge
   const activeBars = device === 'mobile' ? 64 : device === 'tablet' ? 72 : 80;
@@ -1793,6 +1795,9 @@ export default function Component() {
     </div>
   )
 }
+
+
+
 
 
 
