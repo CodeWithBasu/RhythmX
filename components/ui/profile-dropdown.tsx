@@ -4,6 +4,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Settings, CreditCard, FileText, LogOut, User } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -32,6 +33,7 @@ export function ProfileDropdown({
 }: ProfileDropdownProps) {
     const [isOpen, setIsOpen] = React.useState(false);
     const { user, logout } = useAuth();
+    const router = useRouter();
 
     if (!user) {
         return null; // Don't show if not logged in
@@ -40,12 +42,12 @@ export function ProfileDropdown({
     const menuItems: MenuItem[] = [
         {
             label: "Settings",
-            href: "#",
+            href: "/settings",
             icon: <Settings className="w-4 h-4" />,
         },
         {
             label: "Terms & Policies",
-            href: "#",
+            href: "/terms",
             icon: <FileText className="w-4 h-4" />,
             external: true,
         },
@@ -123,7 +125,7 @@ export function ProfileDropdown({
                         <DropdownMenuItem asChild>
                             <button
                                 type="button"
-                                onClick={() => logout()}
+                                onClick={async () => { await logout(); router.push("/"); }}
                                 className="w-full flex items-center gap-2 p-2 duration-200 bg-red-500/10 rounded-xl hover:bg-red-500/20 cursor-pointer border border-transparent hover:border-red-500/30 transition-all group"
                             >
                                 <LogOut className="w-4 h-4 text-red-500 group-hover:text-red-400" />
@@ -138,4 +140,6 @@ export function ProfileDropdown({
         </div>
     );
 }
+
+
 

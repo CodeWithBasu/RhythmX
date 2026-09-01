@@ -1,0 +1,1 @@
+export default function TermsPage() { return <div className="min-h-screen bg-[#0C0414] text-white flex items-center justify-center p-8"><h1 className="text-3xl font-bold">Terms & Policies (Coming Soon)</h1></div> }
