@@ -66,7 +66,9 @@ export function Header() {
 										<ul className="grid gap-2 p-4">
 											{productLinks.map((item, i) => (
 												<li key={i}>
-													<ListItem {...item} />
+													<NavigationMenuLink asChild>
+														<ListItem {...item} />
+													</NavigationMenuLink>
 												</li>
 											))}
 										</ul>
@@ -91,7 +93,9 @@ export function Header() {
 										<ul className="p-4 space-y-2">
 											{companyLinks.map((item, i) => (
 												<li key={i}>
-													<ListItem {...item} />
+													<NavigationMenuLink asChild>
+														<ListItem {...item} />
+													</NavigationMenuLink>
 												</li>
 											))}
 										</ul>
@@ -222,28 +226,27 @@ function MobileMenu({ open, children, className, ...props }: MobileMenuProps) {
 	);
 }
 
-function ListItem({
+const ListItem = React.forwardRef<React.ElementRef<typeof Link>, React.ComponentPropsWithoutRef<typeof Link> & LinkItem>(({
 	title,
 	description,
 	icon: Icon,
 	className,
 	href,
 	...props
-}: React.ComponentProps<typeof NavigationMenuLink> & LinkItem) {
+}, ref) => {
 	return (
-		<NavigationMenuLink className={cn('w-full flex flex-row gap-4 hover:bg-[#C084FC]/10 rounded-lg p-3 transition-colors group cursor-pointer', className)} {...props} asChild>
-			<Link href={href}>
-				<div className="bg-white/5 border border-white/10 flex aspect-square size-12 items-center justify-center rounded-xl shadow-sm group-hover:bg-[#C084FC] group-hover:border-[#C084FC] group-hover:shadow-[0_0_15px_rgba(192,132,252,0.4)] transition-all duration-300">
-					<Icon className="text-white/70 group-hover:text-white size-5 transition-colors" />
-				</div>
-				<div className="flex flex-col items-start justify-center flex-1">
-					<span className="font-semibold text-white/90 group-hover:text-white transition-colors">{title}</span>
-					{description && <span className="text-white/40 text-xs mt-1 line-clamp-1">{description}</span>}
-				</div>
-			</Link>
-		</NavigationMenuLink>
+		<Link ref={ref} href={href} className={cn('w-full flex flex-row gap-4 hover:bg-[#C084FC]/10 rounded-lg p-3 transition-colors group cursor-pointer', className)} {...props}>
+			<div className="bg-white/5 border border-white/10 flex aspect-square size-12 items-center justify-center rounded-xl shadow-sm group-hover:bg-[#C084FC] group-hover:border-[#C084FC] group-hover:shadow-[0_0_15px_rgba(192,132,252,0.4)] transition-all duration-300">
+				<Icon className="text-white/70 group-hover:text-white size-5 transition-colors" />
+			</div>
+			<div className="flex flex-col items-start justify-center flex-1">
+				<span className="font-semibold text-white/90 group-hover:text-white transition-colors">{title}</span>
+				{description && <span className="text-white/40 text-xs mt-1 line-clamp-1">{description}</span>}
+			</div>
+		</Link>
 	);
-}
+});
+ListItem.displayName = "ListItem";
 
 const productLinks: LinkItem[] = [
 	{
@@ -323,6 +326,7 @@ function useScroll(threshold: number) {
 
 	return scrolled;
 }
+
 
 
 
