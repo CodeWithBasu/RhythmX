@@ -43,7 +43,7 @@ export default function SettingsPage() {
     );
   }
 
-  const avatarUrl = user.photoURL || https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email || 'User')}&background=random;
+  const avatarUrl = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email || 'User')}&background=random`;
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,9 +97,9 @@ export default function SettingsPage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={lex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 whitespace-nowrap outline-none  + (isActive ? 'bg-gradient-to-r from-purple-500/10 to-pink-500/5 text-white border border-purple-500/20 shadow-lg shadow-purple-500/5' : 'text-white/50 hover:text-white hover:bg-white/5 border border-transparent')}
+                  className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 whitespace-nowrap outline-none ${isActive ? 'bg-gradient-to-r from-purple-500/10 to-pink-500/5 text-white border border-purple-500/20 shadow-lg shadow-purple-500/5' : 'text-white/50 hover:text-white hover:bg-white/5 border border-transparent'}`}
                 >
-                  <Icon className={w-5 h-5  + (isActive ? 'text-purple-400' : 'text-white/30')} />
+                  <Icon className={`w-5 h-5 ${isActive ? 'text-purple-400' : 'text-white/30'}`} />
                   <span className="font-medium text-sm tracking-wide">{tab.label}</span>
                   {isActive && <ChevronRight className="w-4 h-4 ml-auto hidden md:block text-white/20" />}
                 </button>
@@ -168,7 +168,7 @@ export default function SettingsPage() {
                       Save Changes
                     </button>
                     {saveMessage && (
-                      <span className={	ext-sm font-medium flex items-center gap-2  + (saveMessage.includes('Failed') ? 'text-red-400' : 'text-green-400')}>
+                      <span className={`text-sm font-medium flex items-center gap-2 ${saveMessage.includes('Failed') ? 'text-red-400' : 'text-green-400'}`}>
                         {saveMessage.includes('Failed') ? <AlertCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
                         {saveMessage}
                       </span>
@@ -234,7 +234,7 @@ export default function SettingsPage() {
                      </label>
                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                        {['Data Saver', 'High Quality', 'Lossless'].map(quality => (
-                         <button key={quality} className={py-3.5 px-4 rounded-xl border text-sm font-medium transition-all  + (quality === 'High Quality' ? 'bg-gradient-to-b from-purple-500/20 to-purple-500/5 border-purple-500/30 text-white shadow-lg shadow-purple-500/10' : 'bg-white/[0.03] border-white/5 text-white/50 hover:bg-white/[0.06] hover:text-white/80')}>
+                         <button key={quality} className={`py-3.5 px-4 rounded-xl border text-sm font-medium transition-all ${quality === 'High Quality' ? 'bg-gradient-to-b from-purple-500/20 to-purple-500/5 border-purple-500/30 text-white shadow-lg shadow-purple-500/10' : 'bg-white/[0.03] border-white/5 text-white/50 hover:bg-white/[0.06] hover:text-white/80'}`}>
                            {quality}
                          </button>
                        ))}
