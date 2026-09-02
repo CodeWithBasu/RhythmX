@@ -14,6 +14,7 @@ import {
 import { LucideIcon, Menu, X, PlayCircle, Smartphone, AudioWaveform, Wifi, Github, FileText, MessageSquare, Shield, HelpCircle, ChevronRight, LogOut, User } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import { ProfileDropdown } from '@/components/ui/profile-dropdown';
 
 type LinkItem = {
 	title: string;
@@ -120,19 +121,7 @@ export function Header() {
 
 				<div className="hidden items-center gap-2 md:flex">
 					{user ? (
-						<div className="flex items-center gap-4">
-							<div className="flex items-center gap-2 text-sm text-white/80">
-								{user.photoURL ? (
-									<img src={user.photoURL} alt="avatar" className="w-8 h-8 rounded-full border border-white/10" />
-								) : (
-									<div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><User className="w-4 h-4" /></div>
-								)}
-								<span className="hidden lg:block">{user.displayName || user.email}</span>
-							</div>
-							<Button variant="ghost" size="icon" onClick={logout} className="text-white/60 hover:text-white hover:bg-white/10" title="Log Out">
-								<LogOut className="w-4 h-4" />
-							</Button>
-						</div>
+						<ProfileDropdown className="ml-2" />
 					) : (
 						<>
 							<Link href="/signin" className="relative group px-4 py-2 text-sm font-medium text-white/80 hover:text-white transition-colors">
@@ -334,5 +323,6 @@ function useScroll(threshold: number) {
 
 	return scrolled;
 }
+
 
 
