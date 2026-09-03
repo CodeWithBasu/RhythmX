@@ -89,6 +89,19 @@ export function Footer() {
 
         </div>
 
+        <style dangerouslySetInnerHTML={{__html: 
+          @keyframes mobileShine {
+            0% { background-position-x: -100%; opacity: 0; }
+            5% { opacity: 1; }
+            40% { background-position-x: 200%; opacity: 1; }
+            45% { opacity: 0; }
+            100% { background-position-x: 200%; opacity: 0; }
+          }
+          .mobile-shine-text {
+            animation: mobileShine 3s infinite ease-in-out;
+          }
+        }} />
+
         {/* Middle Section - Giant Outlined Text */}
         <div 
           ref={spotlightRef}
@@ -109,14 +122,32 @@ export function Footer() {
             RHYTHMX
           </h2>
 
-          {/* Hover Text - Spotlight Fill Overlay */}
+          {/* DESKTOP: Hover Text - Spotlight Fill Overlay */}
           <h2 
-            className="absolute inset-0 flex items-center justify-center text-[15vw] leading-none font-bold tracking-tighter z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+            className="hidden md:flex absolute inset-0 items-center justify-center text-[15vw] leading-none font-bold tracking-tighter z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
             style={{
               WebkitTextStroke: '2px rgba(192,132,252,0.5)',
               WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)',
               maskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)',
               backgroundImage: 'radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(192,132,252,1) 0%, transparent 20%)',
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              color: 'transparent'
+            }}
+          >
+            RHYTHMX
+          </h2>
+
+          {/* MOBILE: Auto-Shining Sweep Overlay (Every 3 seconds) */}
+          <h2 
+            className="md:hidden absolute inset-0 flex items-center justify-center text-[15vw] leading-none font-bold tracking-tighter z-20 pointer-events-none mobile-shine-text"
+            style={{
+              WebkitTextStroke: '2px rgba(192,132,252,0.5)',
+              WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)',
+              maskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)',
+              backgroundImage: 'linear-gradient(90deg, transparent 0%, transparent 35%, rgba(192,132,252,1) 50%, transparent 65%, transparent 100%)',
+              backgroundSize: '200% 100%',
               WebkitBackgroundClip: 'text',
               backgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
@@ -141,4 +172,6 @@ export function Footer() {
     </footer>
   );
 }
+
+
 
