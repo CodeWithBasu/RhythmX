@@ -110,7 +110,7 @@ export function Footer() {
         >
           {/* Base Text - Outline Only */}
           <h2 
-            className="text-[15vw] leading-none font-bold tracking-tighter relative z-10"
+            className="text-[23vw] sm:text-[18vw] md:text-[15vw] leading-none font-bold tracking-tighter relative z-10"
             style={{
               WebkitTextStroke: '2px rgba(255,255,255,0.4)',
               WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)',
@@ -124,7 +124,7 @@ export function Footer() {
 
           {/* DESKTOP: Hover Text - Spotlight Fill Overlay */}
           <h2 
-            className="hidden md:flex absolute inset-0 items-center justify-center text-[15vw] leading-none font-bold tracking-tighter z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+            className="hidden md:flex absolute inset-0 items-center justify-center text-[23vw] sm:text-[18vw] md:text-[15vw] leading-none font-bold tracking-tighter z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
             style={{
               WebkitTextStroke: '2px rgba(192,132,252,0.5)',
               WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)',
@@ -141,7 +141,7 @@ export function Footer() {
 
           {/* MOBILE: Auto-Shining Sweep Overlay (Every 3 seconds) */}
           <h2 
-            className="md:hidden absolute inset-0 flex items-center justify-center text-[15vw] leading-none font-bold tracking-tighter z-20 pointer-events-none mobile-shine-text"
+            className="md:hidden absolute inset-0 flex items-center justify-center text-[23vw] sm:text-[18vw] md:text-[15vw] leading-none font-bold tracking-tighter z-20 pointer-events-none mobile-shine-text"
             style={{
               WebkitTextStroke: '2px rgba(192,132,252,0.5)',
               WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)',
@@ -172,6 +172,7 @@ export function Footer() {
     </footer>
   );
 }
+
 
 
 
