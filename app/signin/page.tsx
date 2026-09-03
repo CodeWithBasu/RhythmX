@@ -10,9 +10,38 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
+import { auth } from '@/lib/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useState } from 'react';
+
 export default function SignInPage() {
   const { user, signInWithGoogle } = useAuth();
   const router = useRouter();
+  
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    
+    if (!email || !password) {
+      setError('Please enter your email and password.');
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      await signInWithEmailAndPassword(auth, email, password);
+      // Context will pick up the user, redirect will happen via useEffect
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Failed to sign in. Please check your credentials.');
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -120,6 +149,7 @@ export default function SignInPage() {
     </div>
   );
 }
+
 
 
 

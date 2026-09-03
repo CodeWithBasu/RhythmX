@@ -10,9 +10,43 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
+import { auth } from '@/lib/firebase';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { useState } from 'react';
+
 export default function SignUpPage() {
   const { user, signInWithGoogle } = useAuth();
   const router = useRouter();
+  
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    
+    if (!name || !email || !password) {
+      setError('Please fill in all fields.');
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      // Update profile with name
+      await updateProfile(userCredential.user, {
+        displayName: name
+      });
+      // Context will pick up the user, redirect will happen via useEffect
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Failed to create an account.');
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -53,13 +87,21 @@ export default function SignUpPage() {
               <p className="text-white/60">Enter your details below to create your account.</p>
             </div>
             
-            <form className="flex flex-col gap-4 mt-4" onSubmit={(e) => e.preventDefault()}>
+            <form className="flex flex-col gap-4 mt-4" onSubmit={handleSignUp}>
+              {error && (
+                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                  {error}
+                </div>
+              )}
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium text-white/80">Full Name</label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
                   <input 
                     type="text" 
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                     placeholder="Alex Morgan"
                     className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#C084FC]/50 focus:border-[#C084FC]/50 transition-all"
                   />
@@ -72,6 +114,9 @@ export default function SignUpPage() {
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
                   <input 
                     type="email" 
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     placeholder="name@example.com"
                     className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#C084FC]/50 focus:border-[#C084FC]/50 transition-all"
                   />
@@ -84,14 +129,17 @@ export default function SignUpPage() {
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
                   <input 
                     type="password" 
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     placeholder="Create a strong password"
                     className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#C084FC]/50 focus:border-[#C084FC]/50 transition-all"
                   />
                 </div>
               </div>
               
-              <Button className="w-full bg-[#C084FC] hover:bg-[#A855F7] text-white font-semibold mt-4 py-6 rounded-lg transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(192,132,252,0.3)]">
-                Create Account <ArrowRight className="w-4 h-4 ml-2" />
+              <Button disabled={loading} type="submit" className="w-full bg-[#C084FC] hover:bg-[#A855F7] text-white font-semibold mt-4 py-6 rounded-lg transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(192,132,252,0.3)] disabled:opacity-50 disabled:hover:scale-100">
+                {loading ? 'Creating...' : 'Create Account'} <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </form>
             
@@ -130,5 +178,6 @@ export default function SignUpPage() {
     </div>
   );
 }
+
 
 
