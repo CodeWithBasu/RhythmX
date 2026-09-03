@@ -78,9 +78,12 @@ export function Footer() {
         </div>
 
         {/* Middle Section - Giant Outlined Text */}
-        <div className="w-full flex justify-center py-4 sm:py-8 overflow-hidden select-none relative cursor-default">
+        <div className="w-full flex justify-center py-4 sm:py-8 overflow-hidden select-none relative cursor-default group">
+          {/* Purple Spotlight Background on Hover (Centered behind the whole word) */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100%] h-[150%] bg-[radial-gradient(ellipse_at_center,rgba(192,132,252,0.4)_0%,transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-3xl pointer-events-none z-0" />
+          
           <h2 
-            className="text-[15vw] leading-none font-bold tracking-tighter relative z-10 flex items-center"
+            className="text-[15vw] leading-none font-bold tracking-tighter relative z-10 transition-all duration-700 group-hover:drop-shadow-[0_0_50px_rgba(192,132,252,0.5)]"
             style={{
               WebkitTextStroke: '2px rgba(255,255,255,0.5)',
               WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)',
@@ -89,12 +92,7 @@ export function Footer() {
               color: 'transparent'
             }}
           >
-            <span>RHYTHM</span>
-            <span className="group relative">
-              {/* Purple Spotlight Background on Hover (Centered on the X) */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,rgba(192,132,252,0.6)_0%,transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-2xl pointer-events-none -z-10" />
-              <span className="transition-all duration-700 group-hover:drop-shadow-[0_0_40px_rgba(192,132,252,1)] group-hover:text-[#C084FC]/10">X</span>
-            </span>
+            RHYTHMX
           </h2>
         </div>
 
@@ -112,3 +110,4 @@ export function Footer() {
     </footer>
   );
 }
+
