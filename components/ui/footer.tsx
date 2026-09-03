@@ -1,9 +1,21 @@
 "use client";
 
+import React, { useRef } from 'react';
 import Link from "next/link";
 import { Twitter, Instagram, Youtube, Linkedin, Github } from "lucide-react";
 
 export function Footer() {
+  const spotlightRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!spotlightRef.current) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    spotlightRef.current.style.setProperty('--mouse-x', `${x}%`);
+    spotlightRef.current.style.setProperty('--mouse-y', `${y}%`);
+  };
+
   return (
     <footer className="w-full bg-[#0C0414] text-white py-12 px-6 md:px-12 relative z-20 border-t border-white/5 font-sans overflow-hidden">
       <div className="max-w-7xl mx-auto flex flex-col gap-16 md:gap-24">
@@ -78,9 +90,19 @@ export function Footer() {
         </div>
 
         {/* Middle Section - Giant Outlined Text */}
-        <div className="w-full flex justify-center py-4 sm:py-8 overflow-hidden select-none relative cursor-default group">
-          {/* Purple Spotlight Background on Hover (Centered behind the whole word) */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100%] h-[150%] bg-[radial-gradient(ellipse_at_center,rgba(192,132,252,0.4)_0%,transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-3xl pointer-events-none z-0" />
+        <div 
+          className="w-full flex justify-center py-4 sm:py-8 overflow-hidden select-none relative cursor-default group"
+          onMouseMove={handleMouseMove}
+        >
+          {/* Purple Spotlight Background on Hover (Follows Cursor) */}
+          <div 
+            ref={spotlightRef}
+            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-0"
+            style={{
+              background: 'radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(192,132,252,0.6) 0%, transparent 35%)',
+              filter: 'blur(10px)',
+            }}
+          />
           
           <h2 
             className="text-[15vw] leading-none font-bold tracking-tighter relative z-10 transition-all duration-700 group-hover:drop-shadow-[0_0_50px_rgba(192,132,252,0.5)]"
@@ -110,4 +132,3 @@ export function Footer() {
     </footer>
   );
 }
-
