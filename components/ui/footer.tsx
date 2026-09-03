@@ -1,148 +1,93 @@
 "use client";
 
 import Link from "next/link";
-import { Mail, Twitter, Instagram, Github, Youtube, Heart } from "lucide-react";
-
-const navigation = {
-  categories: [
-    {
-      id: "rhythmx",
-      name: "RhythmX",
-      sections: [
-        {
-          id: "product",
-          name: "Product",
-          items: [
-            { name: "Music Player", href: "/player" },
-            { name: "WebGL Visualizer", href: "/player" },
-            { name: "Party Mode Sync", href: "/player" },
-          ],
-        },
-        {
-          id: "resources",
-          name: "Resources",
-          items: [
-            { name: "GitHub Repo", href: "https://github.com/CodeWithBasu/RhythmX" },
-            { name: "Download APK", href: "https://github.com/CodeWithBasu/RhythmX/releases" },
-            { name: "Developer API", href: "#" },
-          ],
-        },
-        {
-          id: "legal",
-          name: "Company",
-          items: [
-            { name: "Privacy Policy", href: "/privacy" },
-            { name: "Terms of Service", href: "#" },
-            { name: "Contact Us", href: "#" },
-          ],
-        },
-      ],
-    },
-  ],
-};
-
+import { Twitter, Instagram, Youtube, Linkedin, Github } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="border-white/10 mx-auto w-full border-t px-4 bg-[#0C0414] relative z-20">
-      <div className="relative mx-auto grid max-w-7xl items-center justify-center gap-6 p-10 pb-0 md:flex md:justify-start">
-        <Link href="/">
-          <div className="flex flex-col justify-center ml-1">
-            <div className="flex items-center text-3xl tracking-tight uppercase text-white leading-none mb-1" style={{ fontFamily: "'Pixer', monospace" }}>
-              RHYTHM<span className="text-[#C084FC] ml-[1px] relative">
-                X
-                <span className="absolute -bottom-1 left-0 right-0 h-[3px] bg-[#C084FC]"></span>
-              </span>
-            </div>
-            <div className="text-[#888888] text-[10px] tracking-[0.2em]" style={{ fontFamily: "'Pixer', monospace" }}>
-              SONIC REALITY ENGINE
+    <footer className="w-full bg-[#0C0414] text-white py-12 px-6 md:px-12 relative z-20 border-t border-white/5 font-sans">
+      <div className="max-w-7xl mx-auto flex flex-col gap-16 md:gap-24">
+        
+        {/* Top Section - 4 Columns */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
+          
+          {/* Column 1: Brand & Socials */}
+          <div className="flex flex-col gap-6 max-w-sm">
+            <p className="text-white/80 text-lg leading-relaxed font-medium">
+              RhythmX is the modern and intuitive way to listen & visualize your music.
+            </p>
+            <div className="flex items-center gap-3">
+              <Link href="#" className="p-2 border border-white/10 rounded-lg hover:bg-white/5 transition-colors">
+                <Twitter className="w-5 h-5 text-white/70" />
+              </Link>
+              <Link href="#" className="p-2 border border-white/10 rounded-lg hover:bg-white/5 transition-colors">
+                <Instagram className="w-5 h-5 text-white/70" />
+              </Link>
+              <Link href="#" className="p-2 border border-white/10 rounded-lg hover:bg-white/5 transition-colors">
+                <Youtube className="w-5 h-5 text-white/70" />
+              </Link>
+              <Link href="https://github.com/CodeWithBasu/RhythmX" className="p-2 border border-white/10 rounded-lg hover:bg-white/5 transition-colors">
+                <Github className="w-5 h-5 text-white/70" />
+              </Link>
             </div>
           </div>
-        </Link>
-        <p className="bg-transparent text-center text-xs leading-relaxed text-white/50 md:text-left max-w-2xl md:ml-12 mt-4 md:mt-0">
-          Welcome to RhythmX, where sonic reality meets visual precision. 
-          We are passionate about transforming how you experience music by combining 
-          real-time WebGL visualizers with 8D spatial audio and zero-latency 
-          device syncing. RhythmX is an open-source project designed for true 
-          audiophiles who want complete control over their soundscape without 
-          sacrificing performance or privacy.
-        </p>
-      </div>
 
-      <div className="mx-auto max-w-7xl px-6 py-10">
-        <div className="border-b border-white/5"> </div>
-        <div className="py-10">
-          {navigation.categories.map((category) => (
-            <div
-              key={category.name}
-              className="grid grid-cols-2 md:grid-cols-3 flex-row justify-between gap-8 leading-6 md:flex md:gap-32"
-            >
-              {category.sections.map((section) => (
-                <div key={section.name}>
-                  <h3 className="text-white font-semibold mb-4 tracking-wide text-sm">{section.name}</h3>
-                  <ul
-                    role="list"
-                    className="flex flex-col space-y-3"
-                  >
-                    {section.items.map((item) => (
-                      <li key={item.name} className="flow-root">
-                        <Link
-                          href={item.href}
-                          className="text-sm text-white/40 hover:text-[#C084FC] transition-colors"
-                        >
-                          {item.name}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-        <div className="border-b border-white/5"> </div>
-      </div>
+          {/* Column 2: Product */}
+          <div className="flex flex-col gap-4">
+            <h3 className="font-semibold text-lg text-white">Product</h3>
+            <Link href="/player" className="text-white/60 hover:text-white transition-colors text-base">Product Updates</Link>
+            <Link href="/player" className="text-white/60 hover:text-white transition-colors text-base">Web Player</Link>
+            <Link href="/player" className="text-white/60 hover:text-white transition-colors text-base">Party Sync</Link>
+          </div>
 
-      <div className="flex flex-wrap justify-center gap-y-6 md:justify-center items-center mx-auto max-w-7xl px-6 pb-6">
-        <div className="flex flex-wrap items-center justify-center gap-6 gap-y-4 w-full md:w-auto">
-          <Link aria-label="Mail" href="#" className="hover:-translate-y-1 transition-transform text-[#EA4335] hover:opacity-80">
-            <Mail strokeWidth={2} className="h-5 w-5" />
-          </Link>
-          <Link aria-label="Twitter" href="#" className="hover:-translate-y-1 transition-transform text-[#1DA1F2] hover:opacity-80">
-            <Twitter strokeWidth={2} className="h-5 w-5" />
-          </Link>
-          <Link aria-label="Instagram" href="#" className="hover:-translate-y-1 transition-transform text-[#E1306C] hover:opacity-80">
-            <Instagram strokeWidth={2} className="h-5 w-5" />
-          </Link>
-          <Link aria-label="Github" href="https://github.com/CodeWithBasu/RhythmX" className="hover:-translate-y-1 transition-transform text-white hover:opacity-80">
-            <Github strokeWidth={2} className="h-5 w-5" />
-          </Link>
-          <Link aria-label="Youtube" href="#" className="hover:-translate-y-1 transition-transform text-[#FF0000] hover:opacity-80">
-            <Youtube strokeWidth={2} className="h-5 w-5" />
-          </Link>
-        </div>
-        
-      </div>
+          {/* Column 3: Resources */}
+          <div className="flex flex-col gap-4">
+            <h3 className="font-semibold text-lg text-white">Resources</h3>
+            <Link href="#" className="text-white/60 hover:text-white transition-colors text-base">Customer stories</Link>
+            <Link href="#" className="text-white/60 hover:text-white transition-colors text-base">Product docs</Link>
+            <Link href="https://github.com/CodeWithBasu/RhythmX" className="text-white/60 hover:text-white transition-colors text-base">GitHub Repo</Link>
+          </div>
 
-      <div className="mx-auto mb-10 mt-10 flex flex-col justify-between text-center text-xs md:max-w-7xl">
-        <div className="flex flex-row items-center justify-center gap-1 text-white/40">
-          <span> © </span>
-          <span>{new Date().getFullYear()}</span>
-          <span>Made with</span>
-          <Heart className="text-[#C084FC] mx-1 h-3 w-3 animate-pulse fill-[#C084FC]" />
-          <span> by </span>
-          <span className="hover:text-[#C084FC] cursor-pointer text-white transition-colors">
-            <Link aria-label="Author" className="font-bold tracking-wider" href="https://github.com/CodeWithBasu" target="_blank">
-              Basudev
+          {/* Column 4: Company */}
+          <div className="flex flex-col gap-4">
+            <h3 className="font-semibold text-lg text-white">Company</h3>
+            <Link href="#" className="text-white/60 hover:text-white transition-colors text-base">About</Link>
+            <Link href="#" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors text-base">
+              Careers
+              <span className="text-[10px] font-bold tracking-wider bg-white/10 text-white/80 px-2 py-0.5 rounded-full uppercase">
+                We're hiring
+              </span>
             </Link>
-          </span>
-          -
-          <span className="hover:text-[#C084FC] cursor-pointer transition-colors tracking-widest">
-            <Link aria-label="Project" href="/">
-              RHYTHMX
-            </Link>
-          </span>
+          </div>
+
         </div>
+
+        {/* Middle Section - Giant Outlined Text */}
+        <div className="w-full flex justify-center py-4 sm:py-8 overflow-hidden pointer-events-none select-none">
+          <h2 
+            className="text-[15vw] leading-none font-bold tracking-tighter"
+            style={{
+              WebkitTextStroke: '2px rgba(255,255,255,0.5)',
+              WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)',
+              maskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)',
+              WebkitTextFillColor: 'transparent',
+              color: 'transparent'
+            }}
+          >
+            RHYTHMX
+          </h2>
+        </div>
+
+        {/* Bottom Section - Legal & Copyright */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8 border-t border-white/10 text-sm text-white/50">
+          <p>© {new Date().getFullYear()} RhythmX / Reject all substitutes</p>
+          <div className="flex items-center gap-6">
+            <Link href="#" className="hover:text-white transition-colors">Security</Link>
+            <Link href="#" className="hover:text-white transition-colors">Terms of service</Link>
+            <Link href="#" className="hover:text-white transition-colors">Privacy policy</Link>
+          </div>
+        </div>
+
       </div>
     </footer>
   );
