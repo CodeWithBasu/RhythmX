@@ -91,25 +91,34 @@ export function Footer() {
 
         {/* Middle Section - Giant Outlined Text */}
         <div 
+          ref={spotlightRef}
           className="w-full flex justify-center py-4 sm:py-8 overflow-hidden select-none relative cursor-default group"
           onMouseMove={handleMouseMove}
         >
-          {/* Purple Spotlight Background on Hover (Follows Cursor) */}
-          <div 
-            ref={spotlightRef}
-            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-0"
-            style={{
-              background: 'radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(192,132,252,0.6) 0%, transparent 35%)',
-              filter: 'blur(10px)',
-            }}
-          />
-          
+          {/* Base Text - Outline Only */}
           <h2 
-            className="text-[15vw] leading-none font-bold tracking-tighter relative z-10 transition-all duration-700 group-hover:drop-shadow-[0_0_50px_rgba(192,132,252,0.5)]"
+            className="text-[15vw] leading-none font-bold tracking-tighter relative z-10"
             style={{
-              WebkitTextStroke: '2px rgba(255,255,255,0.5)',
+              WebkitTextStroke: '2px rgba(255,255,255,0.4)',
               WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)',
               maskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)',
+              WebkitTextFillColor: 'transparent',
+              color: 'transparent'
+            }}
+          >
+            RHYTHMX
+          </h2>
+
+          {/* Hover Text - Spotlight Fill Overlay */}
+          <h2 
+            className="absolute inset-0 flex items-center justify-center text-[15vw] leading-none font-bold tracking-tighter z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+            style={{
+              WebkitTextStroke: '2px rgba(192,132,252,0.5)',
+              WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)',
+              maskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)',
+              backgroundImage: 'radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(192,132,252,1) 0%, transparent 20%)',
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               color: 'transparent'
             }}
@@ -132,3 +141,4 @@ export function Footer() {
     </footer>
   );
 }
+
