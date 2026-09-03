@@ -38,7 +38,16 @@ export default function SignInPage() {
       // Context will pick up the user, redirect will happen via useEffect
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'Failed to sign in. Please check your credentials.');
+      let friendlyMessage = err.message || 'Failed to sign in. Please check your credentials.';
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+        friendlyMessage = 'Invalid email or password.';
+      } else if (err.code === 'auth/too-many-requests') {
+        friendlyMessage = 'Too many failed login attempts. Please try again later.';
+      } else if (err.code === 'auth/operation-not-allowed') {
+        friendlyMessage = 'Email/Password auth is disabled in Firebase. Please enable it in the Firebase Console.';
+      }
+      
+      setError(friendlyMessage);
       setLoading(false);
     }
   };
@@ -149,6 +158,7 @@ export default function SignInPage() {
     </div>
   );
 }
+
 
 
 

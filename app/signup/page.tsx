@@ -43,7 +43,12 @@ export default function SignUpPage() {
       // Context will pick up the user, redirect will happen via useEffect
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'Failed to create an account.');
+      let friendlyMessage = err.message || 'Failed to create an account.';
+      if (err.code === 'auth/email-already-in-use') friendlyMessage = 'This email is already registered. Please sign in instead.';
+      else if (err.code === 'auth/weak-password') friendlyMessage = 'Password must be at least 6 characters long.';
+      else if (err.code === 'auth/operation-not-allowed') friendlyMessage = 'Email/Password auth is disabled in Firebase. Please enable it in the Firebase Console.';
+      
+      setError(friendlyMessage);
       setLoading(false);
     }
   };
@@ -178,6 +183,7 @@ export default function SignUpPage() {
     </div>
   );
 }
+
 
 
 
