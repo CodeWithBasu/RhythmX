@@ -74,14 +74,17 @@ export default function SignInPage() {
               <p className="text-white/60">Enter your credentials to access the Sonic Reality Engine.</p>
             </div>
             
-            <form className="flex flex-col gap-4 mt-4" onSubmit={(e) => e.preventDefault()}>
+            <form className="flex flex-col gap-4 mt-4" onSubmit={handleSignIn}>
+              {error && (
+                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                  {error}
+                </div>
+              )}
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium text-white/80">Email address</label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
-                  <input 
-                    type="email" 
-                    placeholder="name@example.com"
+                  <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@example.com"
                     className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#C084FC]/50 focus:border-[#C084FC]/50 transition-all"
                   />
                 </div>
@@ -102,8 +105,8 @@ export default function SignInPage() {
                 </div>
               </div>
               
-              <Button className="w-full bg-[#C084FC] hover:bg-[#A855F7] text-white font-semibold mt-4 py-6 rounded-lg transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(192,132,252,0.3)]">
-                Sign In <ArrowRight className="w-4 h-4 ml-2" />
+              <Button disabled={loading} type="submit" className="w-full bg-[#C084FC] hover:bg-[#A855F7] text-white font-semibold mt-4 py-6 rounded-lg transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(192,132,252,0.3)] disabled:opacity-50 disabled:hover:scale-100">
+                {loading ? "Signing In..." : "Sign In"} <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </form>
             
@@ -158,6 +161,9 @@ export default function SignInPage() {
     </div>
   );
 }
+
+
+
 
 
 
