@@ -89,7 +89,7 @@ export function Footer() {
 
         </div>
 
-        <style dangerouslySetInnerHTML={{__html: 
+        <style dangerouslySetInnerHTML={{__html: `
           @keyframes mobileShine {
             0% { background-position-x: -100%; opacity: 0; }
             5% { opacity: 1; }
@@ -100,7 +100,7 @@ export function Footer() {
           .mobile-shine-text {
             animation: mobileShine 3s infinite ease-in-out;
           }
-        }} />
+        `}} />
 
         {/* Middle Section - Giant Outlined Text */}
         <div 
@@ -172,6 +172,8 @@ export function Footer() {
     </footer>
   );
 }
+
+
 
 
 
