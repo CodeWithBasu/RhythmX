@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 import { auth } from '@/lib/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { useState } from 'react';
 
 export default function SignInPage() {
@@ -22,6 +22,32 @@ export default function SignInPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isResetMode, setIsResetMode] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    
+    if (!email) {
+      setError('Please enter your email address.');
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      await sendPasswordResetEmail(auth, email);
+      setResetSent(true);
+      setLoading(false);
+    } catch (err: any) {
+      console.error(err);
+      let friendlyMessage = err.message || 'Failed to send reset email.';
+      if (err.code === 'auth/user-not-found') friendlyMessage = 'No account found with this email.';
+      if (err.code === 'auth/invalid-email') friendlyMessage = 'Please enter a valid email address.';
+      setError(friendlyMessage);
+      setLoading(false);
+    }
+  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,11 +96,25 @@ export default function SignInPage() {
           {/* Left Column: Sign In Form */}
           <div className="flex flex-col gap-6 p-8 rounded-2xl bg-[#130820]/80 backdrop-blur-xl border border-white/10 shadow-[0_0_40px_rgba(192,132,252,0.1)]">
             <div className="flex flex-col space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight text-white">Welcome back</h1>
-              <p className="text-white/60">Enter your credentials to access the Sonic Reality Engine.</p>
+              <h1 className="text-3xl font-bold tracking-tight text-white">{isResetMode ? "Reset password" : "Welcome back"}</h1>
+              <p className="text-white/60">
+                {isResetMode 
+                  ? "Enter your email address and we will send you a link to reset your password." 
+                  : "Enter your credentials to access the Sonic Reality Engine."}
+              </p>
             </div>
             
-            <form className="flex flex-col gap-4 mt-4" onSubmit={handleSignIn}>
+            {resetSent ? (
+              <div className="flex flex-col gap-4 mt-4">
+                <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-sm text-center">
+                  Password reset email sent! Check your inbox.
+                </div>
+                <Button onClick={() => { setIsResetMode(false); setResetSent(false); }} className="w-full bg-[#C084FC] hover:bg-[#A855F7] text-white font-semibold py-4 rounded-lg transition-all mt-4">
+                  Back to Sign In
+                </Button>
+              </div>
+            ) : (
+              <form className="flex flex-col gap-4 mt-4" onSubmit={isResetMode ? handleResetPassword : handleSignIn}>
               {error && (
                 <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
                   {error}
@@ -90,10 +130,11 @@ export default function SignInPage() {
                 </div>
               </div>
               
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-white/80">Password</label>
-                  <Link href="#" className="text-xs font-medium text-[#C084FC] hover:text-white transition-colors">Forgot password?</Link>
+              {!isResetMode && (
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-white/80">Password</label>
+                    <button type="button" onClick={() => { setIsResetMode(true); setError(""); }} className="text-xs font-medium text-[#C084FC] hover:text-white transition-colors">Forgot password?</button>
                 </div>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
@@ -103,14 +144,23 @@ export default function SignInPage() {
                     className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#C084FC]/50 focus:border-[#C084FC]/50 transition-all"
                   />
                 </div>
-              </div>
+                </div>
+              )}
               
               <Button disabled={loading} type="submit" className="w-full bg-[#C084FC] hover:bg-[#A855F7] text-white font-semibold mt-4 py-6 rounded-lg transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(192,132,252,0.3)] disabled:opacity-50 disabled:hover:scale-100">
-                {loading ? "Signing In..." : "Sign In"} <ArrowRight className="w-4 h-4 ml-2" />
+                {loading ? (isResetMode ? "Sending..." : "Signing In...") : (isResetMode ? "Send Reset Link" : "Sign In")} <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
-            </form>
+                {isResetMode && (
+                  <button type="button" onClick={() => { setIsResetMode(false); setError(""); }} className="text-sm text-center mt-2 text-white/60 hover:text-white transition-colors">
+                    Back to Sign In
+                  </button>
+                )}
+              </form>
+            )}
             
-            <div className="relative flex items-center py-2">
+            {!isResetMode && !resetSent && (
+              <>
+                <div className="relative flex items-center py-2">
               <div className="flex-grow border-t border-white/10"></div>
               <span className="flex-shrink-0 mx-4 text-white/40 text-sm">Or continue with</span>
               <div className="flex-grow border-t border-white/10"></div>
@@ -134,8 +184,10 @@ export default function SignInPage() {
               Don't have an account?{' '}
               <Link href="/signup" className="text-[#C084FC] font-medium hover:underline">
                 Sign up
-              </Link>
-            </p>
+                  </Link>
+                </p>
+              </>
+            )}
           </div>
 
           {/* Right Column: Animated Form Component */}
@@ -161,6 +213,9 @@ export default function SignInPage() {
     </div>
   );
 }
+
+
+
 
 
 
