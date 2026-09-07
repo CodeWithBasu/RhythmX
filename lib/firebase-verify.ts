@@ -8,7 +8,7 @@ const JWKS = createRemoteJWKSet(new URL(JWKS_URL));
 export async function verifyFirebaseToken(token: string) {
   try {
     const { payload } = await jwtVerify(token, JWKS, {
-      issuer: "https://securetoken.google.com/$projectId",
+      issuer: `https://securetoken.google.com/${projectId}`,
       audience: projectId,
     });
     return payload;
@@ -17,3 +17,4 @@ export async function verifyFirebaseToken(token: string) {
     return null;
   }
 }
+
