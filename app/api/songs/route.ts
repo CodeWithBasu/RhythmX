@@ -33,7 +33,7 @@ export async function POST(request: Request) {
   try {
     // 1. Verify User Authentication via Firebase Token
     const authHeader = request.headers.get('Authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader === 'Bearer undefined' || authHeader === 'Bearer null') {
       return new NextResponse(JSON.stringify({ error: 'Unauthorized. Please log in.' }), { status: 401 })
     }
     const token = authHeader.split('Bearer ')[1].trim()
@@ -104,6 +104,7 @@ export async function DELETE(request: Request) {
     return new NextResponse(JSON.stringify({ error: error.message || 'Failed to delete song' }), { status: 500 })
   }
 }
+
 
 
 
