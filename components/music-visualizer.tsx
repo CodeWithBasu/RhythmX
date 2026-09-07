@@ -1170,9 +1170,22 @@ export default function Component() {
             animate={{ opacity: 1, scale: 1 }}
             className="bg-[#111] border border-white/10 p-8 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden"
           >
-            <h2 className="text-xl font-bold text-white mb-6">Add Song to Library</h2>
-            
-            <form 
+                          {!user ? (
+                <div className="text-center flex flex-col items-center">
+                  <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mb-4">
+                    <Database className="w-8 h-8 text-purple-400" />
+                  </div>
+                  <h2 className="text-xl font-bold text-white mb-2">Login Required</h2>
+                  <p className="text-white/60 mb-6 text-sm">Please log in or sign up first to upload and store music in the RhythmX library.</p>
+                  <div className="flex gap-4 w-full">
+                    <button type="button" onClick={() => setIsAddingSong(false)} className="flex-1 py-3 px-4 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors text-sm font-medium">Cancel</button>
+                    <Link href="/signin" className="flex-1 py-3 px-4 bg-[#C084FC] hover:bg-[#A855F7] text-white rounded-lg transition-colors text-sm font-medium text-center shadow-[0_0_15px_rgba(192,132,252,0.3)]">Sign In</Link>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <h2 className="text-xl font-bold text-white mb-6">Add Song to Library</h2>
+                  <form 
               onSubmit={async (e) => {
                 e.preventDefault()
                 
@@ -1223,7 +1236,7 @@ export default function Component() {
                               duration: duration
                             }
                             
-                            const token = await user?.getIdToken();
+                            const token = await user?.getIdToken(true);
                             const dbRes = await fetch(`${API_BASE}/api/songs`, {
                               method: 'POST',
                               headers: { 
@@ -1270,7 +1283,7 @@ export default function Component() {
                 } else {
                   // Direct URL logic (already bypasses 4.5MB limit)
                   try {
-                    const token = await user?.getIdToken();
+                    const token = await user?.getIdToken(true);
                     const response = await fetch(`${API_BASE}/api/songs`, {
                       method: 'POST',
                       headers: { 
@@ -1403,10 +1416,12 @@ export default function Component() {
                   {isBuffering ? (uploadProgress > 0 ? `Uploading (${uploadProgress}%)...` : "Processing...") : "Save to Library"}
                 </button>
               </div>
-            </form>
-          </motion.div>
-        </div>
-      )}
+                          </form>
+              </>
+            )}
+            </motion.div>
+          </div>
+        )}
 
       {/* Debug info */}
       <div className="absolute top-8 left-8 text-white/40 text-xs">
@@ -1795,6 +1810,8 @@ export default function Component() {
     </div>
   )
 }
+
+
 
 
 
