@@ -36,10 +36,12 @@ export async function POST(request: Request) {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return new NextResponse(JSON.stringify({ error: 'Unauthorized. Please log in.' }), { status: 401 })
     }
-    const token = authHeader.split('Bearer ')[1]
-    const decodedToken = await verifyFirebaseToken(token)
-    if (!decodedToken) {
-      return new NextResponse(JSON.stringify({ error: 'Invalid or expired authentication token.' }), { status: 401 })
+    const token = authHeader.split('Bearer ')[1].trim()
+    let decodedToken;
+    try {
+      decodedToken = await verifyFirebaseToken(token)
+    } catch (verifyErr: any) {
+      return new NextResponse(JSON.stringify({ error: 'Token verification failed: ' + verifyErr.message }), { status: 401 })
     }
 
     // 2. Process the valid request
@@ -102,4 +104,6 @@ export async function DELETE(request: Request) {
     return new NextResponse(JSON.stringify({ error: error.message || 'Failed to delete song' }), { status: 500 })
   }
 }
+
+
 

@@ -16,6 +16,6 @@ export async function verifyFirebaseToken(token: string) {
     return payload;
   } catch (error: any) {
     console.error("JWT Verification failed. EXACT ERROR:", error.code, error.message);
-    return null;
+    throw new Error("JWT Error: " + error.message);
   }
 }
