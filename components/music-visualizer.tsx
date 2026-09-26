@@ -75,7 +75,7 @@ export default function Component() {
   const [isBuffering, setIsBuffering] = useState(false)
   const [syncOffset, setSyncOffset] = useState(0)
   const [dragActive, setDragActive] = useState(false)
-  const [newSongMeta, setNewSongMeta] = useState({ title: '', url: '', language: 'English' })
+  const [newSongMeta, setNewSongMeta] = useState({ title: '', artist: '', url: '', language: 'English' })
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [searchQuery, setSearchQuery] = useState("")
@@ -978,199 +978,348 @@ export default function Component() {
     }
   }, [hasAudio, isInitialized])
 
+  
   return (
-    <div 
-      className="min-h-screen bg-transparent flex flex-col items-center justify-start p-4 sm:p-8 pt-24 sm:pt-32 overflow-x-hidden font-mono"
-    >
-      {/* Premium Brand Header */}
-      <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-8 py-4 sm:py-6 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-md">
-        <motion.div 
-          className="flex items-center gap-3 cursor-pointer group"
-          onClick={handleAdminLogin}
-          whileHover={{ scale: 1.02 }}
-        >
-          <div className="relative">
-            <img 
-              src="/rhythmx-logo.png" 
-              alt="RhythmX Logo" 
-              className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shadow-lg shadow-purple-500/20 group-hover:shadow-purple-500/40 transition-all duration-300" 
-            />
-            <div className="absolute inset-0 rounded-lg bg-purple-500/10 group-hover:bg-purple-500/0 transition-colors" />
-          </div>
-          <div className="flex flex-col justify-center ml-1">
-            <div className="flex items-center text-xl sm:text-3xl tracking-tight uppercase text-white leading-none mb-1" style={{ fontFamily: "'Pixer', monospace" }}>
-              RHYTHM<span className="text-[#C084FC] ml-[1px] relative">
-                X
-                <span className="absolute -bottom-1 left-0 right-0 h-[2px] sm:h-[3px] bg-[#C084FC]"></span>
-              </span>
-            </div>
-            <div className="text-[#888888] text-[8px] sm:text-[10px] tracking-[0.2em]" style={{ fontFamily: "'Pixer', monospace" }}>
-              SONIC REALITY ENGINE
-            </div>
-          </div>
-        </motion.div>
-      </div>
-
-
-      {/* Hidden file input */}
-      <input ref={fileInputRef} type="file" accept="audio/*" onChange={handleFileUpload} className="hidden" />
-
-      {/* Audio element */}
-      <audio
-        ref={audioRef}
-        crossOrigin="anonymous"
-        onLoadedData={() => {
-            console.log("Audio loaded")
-            setIsBuffering(false)
-        }}
-        onPlay={() => {
-          console.log("Audio started playing")
-          setIsPlaying(true)
-        }}
-        onPause={() => {
-          console.log("Audio paused")
-          setIsPlaying(false)
-        }}
-        onEnded={() => {
-          if (isRepeat && audioRef.current) {
-            audioRef.current.currentTime = 0;
-            audioRef.current.play();
-            return;
-          }
-          
-          setIsPlaying(false)
-          
-          // Auto-play next song in the playlist
-          if (currentSongObj && songs.length > 0) {
-            if (isShuffle) {
-              const randomIndex = Math.floor(Math.random() * songs.length);
-              playSong(songs[randomIndex]);
-            } else {
-              const currentIndex = songs.findIndex(s => s.id === currentSongObj.id)
-              if (currentIndex !== -1 && currentIndex < songs.length - 1) {
-                // Not the last song, play the next one
-                const nextSong = songs[currentIndex + 1]
-                playSong(nextSong)
-              }
-            }
-          }
-        }}
-        onTimeUpdate={() => {
-          if (audioRef.current) {
-            const time = audioRef.current.currentTime
-            setCurrentTime(time)
-            
-            // Sync Lyrics engine
-            if (lyrics.length > 0) {
-              // Find the last lyric line that is past its timestamp
-              let activeIndex = -1
-              for (let i = 0; i < lyrics.length; i++) {
-                if (time >= lyrics[i].time) {
-                  activeIndex = i
-                } else {
-                  break // Since array is sorted by time, we can break early
-                }
-              }
-              if (activeIndex !== currentLyricIndex) {
-                setCurrentLyricIndex(activeIndex)
-              }
-            }
-          }
-        }}
-        onLoadedMetadata={() => {
-          if (audioRef.current) setDuration(audioRef.current.duration)
-        }}
-      />
-
-      <div className="absolute top-4 right-4 sm:top-8 sm:right-8 flex flex-wrap justify-end gap-2 sm:gap-3 z-50 w-full max-w-[calc(100%-140px)] sm:max-w-none">
+    <div className="h-[100dvh] w-full bg-[#0C0414] flex flex-col overflow-hidden font-sans">
+      {/* Top Section: Visualizer & Player (approx 40-45%) */}
+      <div className="flex-none h-[45vh] md:h-[50vh] relative flex flex-col items-center justify-between pb-6 pt-20 bg-gradient-to-b from-black to-[#0C0414] shrink-0">
         
-        {device !== 'mobile' && (
-          <select 
-            value={theme}
-            onChange={(e) => setTheme(e.target.value)}
-            className="bg-white/5 border border-white/10 text-white/70 text-[10px] sm:text-xs rounded-lg px-2 sm:px-3 py-1.5 outline-none hover:bg-white/10 transition-colors cursor-pointer"
+        {/* Header */}
+        <div className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-8 py-4 bg-transparent">
+          <motion.div 
+            className="flex items-center gap-3 cursor-pointer group"
+            onClick={handleAdminLogin}
+            whileHover={{ scale: 1.02 }}
           >
-            <option value="neon" className="bg-neutral-900">Neon Pulse</option>
-            <option value="synthwave" className="bg-neutral-900">Synthwave</option>
-            <option value="matrix" className="bg-neutral-900">Cyber Matrix</option>
-            <option value="ocean" className="bg-neutral-900">Deep Ocean</option>
-          </select>
-        )}
+            <div className="relative">
+              <img 
+                src="/rhythmx-logo.png" 
+                alt="RhythmX Logo" 
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg shadow-lg shadow-purple-500/20 group-hover:shadow-purple-500/40 transition-all duration-300" 
+              />
+              <div className="absolute inset-0 rounded-lg bg-purple-500/10 group-hover:bg-purple-500/0 transition-colors" />
+            </div>
+            <div className="flex flex-col justify-center ml-1">
+              <div className="flex items-center text-xl sm:text-3xl tracking-tight uppercase text-white leading-none mb-1" style={{ fontFamily: "'Pixer', monospace" }}>
+                RHYTHM<span className="text-[#C084FC] ml-[1px] relative">
+                  X
+                  <span className="absolute -bottom-1 left-0 right-0 h-[2px] sm:h-[3px] bg-[#C084FC]"></span>
+                </span>
+              </div>
+              <div className="text-[#888888] text-[8px] sm:text-[10px] tracking-[0.2em]" style={{ fontFamily: "'Pixer', monospace" }}>
+                SONIC REALITY ENGINE
+              </div>
+            </div>
+          </motion.div>
 
-        <motion.button
-          className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 ${partyId ? (isHost ? 'bg-pink-500/20 text-pink-300 border-pink-500/40' : 'bg-blue-500/20 text-blue-300 border-blue-500/40') : 'bg-white/5 hover:bg-white/10 text-white/60 hover:text-white border-white/10'} rounded-lg border transition-all duration-200`}
-          onClick={startParty}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          {partyId ? <Users size={14} className="sm:w-4 sm:h-4" /> : <Share2 size={14} className="sm:w-4 sm:h-4" />}
-          <span className="text-[10px] sm:text-sm hidden sm:inline">{partyId ? (isHost ? "Hosting Party" : "In Party") : "Start Party"}</span>
-          <span className="text-[10px] sm:hidden">{partyId ? "Party" : "Share"}</span>
-        </motion.button>
+          <div className="flex items-center gap-4">
+            <ProfileDropdown />
+            {isAdmin && (
+                <button
+                  onClick={() => setIsAddingSong(true)}
+                  className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-purple-600/20 hover:bg-purple-600/40 text-white rounded-lg border border-purple-500/40 transition-all duration-200"
+                >
+                  <span className="text-[10px] sm:text-sm font-bold tracking-tight">+ Upload</span>
+                </button>
+            )}
+          </div>
+        </div>
 
-        {isAdmin && (
-          <Link href="/admin">
+        {/* Hidden File Input & Audio Element */}
+        <input ref={fileInputRef} type="file" accept="audio/*" onChange={handleFileUpload} className="hidden" />
+        <audio
+          ref={audioRef}
+          crossOrigin="anonymous"
+          onLoadedData={() => setIsBuffering(false)}
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+          onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+          onDurationChange={(e) => setDuration(e.currentTarget.duration)}
+          onWaiting={() => setIsBuffering(true)}
+          onPlaying={() => setIsBuffering(false)}
+        />
+
+        {/* Dynamic Synced Lyrics Display (Overlay) */}
+        <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10 overflow-hidden pt-10 px-4">
+            <AnimatePresence mode="wait">
+            {lyrics.length > 0 && currentLyricIndex !== -1 && (
+                <motion.div
+                key={`lyric-${currentLyricIndex}`}
+                initial={{ opacity: 0, scale: 0.95, filter: "blur(8px)", y: 10 }}
+                animate={{ opacity: 1, scale: 1, filter: "blur(0px)", y: 0 }}
+                exit={{ opacity: 0, scale: 1.05, filter: "blur(8px)", y: -10 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className="text-center w-full"
+                >
+                <span className="text-xl md:text-3xl lg:text-4xl font-bold text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.6)] bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70 leading-tight">
+                    {lyrics[currentLyricIndex].text}
+                </span>
+                </motion.div>
+            )}
+            </AnimatePresence>
+        </div>
+
+        {/* Audio Visualizer Bars */}
+        <div className="flex items-end justify-center gap-[1px] sm:gap-[2px] md:gap-1 w-full max-w-5xl px-4 overflow-hidden flex-1 mb-4 z-0">
+          {audioData.slice(0, activeBars).map((height, index) => {
+            const colors = getBarColors(index, activeBars, height, isPlaying, theme);
+            return (
+              <motion.div
+                key={index}
+                className="rounded-t-sm flex-1 max-w-[4px] sm:max-w-[5px] md:max-w-[6px] lg:max-w-[8px]"
+                style={{
+                  backgroundColor: colors.bg,
+                  opacity: height > 0 ? 1 : 0,
+                  boxShadow: isPlaying ? `0 0 ${Math.floor(height * 6)}px ${colors.glow}` : 'none'
+                }}
+                initial={{ scaleX: 0 }}
+                animate={{
+                  height: `${height * 100}%`,
+                  opacity: height > 0 ? 1 : 0,
+                  scaleX: showInitialAnimation ? 1 : 1,
+                }}
+                transition={{
+                  height: { type: "spring", stiffness: height > 0 ? 400 : 200, damping: height > 0 ? 25 : 35, mass: 0.2 },
+                  opacity: { duration: height > 0 ? 0.1 : 0.8, ease: "easeOut" },
+                  scaleX: { duration: 2, delay: Math.abs(index - 40) * 0.015, ease: "easeOut" },
+                }}
+              />
+            );
+          })}
+        </div>
+
+        {/* Player Controls Section */}
+        <div className="w-full max-w-3xl px-6 flex flex-col items-center z-20">
+            {/* Track Info */}
             <motion.div
-              className="flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 hover:text-purple-200 rounded-lg border border-purple-500/20 hover:border-purple-500/40 transition-all duration-200 cursor-pointer"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+                className="flex items-center gap-4 mb-4 w-full"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
             >
-              <Database size={14} className="sm:w-4 sm:h-4" />
-              <span className="text-[10px] sm:text-sm">Admin</span>
+                {albumArtUrl ? (
+                    <img src={albumArtUrl} alt="Album Art" className="w-12 h-12 rounded-md shadow-[0_0_15px_rgba(255,255,255,0.1)] object-cover" />
+                ) : (
+                    <div className="w-12 h-12 rounded-md bg-white/5 border border-white/10 flex items-center justify-center">
+                        <Headphones className="w-6 h-6 text-white/40" />
+                    </div>
+                )}
+                <div className="flex-1 min-w-0">
+                    <div className="text-lg sm:text-xl font-bold tracking-wider text-white truncate drop-shadow-md">
+                        {currentTrack}
+                    </div>
+                    {currentSongObj?.artist && (
+                        <div className="text-xs text-white/50 truncate">{currentSongObj.artist}</div>
+                    )}
+                </div>
             </motion.div>
-          </Link>
-        )}
 
-        <motion.button
-          className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white rounded-lg border border-white/10 hover:border-white/30 transition-all duration-200"
-          onClick={() => localFileRef.current?.click()}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <Upload size={14} className="sm:w-4 sm:h-4 text-purple-400" />
-          <span className="text-[10px] sm:text-sm hidden sm:inline">Play Local</span>
-          <span className="text-[10px] sm:hidden">Play</span>
-          <input 
-            type="file" 
-            ref={localFileRef}
-            className="hidden" 
-            accept="audio/*" 
-            onChange={async (e) => {
-              const file = e.target.files?.[0]
-              if (file) {
-                const localUrl = URL.createObjectURL(file)
-                setCurrentTrack(`~/ ${file.name.replace(/\.[^/.]+$/, "")}`)
-                if (audioRef.current) {
-                  audioRef.current.src = localUrl
-                  audioRef.current.play()
-                  setIsPlaying(true)
-                }
-              }
-            }}
-          />
-        </motion.button>
+            {/* Seek Bar */}
+            <div className="w-full mb-4">
+                <div className="flex justify-between w-full text-[10px] font-medium text-white/40 mb-1">
+                    <span>{Math.floor(currentTime / 60)}:{(Math.floor(currentTime % 60)).toString().padStart(2, '0')}</span>
+                    <span>{Math.floor(duration / 60)}:{(Math.floor(duration % 60)).toString().padStart(2, '0')}</span>
+                </div>
+                <ElasticSlider
+                    value={currentTime}
+                    maxValue={duration || 100}
+                    startingValue={0}
+                    onChange={(val) => setCurrentTime(val)}
+                    onDragEnd={(val) => { if (audioRef.current) audioRef.current.currentTime = val }}
+                    leftIcon={null}
+                    rightIcon={null}
+                    className="w-full"
+                    theme={theme}
+                />
+            </div>
 
-        <motion.button
-          className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-purple-600/20 hover:bg-purple-600/40 text-white rounded-lg border border-purple-500/40 transition-all duration-200"
-          onClick={() => setIsAddingSong(true)}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <span className="text-[10px] sm:text-sm font-bold tracking-tight">+ Library</span>
-        </motion.button>
-        <ProfileDropdown className="ml-1 sm:ml-2" />
+            {/* Playback Buttons */}
+            <div className="flex items-center justify-center gap-6 sm:gap-8 text-white w-full">
+                <motion.button
+                    onClick={() => setIsShuffle(!isShuffle)}
+                    className={`p-2 transition-colors ${isShuffle ? 'text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]' : 'text-white/30 hover:text-white'}`}
+                    whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                >
+                    <Shuffle size={18} />
+                </motion.button>
+        
+                <motion.button onClick={skipBackward} className="p-2 text-white/70 hover:text-white transition-colors" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                    <SkipBack size={24} />
+                </motion.button>
+        
+                <motion.div
+                    onClick={togglePlayback}
+                    className="flex items-center justify-center w-14 h-14 bg-white text-black rounded-full cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] transition-shadow"
+                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                >
+                    {isBuffering ? (
+                        <div className="w-6 h-6 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                    ) : (
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-black ml-1">
+                        <motion.path
+                            d={isPlaying ? "M6 4h4v16H6V4zm8 0h4v16h-4V4z" : "M8 5v14l11-7z"}
+                            fill="currentColor"
+                            animate={{ d: isPlaying ? "M6 4h4v16H6V4zm8 0h4v16h-4V4z" : "M8 5v14l11-7z" }}
+                            transition={{ duration: 0.3, ease: "easeInOut" }}
+                        />
+                    </svg>
+                    )}
+                </motion.div>
+        
+                <motion.button onClick={skipForward} className="p-2 text-white/70 hover:text-white transition-colors" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                    <SkipForward size={24} />
+                </motion.button>
+        
+                <motion.button
+                    onClick={() => setIsRepeat(!isRepeat)}
+                    className={`p-2 transition-colors ${isRepeat ? 'text-pink-400 drop-shadow-[0_0_8px_rgba(244,114,182,0.8)]' : 'text-white/30 hover:text-white'}`}
+                    whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                >
+                    <Repeat size={18} />
+                </motion.button>
+            </div>
+        </div>
       </div>
 
+      {/* Bottom Section: Scrollable Grid (approx 55-60%) */}
+      <div className="flex-1 w-full bg-[#05010a] rounded-t-[2.5rem] shadow-[0_-20px_50px_rgba(0,0,0,0.8)] overflow-y-auto relative z-10 border-t border-white/5 pb-24">
+        
+        {/* Toggles Container */}
+        <div className="flex flex-wrap items-center justify-center gap-3 p-6 pb-2 border-b border-white/5">
+          <motion.button
+            onClick={() => setIs8DMode(!is8DMode)}
+            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${is8DMode ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.4)]' : 'bg-white/5 text-white/40 border border-white/10 hover:bg-white/10 hover:text-white'}`}
+            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+          >
+            <Headphones size={12} />
+            8D Audio {is8DMode ? 'ON' : 'OFF'}
+          </motion.button>
+  
+          {device === 'mobile' && (
+            <select 
+              value={theme}
+              onChange={(e) => setTheme(e.target.value)}
+              className="bg-white/5 border border-white/10 text-white/70 text-[10px] uppercase font-bold tracking-wider rounded-full px-4 py-1.5 outline-none hover:bg-white/10 transition-colors cursor-pointer text-center appearance-none"
+            >
+              <option value="neon" className="bg-neutral-900">Theme: Neon</option>
+              <option value="synthwave" className="bg-neutral-900">Theme: Synth</option>
+              <option value="matrix" className="bg-neutral-900">Theme: Matrix</option>
+              <option value="ocean" className="bg-neutral-900">Theme: Ocean</option>
+            </select>
+          )}
 
-      {/* Add Song Modal */}
+          {partyId && !isHost && (
+            <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full">
+                <span className="text-white/40 text-[9px] font-mono tracking-widest uppercase">Sync: {(syncOffset > 0 ? "+" : "") + (syncOffset * 1000).toFixed(0)}ms</span>
+                <input 
+                  type="range" min="-0.5" max="0.5" step="0.01" value={syncOffset}
+                  onChange={(e) => setSyncOffset(parseFloat(e.target.value))}
+                  className="w-16 h-1 bg-white/20 rounded-full appearance-none outline-none cursor-pointer" 
+                />
+            </div>
+          )}
+        </div>
+
+        {/* Library Grid */}
+        <div className="p-6 max-w-7xl mx-auto">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <h2 className="text-2xl font-bold text-white tracking-tight">Discover</h2>
+                
+                <div className="relative w-full sm:w-64">
+                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input 
+                        type="text"
+                        placeholder="Search songs..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full bg-[#111]/50 border border-white/10 rounded-full pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-white/30 focus:bg-white/5 transition-all"
+                    />
+                </div>
+            </div>
+
+            {error && (
+                <div className="p-4 mb-6 rounded-xl text-center text-sm text-red-400 bg-red-400/10 border border-red-400/20">
+                    {error}
+                </div>
+            )}
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+                {songs.filter((song) => song.title.toLowerCase().includes(searchQuery.toLowerCase()) || song.language?.toLowerCase().includes(searchQuery.toLowerCase())).map((song) => (
+                    <div 
+                        key={song.id} 
+                        onClick={() => playSong(song)}
+                        className="group relative bg-white/[0.02] rounded-2xl p-3 hover:bg-white/[0.06] transition-all cursor-pointer border border-white/5 hover:border-purple-500/30 shadow-lg hover:shadow-[0_0_20px_rgba(168,85,247,0.15)] flex flex-col"
+                    >
+                        <div className="w-full aspect-square rounded-xl bg-gradient-to-br from-purple-900/40 to-black/80 mb-3 flex items-center justify-center relative overflow-hidden">
+                            {/* We don't have album art natively stored yet, so use a placeholder icon */}
+                            <Headphones className="text-white/10 w-10 h-10 group-hover:scale-110 transition-transform duration-500" />
+                            
+                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                <div className="w-12 h-12 rounded-full bg-purple-500 flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.6)] transform scale-90 group-hover:scale-100 transition-transform duration-300">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-white ml-1">
+                                        <path d="M8 5v14l11-7z" fill="currentColor"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        <h3 className="font-bold text-white/90 text-sm truncate group-hover:text-white transition-colors">{song.title}</h3>
+                        <div className="flex justify-between items-center mt-1">
+                            <p className="text-white/40 text-xs truncate pr-2">{song.artist || 'Unknown Artist'}</p>
+                            {song.language && (
+                                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-white/10 text-white/60 shrink-0 font-medium tracking-wide uppercase">
+                                    {song.language}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {songs.length > 0 && songs.filter((song) => song.title.toLowerCase().includes(searchQuery.toLowerCase()) || song.language?.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                <div className="p-12 text-center flex flex-col items-center">
+                    <Database className="w-12 h-12 text-white/10 mb-4" />
+                    <div className="text-white/40 text-sm">No songs found matching "{searchQuery}"</div>
+                </div>
+            )}
+            
+            {songs.length === 0 && !error && (
+                <div className="p-12 text-center flex flex-col items-center">
+                    <Database className="w-12 h-12 text-white/10 mb-4" />
+                    <div className="text-white/30 text-base font-medium">Your library is empty</div>
+                    <div className="text-white/20 text-xs mt-2">Upload some tracks to get started.</div>
+                </div>
+            )}
+        </div>
+
+        {/* Footer */}
+        <div className="mt-8 mb-8 pb-12 flex flex-col items-center justify-center gap-6 opacity-60 hover:opacity-100 transition-opacity duration-300">
+            <div className="flex items-center gap-5">
+                <motion.a href="https://github.com/CodeWithBasu" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-white/50 hover:text-white transition-all">
+                    <Github size={18} />
+                </motion.a>
+                <motion.a href="https://www.linkedin.com/in/basudev-moharana/" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-blue-500/20 hover:border-blue-500/40 text-white/50 hover:text-blue-400 transition-all">
+                    <Linkedin size={18} />
+                </motion.a>
+                <motion.a href="https://basudev.vercel.app" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-green-500/20 hover:border-green-500/40 text-white/50 hover:text-green-400 transition-all">
+                    <Globe size={18} />
+                </motion.a>
+            </div>
+            <div className="text-[8px] text-white/10 tracking-[0.4em] uppercase text-center">
+                &copy; 2026 RhythmX // Designed by Basudev <br/>
+                <span className="opacity-50 mt-1 block">Beyond Visualization</span>
+            </div>
+        </div>
+      </div>
+
+      {/* Overlays (Unchanged) */}
       {isAddingSong && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
             className="bg-[#111] border border-white/10 p-8 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden"
           >
-                          {!user ? (
+            {!user ? (
                 <div className="text-center flex flex-col items-center">
                   <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mb-4">
                     <Database className="w-8 h-8 text-purple-400" />
@@ -1185,588 +1334,129 @@ export default function Component() {
               ) : (
                 <>
                   <h2 className="text-xl font-bold text-white mb-6">Add Song to Library</h2>
-                  <form 
-              onSubmit={async (e) => {
-                e.preventDefault()
-                
-                if (selectedFile) {
-                  setIsBuffering(true) // Loading State
-                  
-                  // 1. Get Audio Duration First (Local Analysis)
-                  const audio = new Audio()
-                  const blobUrl = URL.createObjectURL(selectedFile)
-                  audio.src = blobUrl
-                  
-                  audio.onloadedmetadata = async () => {
-                    const duration = Math.floor(audio.duration)
-                    URL.revokeObjectURL(blobUrl)
+                  <form onSubmit={async (e) => {
+                  e.preventDefault()
+                  if (selectedFile) {
+                    setIsBuffering(true)
+                    const audio = new Audio()
+                    const blobUrl = URL.createObjectURL(selectedFile)
+                    audio.src = blobUrl
+                    audio.onloadedmetadata = async () => {
+                      const dur = audio.duration
+                      const formData = new FormData()
+                      formData.append("file", selectedFile)
+                      formData.append("title", newSongMeta.title)
+                      formData.append("artist", newSongMeta.artist || "Unknown Artist")
+                      formData.append("language", newSongMeta.language)
+                      formData.append("duration", dur.toString())
+                      
+                      const token = await user?.getIdToken(true);
+                      
+                      const xhr = new XMLHttpRequest();
+                      xhr.open('POST', `${API_BASE}/api/songs`, true);
+                      xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+                      
+                      xhr.upload.onprogress = (e) => {
+                        if (e.lengthComputable) {
+                          setUploadProgress(Math.round((e.loaded / e.total) * 100));
+                        }
+                      };
+                      
+                      xhr.onload = async () => {
+                        setIsBuffering(false)
+                        setUploadProgress(0)
+                        if (xhr.status === 200) {
+                          const resData = JSON.parse(xhr.responseText);
+                          setSongs([...songs, resData])
+                          setIsAddingSong(false)
+                          setSelectedFile(null)
+                          setNewSongMeta({ title: "", artist: "", url: "", language: "English" })
+                        } else {
+                          setError("Failed to upload song. Missing auth or server error.")
+                        }
+                      };
+                      xhr.send(formData);
+                    }
+                  }
+                }}>
+                  <div className="flex flex-col gap-4">
+                    <input 
+                      type="file" 
+                      accept="audio/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) {
+                          setSelectedFile(file)
+                          setNewSongMeta({ ...newSongMeta, title: file.name.replace(/\.[^/.]+$/, "") })
+                        }
+                      }}
+                      className="text-sm text-white/60 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-500/20 file:text-purple-400 hover:file:bg-purple-500/30"
+                    />
+                    <input 
+                      type="text" 
+                      placeholder="Song Title" 
+                      value={newSongMeta.title}
+                      onChange={(e) => setNewSongMeta({...newSongMeta, title: e.target.value})}
+                      className="w-full bg-[#222] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-500/50"
+                      required
+                    />
+                    <input 
+                      type="text" 
+                      placeholder="Artist (Optional)" 
+                      value={newSongMeta.artist || ''}
+                      onChange={(e) => setNewSongMeta({...newSongMeta, artist: e.target.value})}
+                      className="w-full bg-[#222] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-500/50"
+                    />
+                    <select
+                      value={newSongMeta.language}
+                      onChange={(e) => setNewSongMeta({...newSongMeta, language: e.target.value})}
+                      className="w-full bg-[#222] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-500/50"
+                    >
+                      <option value="English">English</option>
+                      <option value="Hindi">Hindi</option>
+                      <option value="Spanish">Spanish</option>
+                      <option value="Korean">Korean</option>
+                      <option value="Instrumental">Instrumental</option>
+                    </select>
                     
-                    try {
-                      // 2. Prepare Cloudinary Upload (XHR for Progress tracking)
-                      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dlmpk5juu'; 
-                      const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'rhythmx_unsigned'; 
-                      
-                      const formData = new FormData();
-                      formData.append('file', selectedFile);
-                      formData.append('upload_preset', uploadPreset);
-                      
-                      setUploadProgress(0);
-                      
-                      await new Promise((resolve, reject) => {
-                        const xhr = new XMLHttpRequest();
-                        xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`);
-                        
-                        xhr.upload.onprogress = (event) => {
-                          if (event.lengthComputable) {
-                            const progress = Math.round((event.loaded / event.total) * 95); // Map to 0-95% (save last 5 for database)
-                            setUploadProgress(progress);
-                          }
-                        };
-                        
-                        xhr.onload = async () => {
-                          const res = JSON.parse(xhr.responseText);
-                          if (xhr.status >= 200 && xhr.status < 300) {
-                            const uploadedUrl = res.secure_url;
-                            setUploadProgress(96);
-                            
-                            // 3. Save the permanent Cloud URL to your MongoDB
-                            const songData = {
-                              ...newSongMeta,
-                              url: uploadedUrl,
-                              duration: duration
-                            }
-                            
-                            const token = await user?.getIdToken(true);
-                            const dbRes = await fetch(`${API_BASE}/api/songs`, {
-                              method: 'POST',
-                              headers: { 
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${token}`
-                              },
-                              body: JSON.stringify(songData),
-                            });
-                            
-                            if (dbRes.ok) {
-                              setUploadProgress(100);
-                              resolve(null);
-                            } else {
-                              const data = await dbRes.json();
-                              reject(new Error(`Database Error: ${data.error || 'Failed to save metadata.'}`));
-                            }
-                          } else {
-                            reject(new Error(res.error?.message || 'Cloudinary upload failed'));
-                          }
-                        };
-                        
-                        xhr.onerror = () => reject(new Error('Network error during upload.'));
-                        xhr.send(formData);
-                      });
-
-                      setIsBuffering(false)
-                      setUploadProgress(0)
-                      setIsAddingSong(false)
-                      setSelectedFile(null)
-                      setNewSongMeta({ title: '', url: '', language: 'English' })
-                      fetchSongs()
-                    } catch (err: any) {
-                      setIsBuffering(false)
-                      setUploadProgress(0)
-                      alert(`Upload Error: ${err.message || 'Check your Cloudinary settings.'}`)
-                      console.error('Upload Error:', err);
-                    }
-                  }
-                  
-                  audio.onerror = () => {
-                    setIsBuffering(false)
-                    alert("Failed to analyze audio file. The file might be corrupted.")
-                  }
-                } else {
-                  // Direct URL logic (already bypasses 4.5MB limit)
-                  try {
-                    const token = await user?.getIdToken(true);
-                    const response = await fetch(`${API_BASE}/api/songs`, {
-                      method: 'POST',
-                      headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                      },
-                      body: JSON.stringify(newSongMeta),
-                    })
-                    if (response.ok) {
-                      setIsAddingSong(false)
-                      fetchSongs()
-                    } else {
-                      const data = await response.json()
-                      alert(`Error: ${data.error || 'Failed to save song.'}`)
-                    }
-                  } catch (err) {
-                    alert("Network error: Could not connect to the server.")
-                  }
-                }
-              }} 
-              className="space-y-4"
-              onDragEnter={handleDrag}
-            >
-              <div 
-                className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
-                  dragActive ? "border-white bg-white/5" : "border-white/10 bg-white/0"
-                } ${selectedFile ? "border-green-500/50 bg-green-500/5" : ""}`}
-                onDragOver={handleDrag}
-                onDragLeave={handleDrag}
-                onDrop={handleDrop}
-              >
-                {selectedFile ? (
-                  <div className="space-y-2">
-                    <div className="text-green-500 font-medium">✓ {selectedFile.name}</div>
-                    <button type="button" onClick={() => setSelectedFile(null)} className="text-xs text-white/40 hover:text-white underline">Change File</button>
+                    <div className="flex gap-4">
+                      <button 
+                        type="button" 
+                        onClick={() => {
+                          setIsAddingSong(false)
+                          setSelectedFile(null)
+                          setNewSongMeta({ title: "", artist: "", url: "", language: "English" })
+                        }}
+                        className="flex-1 py-3 px-4 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors text-sm font-medium"
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        type="submit"
+                        disabled={!selectedFile || isBuffering || uploadProgress > 0}
+                        className="flex-1 py-3 px-4 bg-[#C084FC] hover:bg-[#A855F7] text-white rounded-lg transition-colors text-sm font-medium shadow-[0_0_15px_rgba(192,132,252,0.3)] disabled:opacity-50"
+                      >
+                        {uploadProgress > 0 ? `Uploading (${uploadProgress}%)...` : isBuffering ? "Processing..." : "Add to Library"}
+                      </button>
+                    </div>
                   </div>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="text-white/60">Drag and drop an MP3 here</div>
-                    <div className="text-xs text-white/30 uppercase tracking-widest">or</div>
-                    <label className="text-sm border border-white/20 px-3 py-1 rounded hover:bg-white/5 text-white/80 transition-colors cursor-pointer inline-block">
-                      Select File
-                      <input 
-                        type="file" 
-                        accept="audio/*" 
-                        className="hidden" 
-                        onChange={(e) => {
-                          const file = e.target.files?.[0]
-                          if (file && file.type.startsWith('audio/')) {
-                            setSelectedFile(file)
-                            setNewSongMeta({
-                              ...newSongMeta,
-                              title: file.name.replace(/\.[^/.]+$/, "")
-                            })
-                          }
-                          // Reset input value so the same file can be selected again if needed
-                          e.target.value = ''
-                        }} 
-                      />
-                    </label>
-                  </div>
-                )}
-              </div>
-
-              {dragActive && (
-                <div 
-                  className="fixed inset-0 z-10" 
-                  onDragEnter={handleDrag} 
-                  onDragLeave={handleDrag} 
-                  onDragOver={handleDrag} 
-                  onDrop={handleDrop}
-                />
-              )}
-
-              <div>
-                <label className="block text-xs text-white/40 mb-2 uppercase tracking-widest">Song Title</label>
-                <input 
-                  required
-                  type="text" 
-                  value={newSongMeta.title}
-                  onChange={(e) => setNewSongMeta({...newSongMeta, title: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-white/30"
-                  placeholder="e.g. Starboy (The Weeknd)"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs text-white/40 mb-2 uppercase tracking-widest">Language / Genre</label>
-                <select
-                  value={newSongMeta.language}
-                  onChange={(e) => setNewSongMeta({...newSongMeta, language: e.target.value})}
-                  className="w-full bg-[#111] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-white/30 appearance-none"
-                  style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center', backgroundSize: '1.2em' }}
-                >
-                  <option value="English">English</option>
-                  <option value="Hindi">Hindi</option>
-                  <option value="Odia">Odia</option>
-                  <option value="Punjabi">Punjabi</option>
-                  <option value="Instrumental">Instrumental</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              {!selectedFile && (
-                <div>
-                  <label className="block text-xs text-white/40 mb-2 uppercase tracking-widest">Or Use Direct MP3 URL</label>
-                  <input 
-                    type="url" 
-                    value={newSongMeta.url}
-                    onChange={(e) => setNewSongMeta({...newSongMeta, url: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-white/30"
-                    placeholder="https://example.com/song.mp3"
-                  />
-                </div>
-              )}
-
-              <div className="flex gap-4 mt-8">
-                <button 
-                  type="button"
-                  onClick={() => setIsAddingSong(false)}
-                  className="flex-1 py-3 text-white/40 hover:text-white transition-colors"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit"
-                  disabled={!newSongMeta.title || (!newSongMeta.url && !selectedFile) || isBuffering}
-                  className="flex-1 py-3 bg-white text-black font-bold rounded-lg hover:bg-white/90 disabled:opacity-50 transition-colors"
-                >
-                  {isBuffering ? (uploadProgress > 0 ? `Uploading (${uploadProgress}%)...` : "Processing...") : "Save to Library"}
-                </button>
-              </div>
-                          </form>
+                </form>
               </>
             )}
-            </motion.div>
-          </div>
-        )}
-
-      {/* Debug info */}
-      <div className="absolute top-8 left-8 text-white/40 text-xs">
-        <div>Audio: {hasAudio ? "✓" : "✗"}</div>
-        <div>Initialized: {isInitialized ? "✓" : "✗"}</div>
-        <div>Playing: {isPlaying ? "✓" : "✗"}</div>
-        <div>Loop: {isLooping ? "✓" : "✗"}</div>
-        <div>{isBuffering ? "BUFF..." : ""}</div>
-      </div>
-
-      {/* Audio Visualizer - EFECTO OLA */}
-      <div className="flex items-end justify-center gap-[1px] sm:gap-[2px] md:gap-1 mb-6 sm:mb-8 md:mb-12 w-full max-w-6xl px-2 sm:px-4 overflow-hidden h-32 sm:h-48 md:h-60 lg:h-72">
-        {audioData.slice(0, activeBars).map((height, index) => {
-          const colors = getBarColors(index, activeBars, height, isPlaying, theme);
-          return (
-            <motion.div
-              key={index}
-              className="rounded-t-sm flex-1 max-w-[4px] sm:max-w-[5px] md:max-w-[6px] lg:max-w-[8px]"
-              style={{
-                backgroundColor: colors.bg,
-                opacity: height > 0 ? 1 : 0,
-                boxShadow: isPlaying ? `0 0 ${Math.floor(height * 6)}px ${colors.glow}` : 'none'
-              }}
-              initial={{ scaleX: 0 }}
-              animate={{
-                height: `${height * 100}%`,
-                opacity: height > 0 ? 1 : 0,
-                scaleX: showInitialAnimation ? 1 : 1,
-              }}
-              transition={{
-                height: {
-                  type: "spring",
-                  stiffness: height > 0 ? 400 : 200,
-                  damping: height > 0 ? 25 : 35,
-                  mass: 0.2,
-                },
-                opacity: {
-                  duration: height > 0 ? 0.1 : 0.8,
-                  ease: "easeOut",
-                },
-                scaleX: {
-                  duration: 2,
-                  delay: Math.abs(index - 40) * 0.015,
-                  ease: "easeOut",
-                },
-              }}
-            />
-          );
-        })}
-      </div>
-
-      {/* Controls */}
-      <div className="flex items-center gap-4 sm:gap-6 text-white mt-4 sm:mt-6">
-        <motion.button
-          onClick={() => setIsShuffle(!isShuffle)}
-          className={`p-2 transition-colors ${isShuffle ? 'text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]' : 'text-white/30 hover:text-white'}`}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <Shuffle size={18} />
-        </motion.button>
-
-        <motion.button
-          onClick={skipBackward}
-          className="p-2 text-white/50 hover:text-white transition-colors"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <SkipBack size={24} />
-        </motion.button>
-
-        <motion.div
-          onClick={togglePlayback}
-          className="flex items-center justify-center w-16 h-16 bg-white text-black rounded-full cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] transition-shadow"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          {isBuffering ? (
-              <div className="w-8 h-8 border-2 border-black/20 border-t-black rounded-full animate-spin" />
-          ) : (
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-black ml-1">
-                <motion.path
-                d={isPlaying ? "M6 4h4v16H6V4zm8 0h4v16h-4V4z" : "M8 5v14l11-7z"}
-                fill="currentColor"
-                animate={{
-                    d: isPlaying ? "M6 4h4v16H6V4zm8 0h4v16h-4V4z" : "M8 5v14l11-7z",
-                }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-                />
-            </svg>
-          )}
-        </motion.div>
-
-        <motion.button
-          onClick={skipForward}
-          className="p-2 text-white/50 hover:text-white transition-colors"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <SkipForward size={24} />
-        </motion.button>
-
-        <motion.button
-          onClick={() => setIsRepeat(!isRepeat)}
-          className={`p-2 transition-colors ${isRepeat ? 'text-pink-400 drop-shadow-[0_0_8px_rgba(244,114,182,0.8)]' : 'text-white/30 hover:text-white'}`}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <Repeat size={18} />
-        </motion.button>
-      </div>
-
-      <div className="flex flex-col items-center gap-3 mt-6">
-        <motion.button
-          onClick={() => setIs8DMode(!is8DMode)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${is8DMode ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.4)]' : 'bg-white/5 text-white/40 border border-white/10 hover:bg-white/10 hover:text-white'}`}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <Headphones size={14} />
-          8D Audio {is8DMode ? 'ON' : 'OFF'}
-        </motion.button>
-
-        {device === 'mobile' && (
-          <select 
-            value={theme}
-            onChange={(e) => setTheme(e.target.value)}
-            className="bg-white/5 border border-white/10 text-white/70 text-xs rounded-full px-4 py-2 outline-none hover:bg-white/10 transition-colors cursor-pointer text-center appearance-none"
-          >
-            <option value="neon" className="bg-neutral-900">Theme: Neon Pulse</option>
-            <option value="synthwave" className="bg-neutral-900">Theme: Synthwave</option>
-            <option value="matrix" className="bg-neutral-900">Theme: Cyber Matrix</option>
-            <option value="ocean" className="bg-neutral-900">Theme: Deep Ocean</option>
-          </select>
-        )}
-      </div>
-
-      {/* Dynamic Synced Lyrics Display */}
-      <AnimatePresence mode="wait">
-        {lyrics.length > 0 && currentLyricIndex !== -1 && (
-          <motion.div
-            key={`lyric-${currentLyricIndex}`}
-            initial={{ opacity: 0, scale: 0.95, filter: "blur(8px)" }}
-            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, scale: 1.05, filter: "blur(8px)" }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
-            className="text-center px-6 mt-8 mb-2 max-w-2xl min-h-[60px] flex items-center justify-center"
-          >
-            <span className="text-xl sm:text-3xl font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.4)] bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70 leading-tight">
-              {lyrics[currentLyricIndex].text}
-            </span>
           </motion.div>
-        )}
-      </AnimatePresence>
-
-        <motion.div
-          className="flex items-center gap-4 mt-4 sm:mt-6"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          {albumArtUrl && (
-            <img 
-              src={albumArtUrl} 
-              alt="Album Art" 
-              className="w-10 h-10 sm:w-12 sm:h-12 rounded-md shadow-[0_0_15px_rgba(255,255,255,0.1)] object-cover" 
-            />
-          )}
-          <div className="text-xl sm:text-2xl font-light tracking-wider">
-            {currentTrack}
-          </div>
-        </motion.div>
-
-      {/* Seek Bar */}
-      <div className="w-full max-w-2xl mt-12 mb-4">
-        <div className="flex justify-between w-full px-2 text-xs font-medium text-white/40 mb-2">
-          <span>{Math.floor(currentTime / 60)}:{(Math.floor(currentTime % 60)).toString().padStart(2, '0')}</span>
-          <span>{Math.floor(duration / 60)}:{(Math.floor(duration % 60)).toString().padStart(2, '0')}</span>
         </div>
-        <ElasticSlider
-          value={currentTime}
-          maxValue={duration || 100}
-          startingValue={0}
-          onChange={(val: number) => setCurrentTime(val)}
-          onDragEnd={(val: number) => {
-            if (audioRef.current) audioRef.current.currentTime = val
-          }}
-          leftIcon={null}
-          rightIcon={null}
-          className="w-full"
-          theme={theme}
-        />
+      )}
 
-        {/* Manual Sync Offset Calibration for Guests */}
-        {partyId && !isHost && (
-          <div className="flex flex-col items-center gap-1 sm:gap-2 mt-4 sm:mt-6 max-w-xs mx-auto opacity-60 hover:opacity-100 transition-opacity">
-              <span className="text-white/40 text-[10px] font-mono tracking-widest uppercase">Sync Adjustment: {(syncOffset > 0 ? "+" : "") + (syncOffset * 1000).toFixed(0)} ms</span>
-              <input 
-                type="range" 
-                min="-0.5" 
-                max="0.5" 
-                step="0.01" 
-                value={syncOffset}
-                onChange={(e) => setSyncOffset(parseFloat(e.target.value))}
-                className="w-full h-1 bg-white/10 rounded-full appearance-none outline-none cursor-pointer" 
-              />
-              <span className="text-white/30 text-[8px]">Slide to fix echo/hardware lag</span>
-          </div>
-        )}
-      </div>
-
-      {/* Playlist */}
-      <div className="mt-8 w-full max-w-2xl bg-white/5 rounded-xl border border-white/10 overflow-hidden flex flex-col">
-        <div className="p-4 border-b border-white/10 bg-white/5 font-semibold text-white/80 flex flex-col gap-3">
-          <div className="flex justify-between items-center">
-            <span>Playlist</span>
-            <span className="text-[10px] text-white/20 uppercase tracking-[2px]">On-Demand Cloud Library</span>
-          </div>
-          <div className="relative">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search by song name or language..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#111]/50 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:outline-none focus:border-white/30 transition-colors"
-            />
-          </div>
-        </div>
-        <div className="divide-y divide-white/5 max-h-60 overflow-y-auto">
-          {songs.filter((song) => song.title.toLowerCase().includes(searchQuery.toLowerCase()) || song.language?.toLowerCase().includes(searchQuery.toLowerCase())).map((song) => (
-            <div 
-              key={song.id} 
-              onClick={() => playSong(song)}
-              className="p-3 text-white/60 hover:text-white hover:bg-white/10 cursor-pointer transition-colors group flex justify-between items-center"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-white/10 group-hover:bg-white transition-colors" />
-                <div>
-                    <span className="font-medium mr-2">{song.title}</span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/5 border border-white/10">{song.language}</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="text-xs opacity-50">
-                    {Math.floor(song.duration / 60)}:{(Math.floor(song.duration % 60)).toString().padStart(2, '0')}
-                </div>
-              </div>
-            </div>
-          ))}
-          {songs.length > 0 && songs.filter((song) => song.title.toLowerCase().includes(searchQuery.toLowerCase()) || song.language?.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
-            <div className="p-6 text-center">
-                <div className="text-white/40 text-sm">No songs found matching "{searchQuery}"</div>
-            </div>
-          )}
-          {songs.length === 0 && !error && (
-            <div className="p-6 text-center">
-                <div className="text-white/20 text-sm italic">Library is empty.</div>
-                <div className="text-white/10 text-[10px] mt-1">Add music using the buttons above.</div>
-            </div>
-          )}
-          {error && (
-            <div className="p-4 text-center text-sm text-red-400 bg-red-400/10">
-              {error}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="mt-16 mb-8 flex flex-col items-center justify-center gap-6 opacity-60 hover:opacity-100 transition-opacity duration-300">
-        {/* Social Links */}
-        <div className="flex items-center gap-5">
-          <motion.a 
-            href="https://github.com/CodeWithBasu" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-white/50 hover:text-white transition-all shadow-[0_0_10px_rgba(255,255,255,0.02)]"
-            whileHover={{ scale: 1.1, y: -2 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <Github size={18} />
-          </motion.a>
-          <motion.a 
-            href="https://www.linkedin.com/in/basudev-moharana/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-blue-500/20 hover:border-blue-500/40 text-white/50 hover:text-blue-400 transition-all shadow-[0_0_10px_rgba(59,130,246,0.05)]"
-            whileHover={{ scale: 1.1, y: -2 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <Linkedin size={18} />
-          </motion.a>
-          <motion.a 
-            href="https://basudev.vercel.app" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-green-500/20 hover:border-green-500/40 text-white/50 hover:text-green-400 transition-all shadow-[0_0_10px_rgba(34,197,94,0.05)]"
-            whileHover={{ scale: 1.1, y: -2 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <Globe size={18} />
-          </motion.a>
-        </div>
-
-        <div className="flex items-center gap-6 text-[10px] sm:text-xs text-white/50 tracking-[0.2em] font-light uppercase">
-          <span className="flex items-center gap-1">
-            <span className="w-1 h-1 rounded-full bg-green-500 animate-pulse" />
-            V0.1 Alpha
-          </span>
-          <span className="text-white/20">|</span>
-          <Link href="/privacy" className="hover:text-green-500 transition-colors">
-            Privacy Policy
-          </Link>
-          <span className="text-white/20">|</span>
-          <span className="flex items-center gap-1">
-            Powered by Cloudinary & MongoDB
-          </span>
-        </div>
-        <div className="text-[8px] text-white/10 tracking-[0.4em] uppercase text-center">
-          &copy; 2026 RhythmX // Designed by Basudev <br/>
-          <span className="opacity-50 mt-1 block">Beyond Visualization</span>
-        </div>
-      </div>
-
-      {/* Join Party Overlay */}
       {partyId && !isHost && !hasJoinedMobile && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md px-4">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center text-center max-w-sm"
-          >
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center text-center max-w-sm">
             <div className="w-20 h-20 mb-6 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
               <Users className="w-10 h-10 text-blue-400" />
             </div>
             <h2 className="text-2xl font-bold text-white mb-2">You've been invited!</h2>
             <p className="text-white/60 mb-8 text-sm">Join the live listening session to synchronize playback.</p>
             <button 
-              onClick={async () => {
-                await initializeAudioContext();
-                setHasJoinedMobile(true);
-              }}
+              onClick={async () => { await initializeAudioContext(); setHasJoinedMobile(true); }}
               className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-full transition-all duration-300 hover:scale-105 shadow-[0_0_30px_rgba(37,99,235,0.3)]"
             >
               Join Party
@@ -1775,7 +1465,6 @@ export default function Component() {
         </div>
       )}
 
-      {/* Floating Reactions Render Layer */}
       <div className="pointer-events-none fixed inset-0 z-[100] overflow-hidden">
         <AnimatePresence>
           {reactions.map((r) => (
@@ -1783,8 +1472,7 @@ export default function Component() {
               key={r.id}
               initial={{ y: "100vh", opacity: 0, scale: 0.5, x: `${r.x}vw` }}
               animate={{ y: "-10vh", opacity: [0, 1, 1, 0], scale: 1.5 + Math.random(), rotate: Math.random() * 60 - 30 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 2.5, ease: "easeOut" }}
+              exit={{ opacity: 0 }} transition={{ duration: 2.5, ease: "easeOut" }}
               className="absolute text-5xl drop-shadow-2xl"
             >
               {r.emoji}
@@ -1793,14 +1481,12 @@ export default function Component() {
         </AnimatePresence>
       </div>
 
-      {/* Social Emoji Reaction Buttons */}
       {partyId && (hasJoinedMobile || isHost) && (
         <div className="fixed right-4 sm:right-8 bottom-24 sm:bottom-1/2 sm:translate-y-1/2 z-50 flex flex-col gap-3">
-          {["🔥", "❤️", "🎉", "🕺"].map((emoji) => (
+          {["🔥", "💖", "🎉", "👀"].map((emoji) => (
             <button
-              key={emoji}
-              onClick={() => handleSendReaction(emoji)}
-              className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-2xl transition-transform hover:scale-110 active:scale-95 shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+              key={emoji} onClick={() => handleSendReaction(emoji)}
+              className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-2xl transition-transform hover:scale-110 active:scale-95 shadow-[0_0_15px_rgba(255,255,255,0.1)]"
             >
               {emoji}
             </button>
@@ -1810,13 +1496,5 @@ export default function Component() {
     </div>
   )
 }
-
-
-
-
-
-
-
-
 
 
