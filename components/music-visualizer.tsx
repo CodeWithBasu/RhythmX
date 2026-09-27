@@ -75,7 +75,7 @@ export default function Component() {
   const [isBuffering, setIsBuffering] = useState(false)
   const [syncOffset, setSyncOffset] = useState(0)
   const [dragActive, setDragActive] = useState(false)
-  const [newSongMeta, setNewSongMeta] = useState({ title: '', artist: '', url: '', language: 'English' })
+  const [newSongMeta, setNewSongMeta] = useState({ title: '', artist: '', url: '', imageUrl: '', language: 'English' })
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [searchQuery, setSearchQuery] = useState("")
@@ -787,6 +787,7 @@ export default function Component() {
 
   const playSong = async (song: any) => {
     setCurrentSongObj(song);
+    setAlbumArtUrl(song.imageUrl || null);
     if (audioRef.current) {
       let songUrl = song.url
       if (!songUrl) {
@@ -1252,8 +1253,11 @@ export default function Component() {
                         className="group relative bg-white/[0.02] rounded-2xl p-3 hover:bg-white/[0.06] transition-all cursor-pointer border border-white/5 hover:border-purple-500/30 shadow-lg hover:shadow-[0_0_20px_rgba(168,85,247,0.15)] flex flex-col"
                     >
                         <div className="w-full aspect-square rounded-xl bg-gradient-to-br from-purple-900/40 to-black/80 mb-3 flex items-center justify-center relative overflow-hidden">
-                            {/* We don't have album art natively stored yet, so use a placeholder icon */}
-                            <Headphones className="text-white/10 w-10 h-10 group-hover:scale-110 transition-transform duration-500" />
+                            {song.imageUrl ? (
+                                <img src={song.imageUrl} alt={song.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                            ) : (
+                                <Headphones className="text-white/10 w-10 h-10 group-hover:scale-110 transition-transform duration-500" />
+                            )}
                             
                             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                                 <div className="w-12 h-12 rounded-full bg-purple-500 flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.6)] transform scale-90 group-hover:scale-100 transition-transform duration-300">
@@ -1337,49 +1341,119 @@ export default function Component() {
                   <form onSubmit={async (e) => {
                   e.preventDefault()
                   if (selectedFile) {
-                    setIsBuffering(true)
+                    setIsBuffering(true) // Loading State
+                    
                     const audio = new Audio()
                     const blobUrl = URL.createObjectURL(selectedFile)
                     audio.src = blobUrl
+                    
                     audio.onloadedmetadata = async () => {
-                      const dur = audio.duration
-                      const formData = new FormData()
-                      formData.append("file", selectedFile)
-                      formData.append("title", newSongMeta.title)
-                      formData.append("artist", newSongMeta.artist || "Unknown Artist")
-                      formData.append("language", newSongMeta.language)
-                      formData.append("duration", dur.toString())
+                      const duration = Math.floor(audio.duration)
+                      URL.revokeObjectURL(blobUrl)
                       
-                      const token = await user?.getIdToken(true);
-                      
-                      const xhr = new XMLHttpRequest();
-                      xhr.open('POST', `${API_BASE}/api/songs`, true);
-                      xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-                      
-                      xhr.upload.onprogress = (e) => {
-                        if (e.lengthComputable) {
-                          setUploadProgress(Math.round((e.loaded / e.total) * 100));
+                      try {
+                        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dlmpk5juu'; 
+                        const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'rhythmx_unsigned'; 
+                        
+                        setUploadProgress(10);
+                        
+                        // 1. Upload Cover Image (if exists)
+                        let uploadedImageUrl = null;
+                        if (newSongMeta.imageUrl && newSongMeta.imageUrl.startsWith('data:image')) {
+                           const imgFormData = new FormData();
+                           imgFormData.append('file', newSongMeta.imageUrl);
+                           imgFormData.append('upload_preset', uploadPreset);
+                           const imgRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                             method: 'POST',
+                             body: imgFormData
+                           });
+                           if (imgRes.ok) {
+                             const imgData = await imgRes.json();
+                             uploadedImageUrl = imgData.secure_url;
+                           }
                         }
-                      };
-                      
-                      xhr.onload = async () => {
-                        setIsBuffering(false)
-                        setUploadProgress(0)
-                        if (xhr.status === 200) {
-                          const resData = JSON.parse(xhr.responseText);
-                          setSongs([...songs, resData])
-                          setIsAddingSong(false)
-                          setSelectedFile(null)
-                          setNewSongMeta({ title: "", artist: "", url: "", language: "English" })
-                        } else {
-                          setError("Failed to upload song. Missing auth or server error.")
-                        }
-                      };
-                      xhr.send(formData);
+
+                        // 2. Upload Audio File (with progress)
+                        const formData = new FormData();
+                        formData.append('file', selectedFile);
+                        formData.append('upload_preset', uploadPreset);
+                        
+                        await new Promise((resolve, reject) => {
+                          const xhr = new XMLHttpRequest();
+                          xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`);
+                          
+                          xhr.upload.onprogress = (event) => {
+                            if (event.lengthComputable) {
+                              const progress = 10 + Math.round((event.loaded / event.total) * 85); // 10-95%
+                              setUploadProgress(progress);
+                            }
+                          };
+                          
+                          xhr.onload = async () => {
+                            if (xhr.status >= 200 && xhr.status < 300) {
+                              const res = JSON.parse(xhr.responseText);
+                              const uploadedUrl = res.secure_url;
+                              setUploadProgress(96);
+                              
+                              // 3. Save to MongoDB
+                              const songData = {
+                                title: newSongMeta.title,
+                                artist: newSongMeta.artist || "Unknown Artist",
+                                language: newSongMeta.language,
+                                url: uploadedUrl,
+                                imageUrl: uploadedImageUrl || null,
+                                duration: duration
+                              };
+                              
+                              const token = await user?.getIdToken(true);
+                              const dbRes = await fetch(`${API_BASE}/api/songs`, {
+                                method: 'POST',
+                                headers: { 
+                                  'Content-Type': 'application/json',
+                                  'Authorization': `Bearer ${token}`
+                                },
+                                body: JSON.stringify(songData),
+                              });
+                              
+                              if (dbRes.ok) {
+                                const dbData = await dbRes.json();
+                                setSongs([...songs, dbData.song]);
+                                resolve(null);
+                              } else {
+                                reject(new Error('Failed to save to database'));
+                              }
+                            } else {
+                              reject(new Error('Cloudinary upload failed'));
+                            }
+                          };
+                          
+                          xhr.onerror = () => reject(new Error('Network error'));
+                          xhr.send(formData);
+                        });
+
+                        setIsBuffering(false);
+                        setUploadProgress(0);
+                        setIsAddingSong(false);
+                        setSelectedFile(null);
+                        setNewSongMeta({ title: "", artist: "", url: "", imageUrl: "", language: "English" });
+                      } catch (err) {
+                        setIsBuffering(false);
+                        setUploadProgress(0);
+                        setError("Failed to upload song. Check console.");
+                        console.error(err);
+                      }
                     }
                   }
                 }}>
                   <div className="flex flex-col gap-4">
+                    
+                    {/* Cover Art Preview */}
+                    {newSongMeta.imageUrl && (
+                      <div className="flex justify-center mb-2">
+                        <img src={newSongMeta.imageUrl} alt="Cover Preview" className="w-24 h-24 rounded-lg object-cover shadow-lg border border-white/10" />
+                      </div>
+                    )}
+
                     <input 
                       type="file" 
                       accept="audio/*"
@@ -1387,7 +1461,28 @@ export default function Component() {
                         const file = e.target.files?.[0]
                         if (file) {
                           setSelectedFile(file)
-                          setNewSongMeta({ ...newSongMeta, title: file.name.replace(/\.[^/.]+$/, "") })
+                          setNewSongMeta({ ...newSongMeta, title: file.name.replace(/.[^/.]+$/, "") })
+                          
+                          // Dynamically import jsmediatags and Extract ID3 Tags (Cover Art)
+                          import('jsmediatags').then((jsmediatags) => {
+                            jsmediatags.read(file, {
+                              onSuccess: function(tag) {
+                                const picture = tag.tags.picture;
+                                if (picture) {
+                                  let base64String = "";
+                                  for (let i = 0; i < picture.data.length; i++) {
+                                      base64String += String.fromCharCode(picture.data[i]);
+                                  }
+                                  const base64 = btoa(base64String);
+                                  const imageUrl = `data:${picture.format};base64,${base64}`;
+                                  setNewSongMeta(prev => ({ ...prev, imageUrl, artist: tag.tags.artist || prev.artist, title: tag.tags.title || prev.title }));
+                                }
+                              },
+                              onError: function(error) {
+                                console.log("No ID3 tags found.", error);
+                              }
+                            });
+                          }).catch(err => console.log('Failed to load jsmediatags', err));
                         }
                       }}
                       className="text-sm text-white/60 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-500/20 file:text-purple-400 hover:file:bg-purple-500/30"
@@ -1425,7 +1520,7 @@ export default function Component() {
                         onClick={() => {
                           setIsAddingSong(false)
                           setSelectedFile(null)
-                          setNewSongMeta({ title: "", artist: "", url: "", language: "English" })
+                          setNewSongMeta({ title: "", artist: "", url: "", imageUrl: "", language: "English" })
                         }}
                         className="flex-1 py-3 px-4 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors text-sm font-medium"
                       >
@@ -1496,5 +1591,7 @@ export default function Component() {
     </div>
   )
 }
+
+
 
 

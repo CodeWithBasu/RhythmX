@@ -46,7 +46,7 @@ export async function POST(request: Request) {
 
     // 2. Process the valid request
     const body = await request.json()
-    const { title, url, language, duration } = body
+    const { title, url, language, duration, imageUrl } = body
 
     if (!title || !url) {
       return new NextResponse(JSON.stringify({ error: 'Title and URL are required' }), { status: 400 })
@@ -58,6 +58,7 @@ export async function POST(request: Request) {
     const newSong = {
       title,
       url,
+      imageUrl: imageUrl || null,
       language: language || 'Unknown',
       duration: duration || 0,
       createdAt: new Date(),
