@@ -1283,11 +1283,7 @@ export default function Component() {
                         className="group relative bg-white/[0.02] rounded-2xl p-3 hover:bg-white/[0.06] transition-all cursor-pointer border border-white/5 hover:border-purple-500/30 shadow-lg hover:shadow-[0_0_20px_rgba(168,85,247,0.15)] flex flex-col"
                     >
                         <div className="w-full aspect-square rounded-xl bg-gradient-to-br from-purple-900/40 to-black/80 mb-3 flex items-center justify-center relative overflow-hidden">
-                            {song.imageUrl ? (
-                                <img src={song.imageUrl} alt={song.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                            ) : (
-                                <Headphones className="text-white/10 w-10 h-10 group-hover:scale-110 transition-transform duration-500" />
-                            )}
+                            <GridAlbumArt song={song} />
                             
                             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                                 <div className="w-12 h-12 rounded-full bg-purple-500 flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.6)] transform scale-90 group-hover:scale-100 transition-transform duration-300">
