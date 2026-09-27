@@ -47,6 +47,36 @@ const getBarColors = (index: number, total: number, height: number, isPlaying: b
   };
 };
 
+
+const GridAlbumArt = ({ song }: { song: any }) => {
+  const [imgUrl, setImgUrl] = React.useState<string | null>(song.imageUrl || null)
+
+  React.useEffect(() => {
+    if (song.imageUrl) return;
+
+    let isMounted = true;
+    const fetchArt = async () => {
+      try {
+        const cleanTitle = song.title.replace('~/', '').trim();
+        const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(cleanTitle)}&entity=song&limit=1`);
+        const data = await res.json();
+        if (isMounted && data.results && data.results.length > 0) {
+           setImgUrl(data.results[0].artworkUrl100.replace('100x100', '300x300'));
+        }
+      } catch (e) {
+      }
+    };
+    fetchArt();
+    return () => { isMounted = false; };
+  }, [song.title, song.imageUrl]);
+
+  if (imgUrl) {
+    return <img src={imgUrl} alt={song.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+  }
+
+  return <Headphones className="text-white/10 w-10 h-10 group-hover:scale-110 transition-transform duration-500" />
+}
+
 export default function Component() {
   const { user } = useAuth();
   const device = useDevice()
@@ -1467,7 +1497,7 @@ export default function Component() {
                           const jsmediatags = require('jsmediatags/dist/jsmediatags.min.js');
                           if(jsmediatags) {
                             jsmediatags.read(file, {
-                              onSuccess: function(tag) {
+                              onSuccess: function(tag: any) {
                                 const picture = tag.tags.picture;
                                 if (picture) {
                                   let base64String = "";
@@ -1479,7 +1509,7 @@ export default function Component() {
                                   setNewSongMeta(prev => ({ ...prev, imageUrl, artist: tag.tags.artist || prev.artist, title: tag.tags.title || prev.title }));
                                 }
                               },
-                              onError: function(error) {
+                              onError: function(error: any) {
                                 console.log("No ID3 tags found.", error);
                               }
                             });
@@ -1592,6 +1622,7 @@ export default function Component() {
     </div>
   )
 }
+
 
 
 
