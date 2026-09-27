@@ -1464,7 +1464,8 @@ export default function Component() {
                           setNewSongMeta({ ...newSongMeta, title: file.name.replace(/.[^/.]+$/, "") })
                           
                           // Dynamically import jsmediatags and Extract ID3 Tags (Cover Art)
-                          import('jsmediatags').then((jsmediatags) => {
+                          const jsmediatags = require('jsmediatags/dist/jsmediatags.min.js');
+                          if(jsmediatags) {
                             jsmediatags.read(file, {
                               onSuccess: function(tag) {
                                 const picture = tag.tags.picture;
@@ -1482,7 +1483,7 @@ export default function Component() {
                                 console.log("No ID3 tags found.", error);
                               }
                             });
-                          }).catch(err => console.log('Failed to load jsmediatags', err));
+                          }
                         }
                       }}
                       className="text-sm text-white/60 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-500/20 file:text-purple-400 hover:file:bg-purple-500/30"
@@ -1591,6 +1592,7 @@ export default function Component() {
     </div>
   )
 }
+
 
 
 
