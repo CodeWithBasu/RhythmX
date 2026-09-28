@@ -16,7 +16,7 @@ export interface AnimatedTabBarProps {
 
 const tabBarStyles = `
 .animated-tab-bar {
-  --bgColorMenu: #050505;
+  --bgColorMenu: #1d1d27;
   --duration: 0.7s;
   box-sizing: border-box;
   width: 100%;
@@ -132,7 +132,7 @@ export const AnimatedTabBar: React.FC<AnimatedTabBarProps> = ({
       const offsetActiveItem = activeItem.getBoundingClientRect();
       const left = Math.floor(
         offsetActiveItem.left -
-          menu.offsetLeft -
+          menu.getBoundingClientRect().left -
           (menuBorder.offsetWidth - offsetActiveItem.width) / 2,
       );
       menuBorder.style.transform = `translate3d(${left}px, 0, 0)`;
@@ -205,3 +205,5 @@ export const AnimatedTabBar: React.FC<AnimatedTabBarProps> = ({
 };
 
 export default AnimatedTabBar;
+
+
