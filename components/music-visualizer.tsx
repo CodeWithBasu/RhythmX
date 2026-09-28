@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Upload, Database, Share2, Users, SkipBack, SkipForward, Shuffle, Repeat, Headphones, Github, Linkedin, Globe, ChevronDown } from "lucide-react"
+import { Upload, Database, Share2, Users, SkipBack, SkipForward, Shuffle, Repeat, Headphones, Github, Linkedin, Globe, ChevronDown, User } from "lucide-react"
 import Link from "next/link"
 import { ProfileDropdown } from "@/components/ui/profile-dropdown";
 import { useAuth } from "@/contexts/AuthContext";
@@ -1028,10 +1028,9 @@ export default function Component() {
         {/* Top Header (Spotify Style) */}
         <div className="sticky top-0 z-40 bg-[#121212]/90 backdrop-blur-xl px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <ProfileDropdown />
+            {user ? <ProfileDropdown /> : <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/50"><User className="w-5 h-5" /></div>}
             <button className="bg-[#1ed760] text-black px-4 py-1.5 rounded-full text-sm font-medium">All</button>
-            <button className="bg-white/10 text-white px-4 py-1.5 rounded-full text-sm font-medium">Music</button>
-            <button className="bg-white/10 text-white px-4 py-1.5 rounded-full text-sm font-medium">Podcasts</button>
+            
           </div>
           {isAdmin && (
             <button onClick={() => setIsAddingSong(true)} className="bg-white/10 text-white p-2 rounded-full">
@@ -1043,7 +1042,7 @@ export default function Component() {
         <main className="px-4 py-2 space-y-8">
           
           {/* Quick Play Grid (2 Columns) */}
-          <div className="grid grid-cols-2 gap-2 sm:gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
             {songs.slice(0, 6).map((song) => (
               <div 
                 key={`quick-${song.id}`}
@@ -1067,9 +1066,9 @@ export default function Component() {
                   <div 
                     key={`hits-${song.id}`} 
                     onClick={() => { playSong(song); setIsPlayerExpanded(true); }} 
-                    className="snap-start shrink-0 w-[140px] cursor-pointer group"
+                    className="snap-start shrink-0 w-[112px] cursor-pointer group"
                   >
-                    <div className="w-[140px] h-[140px] mb-3">
+                    <div className="w-[112px] h-[112px] mb-3">
                       <div className="w-full h-full rounded-md overflow-hidden relative shadow-lg">
                         <GridAlbumArt song={song} />
                         <div className="absolute top-2 left-2">
@@ -1094,9 +1093,9 @@ export default function Component() {
                   <div 
                     key={`chill-${song.id}`} 
                     onClick={() => { playSong(song); setIsPlayerExpanded(true); }} 
-                    className="snap-start shrink-0 w-[140px] cursor-pointer group"
+                    className="snap-start shrink-0 w-[112px] cursor-pointer group"
                   >
-                    <div className="w-[140px] h-[140px] mb-3">
+                    <div className="w-[112px] h-[112px] mb-3">
                       <div className="w-full h-full rounded-md overflow-hidden relative shadow-lg">
                         <GridAlbumArt song={song} />
                         <div className="absolute top-2 left-2">
@@ -1121,9 +1120,9 @@ export default function Component() {
                   <div 
                     key={`throwback-${song.id}`} 
                     onClick={() => { playSong(song); setIsPlayerExpanded(true); }} 
-                    className="snap-start shrink-0 w-[140px] cursor-pointer group"
+                    className="snap-start shrink-0 w-[112px] cursor-pointer group"
                   >
-                    <div className="w-[140px] h-[140px] mb-3">
+                    <div className="w-[112px] h-[112px] mb-3">
                       <div className="w-full h-full rounded-md overflow-hidden relative shadow-lg">
                         <GridAlbumArt song={song} />
                         <div className="absolute top-2 left-2">
