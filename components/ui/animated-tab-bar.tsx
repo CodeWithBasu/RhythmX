@@ -39,7 +39,7 @@ const tabBarStyles = `
   max-width: 32.05em;
   margin: 0;
   padding: 0 2.85em;
-  font-size: 1.5em;
+  font-size: 1em;
   display: flex;
   position: relative;
   border-top: 1px solid rgba(255,255,255,0.05);
@@ -77,14 +77,14 @@ const tabBarStyles = `
 }
 .icon {
   stroke: #fff;
-  fill: #0000;
+  fill: transparent;
   stroke-width: 1pt;
   stroke-miterlimit: 10;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dasharray: 400;
-  width: 2.6em;
-  height: 2.6em;
+  width: 2.6em !important;
+  height: 2.6em !important;
 }
 .menu__item.active .icon {
   animation: 1.5s reverse strok;
@@ -108,9 +108,7 @@ const tabBarStyles = `
   height: 0;
   position: absolute;
 }
-@media screen and (max-width: 50em) {
-  .menu { font-size: 0.8em; }
-}
+@media screen and (max-width: 50em) { .menu { font-size: 0.8em; } }
 `;
 
 export const AnimatedTabBar: React.FC<AnimatedTabBarProps> = ({
@@ -205,5 +203,7 @@ export const AnimatedTabBar: React.FC<AnimatedTabBarProps> = ({
 };
 
 export default AnimatedTabBar;
+
+
 
 
