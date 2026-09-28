@@ -1026,7 +1026,7 @@ export default function Component() {
       <div className={`flex-1 overflow-y-auto pb-32 transition-opacity duration-300 ${isPlayerExpanded ? 'opacity-0 pointer-events-none absolute inset-0' : 'opacity-100 relative z-10'} bg-[#121212]`}>
         
         {/* Top Header (Spotify Style) */}
-        <div className="sticky top-0 z-40 bg-[#121212]/90 backdrop-blur-xl px-4 py-4 flex items-center justify-between">
+        <div className="sticky top-0 z-40 bg-[#121212]/90 backdrop-blur-xl px-4 py-4 flex items-center justify-between max-w-7xl mx-auto w-full">
           <div className="flex items-center gap-3">
             {user ? <ProfileDropdown /> : <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/50"><User className="w-5 h-5" /></div>}
             <button className="bg-[#1ed760] text-black px-4 py-1.5 rounded-full text-sm font-medium">All</button>
@@ -1039,10 +1039,10 @@ export default function Component() {
           )}
         </div>
 
-        <main className="px-4 py-2 space-y-8">
+        <main className="px-4 py-2 space-y-8 max-w-7xl mx-auto w-full">
           
           {/* Quick Play Grid (2 Columns) */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 sm:gap-3">
             {songs.slice(0, 6).map((song) => (
               <div 
                 key={`quick-${song.id}`}
@@ -1066,9 +1066,9 @@ export default function Component() {
                   <div 
                     key={`hits-${song.id}`} 
                     onClick={() => { playSong(song); setIsPlayerExpanded(true); }} 
-                    className="snap-start shrink-0 w-[112px] cursor-pointer group"
+                    className="snap-start shrink-0 w-[120px] sm:w-[160px] cursor-pointer group"
                   >
-                    <div className="w-[112px] h-[112px] mb-3">
+                    <div className="w-[120px] sm:w-[160px] h-[120px] sm:h-[160px] mb-3">
                       <div className="w-full h-full rounded-md overflow-hidden relative shadow-lg">
                         <GridAlbumArt song={song} />
                         <div className="absolute top-2 left-2">
@@ -1093,9 +1093,9 @@ export default function Component() {
                   <div 
                     key={`chill-${song.id}`} 
                     onClick={() => { playSong(song); setIsPlayerExpanded(true); }} 
-                    className="snap-start shrink-0 w-[112px] cursor-pointer group"
+                    className="snap-start shrink-0 w-[120px] sm:w-[160px] cursor-pointer group"
                   >
-                    <div className="w-[112px] h-[112px] mb-3">
+                    <div className="w-[120px] sm:w-[160px] h-[120px] sm:h-[160px] mb-3">
                       <div className="w-full h-full rounded-md overflow-hidden relative shadow-lg">
                         <GridAlbumArt song={song} />
                         <div className="absolute top-2 left-2">
@@ -1120,9 +1120,9 @@ export default function Component() {
                   <div 
                     key={`throwback-${song.id}`} 
                     onClick={() => { playSong(song); setIsPlayerExpanded(true); }} 
-                    className="snap-start shrink-0 w-[112px] cursor-pointer group"
+                    className="snap-start shrink-0 w-[120px] sm:w-[160px] cursor-pointer group"
                   >
-                    <div className="w-[112px] h-[112px] mb-3">
+                    <div className="w-[120px] sm:w-[160px] h-[120px] sm:h-[160px] mb-3">
                       <div className="w-full h-full rounded-md overflow-hidden relative shadow-lg">
                         <GridAlbumArt song={song} />
                         <div className="absolute top-2 left-2">
@@ -1190,7 +1190,7 @@ export default function Component() {
       </AnimatePresence>
 
       {/* BOTTOM NAVIGATION BAR */}
-      <div className={`fixed bottom-0 left-0 right-0 h-[65px] bg-gradient-to-t from-black via-black/95 to-black/80 z-[50] flex items-center justify-around px-2 sm:px-8 pb-2 transition-transform duration-300 ${isPlayerExpanded ? 'translate-y-full' : 'translate-y-0'}`}>
+      <div className={`fixed bottom-0 left-0 right-0 h-[65px] bg-gradient-to-t from-black via-black/95 to-black/80 z-[50] flex items-center justify-around px-2 sm:px-8 pb-2 max-w-md mx-auto w-full transition-transform duration-300 ${isPlayerExpanded ? 'translate-y-full' : 'translate-y-0'}`}>
          <div className="flex flex-col items-center gap-1 cursor-pointer text-white">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3L4 9v12h5v-7h6v7h5V9z"/></svg>
             <span className="text-[10px] font-medium">Home</span>
@@ -1647,4 +1647,5 @@ export default function Component() {
     </div>
   );
 }
+
 
