@@ -78,7 +78,63 @@ const GridAlbumArt = ({ song }: { song: any }) => {
   return <Headphones className="text-white/10 w-10 h-10 group-hover:scale-110 transition-transform duration-500" />
 }
 
+
+import type { TabItem } from "@/components/ui/animated-tab-bar";
+
+const tabItems: TabItem[] = [
+  {
+    color: "#ff8c00",
+    icon: (
+      <svg className="icon" viewBox="0 0 24 24">
+        <path d="M3.8,6.6h16.4" />
+        <path d="M20.2,12.1H3.8" />
+        <path d="M3.8,17.5h16.4" />
+      </svg>
+    ),
+  },
+  {
+    color: "#f54888",
+    icon: (
+      <svg className="icon" viewBox="0 0 24 24">
+        <path d="M6.7,4.8h10.7c0.3,0,0.6,0.2,0.7,0.5l2.8,7.3c0,0.1,0,0.2,0,0.3v5.6c0,0.4-0.4,0.8-0.8,0.8H3.8 C3.4,19.3,3,19,3,18.5v-5.6c0-0.1,0-0.2,0.1-0.3L6,5.3C6.1,5,6.4,4.8,6.7,4.8z" />
+        <path d="M3.4,12.9H8l1.6,2.8h4.9l1.5-2.8h4.6" />
+      </svg>
+    ),
+  },
+  {
+    color: "#4343f5",
+    icon: (
+      <svg className="icon" viewBox="0 0 24 24">
+        <path d="M3.4,11.9l8.8,4.4l8.4-4.4" />
+        <path d="M3.4,16.2l8.8,4.5l8.4-4.5" />
+        <path d="M3.7,7.8l8.6-4.5l8,4.5l-8,4.3L3.7,7.8z" />
+      </svg>
+    ),
+  },
+  {
+    color: "#e0b115",
+    icon: (
+      <svg className="icon" viewBox="0 0 24 24">
+        <path d="M5.1,3.9h13.9c0.6,0,1.2,0.5,1.2,1.2v13.9c0,0.6-0.5,1.2-1.2,1.2H5.1c-0.6,0-1.2-0.5-1.2-1.2V5.1 C3.9,4.4,4.4,3.9,5.1,3.9z" />
+        <path d="M4.2,9.3h15.6" />
+        <path d="M9.1,9.5v10.3" />
+      </svg>
+    ),
+  },
+  {
+    color: "#65ddb7",
+    icon: (
+      <svg className="icon" viewBox="0 0 24 24">
+        <path d="M5.1,3.9h13.9c0.6,0,1.2,0.5,1.2,1.2v13.9c0,0.6-0.5,1.2-1.2,1.2H5.1c-0.6,0-1.2-0.5-1.2-1.2V5.1 C3.9,4.4,4.4,3.9,5.1,3.9z" />
+        <path d="M5.5,20l9.9-9.9l4.7,4.7" />
+        <path d="M10.4,8.8c0,0.9-0.7,1.6-1.6,1.6c-0.9,0-1.6-0.7-1.6-1.6C7.3,8,8,7.3,8.9,7.3C9.7,7.3,10.4,8,10.4,8.8z" />
+      </svg>
+    ),
+  },
+];
+
 export default function Component() {
+
   const { user } = useAuth();
   const device = useDevice()
   // 64 bars on mobile is the sweet spot—wider than before, but not edge-to-edge
@@ -1200,32 +1256,18 @@ export default function Component() {
       </AnimatePresence>
 
       {/* BOTTOM NAVIGATION BAR */}
-      <div className={`fixed bottom-0 left-0 right-0 h-[65px] bg-gradient-to-t from-black via-black/95 to-black/80 z-[50] flex items-center justify-around px-2 sm:px-8 pb-2 max-w-md mx-auto w-full transition-transform duration-300 ${isPlayerExpanded ? 'translate-y-full' : 'translate-y-0'}`}>
-         <div className="flex flex-col items-center gap-1 cursor-pointer text-white">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3L4 9v12h5v-7h6v7h5V9z"/></svg>
-            <span className="text-[10px] font-medium">Home</span>
-         </div>
-         <div className="flex flex-col items-center gap-1 cursor-pointer text-white/60 hover:text-white transition-colors">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            <span className="text-[10px] font-medium">Search</span>
-         </div>
-         <div className="flex flex-col items-center gap-1 cursor-pointer text-white/60 hover:text-white transition-colors">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-            <span className="text-[10px] font-medium">Your Library</span>
-         </div>
-         <div className="flex flex-col items-center gap-1 cursor-pointer text-white/60 hover:text-white transition-colors">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-            <span className="text-[10px] font-medium">Premium</span>
-         </div>
-         {isAdmin && (
-             <div onClick={() => setIsAddingSong(true)} className="flex flex-col items-center gap-1 cursor-pointer text-white/60 hover:text-white transition-colors">
-                <Upload className="w-6 h-6" />
-                <span className="text-[10px] font-medium">Create</span>
-             </div>
-         )}
+      <div className={`fixed bottom-0 left-0 right-0 z-[50] flex justify-center transition-transform duration-300 ${isPlayerExpanded ? 'translate-y-full' : 'translate-y-0'}`}>
+         <AnimatedTabBar 
+           items={tabItems} 
+           onTabChange={(idx) => {
+             if (idx === 4 && isAdmin) {
+                 setIsAddingSong(true);
+             }
+           }} 
+         />
       </div>
-
-{/* EXPANDED PLAYER (Visualizer) */}
+      
+      {/* EXPANDED PLAYER (Visualizer) */}
       <div 
         className={`fixed inset-0 z-50 bg-[#0C0414] flex flex-col overflow-hidden transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isPlayerExpanded ? 'translate-y-0' : 'translate-y-full'}`}
       >
