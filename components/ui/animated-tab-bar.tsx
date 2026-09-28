@@ -41,7 +41,7 @@ const tabBarStyles = `
   max-width: 32.05em;
   margin: 0;
   padding: 0 2.85em;
-  font-size: 1em;
+  font-size: 0.7em;
   display: flex;
   position: relative;
   border: 1px solid rgba(255,255,255,0.1);
@@ -115,7 +115,7 @@ const tabBarStyles = `
   height: 0;
   position: absolute;
 }
-@media screen and (max-width: 50em) { .menu { font-size: 0.8em; } }
+@media screen and (max-width: 50em) { .menu { font-size: 0.55em; } }
 `;
 
 export const AnimatedTabBar: React.FC<AnimatedTabBarProps> = ({
@@ -210,6 +210,7 @@ export const AnimatedTabBar: React.FC<AnimatedTabBarProps> = ({
 };
 
 export default AnimatedTabBar;
+
 
 
 
