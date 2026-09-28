@@ -3,7 +3,7 @@
 import { SlideTabs } from "@/components/ui/slide-tabs";
 import React, { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Upload, Home, Search, Library, PlusCircle, Database, Share2, Users, SkipBack, SkipForward, Shuffle, Repeat, Headphones, Github, Linkedin, Globe, ChevronDown, User } from "lucide-react"
+import { Upload, Home, Search, Library, PlusCircle, Database, Share2, Users, SkipBack, SkipForward, Shuffle, Repeat, Headphones, Github, Linkedin, Globe, ChevronDown, User, ChevronLeft, ChevronRight } from "lucide-react"
 import Link from "next/link"
 import { ProfileDropdown } from "@/components/ui/profile-dropdown";
 import { useAuth } from "@/contexts/AuthContext";
@@ -79,6 +79,64 @@ const GridAlbumArt = ({ song }: { song: any }) => {
 }
 
 
+
+
+const SongCarousel = ({ title, songs, onPlay }: { title: string, songs: any[], onPlay: (song: any) => void }) => {
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const { clientWidth, scrollLeft } = scrollRef.current;
+      const scrollAmount = direction === 'left' ? -clientWidth * 0.75 : clientWidth * 0.75;
+      scrollRef.current.scrollTo({ left: scrollLeft + scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  return (
+    <section>
+      <h2 className="text-xl font-bold mb-4 text-white">{title}</h2>
+      <div className="relative group -mx-4">
+        {/* Left Arrow */}
+        <button 
+          onClick={() => scroll('left')}
+          className="hidden md:flex absolute left-0 top-0 bottom-4 w-16 items-center justify-center bg-gradient-to-r from-black/90 via-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10 text-white"
+        >
+          <ChevronLeft className="w-10 h-10 drop-shadow-md" />
+        </button>
+
+        {/* Scroll Container */}
+        <div ref={scrollRef} className="flex overflow-x-auto gap-4 pb-4 snap-x hide-scrollbar px-4 scroll-smooth">
+          {songs.map((song) => (
+            <div 
+              key={`carousel-${title}-${song.id}`} 
+              onClick={() => onPlay(song)} 
+              className="snap-start shrink-0 w-[120px] sm:w-[160px] cursor-pointer group/item"
+            >
+              <div className="w-[120px] sm:w-[160px] h-[120px] sm:h-[160px] mb-3">
+                <div className="w-full h-full rounded-md overflow-hidden relative shadow-lg">
+                  <GridAlbumArt song={song} />
+                  <div className="absolute top-2 left-2">
+                    <img src="/rhythmx-logo.png" className="w-4 h-4 rounded-sm opacity-80" />
+                  </div>
+                </div>
+              </div>
+              <h3 className="font-medium text-white/90 text-sm truncate">{song.title}</h3>
+              <p className="text-white/60 text-xs line-clamp-2 mt-1 leading-tight">{song.artist || 'Various Artists'}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Right Arrow */}
+        <button 
+          onClick={() => scroll('right')}
+          className="hidden md:flex absolute right-0 top-0 bottom-4 w-16 items-center justify-center bg-gradient-to-l from-black/90 via-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10 text-white"
+        >
+          <ChevronRight className="w-10 h-10 drop-shadow-md" />
+        </button>
+      </div>
+    </section>
+  );
+};
 
 export default function Component() {
 
@@ -1109,88 +1167,23 @@ export default function Component() {
             )}
             
             {/* Today's biggest hits */}
-          {songs.length > 0 && (
-            <section>
-              <h2 className="text-xl font-bold mb-4 text-white">Today's biggest hits</h2>
-              <div className="flex overflow-x-auto gap-4 pb-4 snap-x hide-scrollbar -mx-4 px-4">
-                {songs.slice(0, 8).map((song) => (
-                  <div 
-                    key={`hits-${song.id}`} 
-                    onClick={() => { playSong(song); setIsPlayerExpanded(true); }} 
-                    className="snap-start shrink-0 w-[120px] sm:w-[160px] cursor-pointer group"
-                  >
-                    <div className="w-[120px] sm:w-[160px] h-[120px] sm:h-[160px] mb-3">
-                      <div className="w-full h-full rounded-md overflow-hidden relative shadow-lg">
-                        <GridAlbumArt song={song} />
-                        <div className="absolute top-2 left-2">
-                          <img src="/rhythmx-logo.png" className="w-4 h-4 rounded-sm opacity-80" />
-                        </div>
-                      </div>
-                    </div>
-                    <h3 className="font-medium text-white/90 text-sm truncate">{song.title}</h3>
-                    <p className="text-white/60 text-xs line-clamp-2 mt-1 leading-tight">{song.artist || 'Various Artists'}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
+            {songs.length > 0 && (
+              <SongCarousel 
+                title="Today's biggest hits" 
+                songs={songs.slice(0, 8)} 
+                onPlay={(song) => { playSong(song); setIsPlayerExpanded(true); }} 
+              />
+            )}
 
-          {/* Chill */}
-          {songs.length > 2 && (
-            <section>
-              <h2 className="text-xl font-bold mb-4 text-white">Chill</h2>
-              <div className="flex overflow-x-auto gap-4 pb-4 snap-x hide-scrollbar -mx-4 px-4">
-                {songs.slice(2, 10).map((song) => (
-                  <div 
-                    key={`chill-${song.id}`} 
-                    onClick={() => { playSong(song); setIsPlayerExpanded(true); }} 
-                    className="snap-start shrink-0 w-[120px] sm:w-[160px] cursor-pointer group"
-                  >
-                    <div className="w-[120px] sm:w-[160px] h-[120px] sm:h-[160px] mb-3">
-                      <div className="w-full h-full rounded-md overflow-hidden relative shadow-lg">
-                        <GridAlbumArt song={song} />
-                        <div className="absolute top-2 left-2">
-                          <img src="/rhythmx-logo.png" className="w-4 h-4 rounded-sm opacity-80" />
-                        </div>
-                      </div>
-                    </div>
-                    <h3 className="font-medium text-white/90 text-sm truncate">{song.title}</h3>
-                    <p className="text-white/60 text-xs line-clamp-2 mt-1 leading-tight">{song.artist || 'Various Artists'}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* Throwback */}
-          {songs.length > 4 && (
-            <section>
-              <h2 className="text-xl font-bold mb-4 text-white">Throwback</h2>
-              <div className="flex overflow-x-auto gap-4 pb-4 snap-x hide-scrollbar -mx-4 px-4">
-                {songs.slice(4, 12).map((song) => (
-                  <div 
-                    key={`throwback-${song.id}`} 
-                    onClick={() => { playSong(song); setIsPlayerExpanded(true); }} 
-                    className="snap-start shrink-0 w-[120px] sm:w-[160px] cursor-pointer group"
-                  >
-                    <div className="w-[120px] sm:w-[160px] h-[120px] sm:h-[160px] mb-3">
-                      <div className="w-full h-full rounded-md overflow-hidden relative shadow-lg">
-                        <GridAlbumArt song={song} />
-                        <div className="absolute top-2 left-2">
-                          <img src="/rhythmx-logo.png" className="w-4 h-4 rounded-sm opacity-80" />
-                        </div>
-                      </div>
-                    </div>
-                    <h3 className="font-medium text-white/90 text-sm truncate">{song.title}</h3>
-                    <p className="text-white/60 text-xs line-clamp-2 mt-1 leading-tight">{song.artist || 'Various Artists'}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          <div className="h-10"></div> {/* Extra padding */}
-        </main>
+            {/* Chill */}
+            {songs.length > 2 && (
+              <SongCarousel 
+                title="Chill" 
+                songs={songs.slice(2, 10)} 
+                onPlay={(song) => { playSong(song); setIsPlayerExpanded(true); }} 
+              />
+            )}
+          </main>
       </div>
 
 {/* MINI PLAYER (Floating at Bottom) */}
