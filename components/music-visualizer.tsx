@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Upload, Database, Share2, Users, SkipBack, SkipForward, Shuffle, Repeat, Headphones, Github, Linkedin, Globe } from "lucide-react"
+import { Upload, Database, Share2, Users, SkipBack, SkipForward, Shuffle, Repeat, Headphones, Github, Linkedin, Globe, ChevronDown } from "lucide-react"
 import Link from "next/link"
 import { ProfileDropdown } from "@/components/ui/profile-dropdown";
 import { useAuth } from "@/contexts/AuthContext";
@@ -116,6 +116,7 @@ export default function Component() {
   const [isRepeat, setIsRepeat] = useState(false)
   const [is8DMode, setIs8DMode] = useState(false)
   const [albumArtUrl, setAlbumArtUrl] = useState<string | null>(null)
+  const [isPlayerExpanded, setIsPlayerExpanded] = useState(false)
 
   const handleAdminLogin = () => {
     const password = prompt("Enter Security Key to unlock Admin Panel:");
@@ -1013,10 +1014,15 @@ export default function Component() {
   return (
     <div className="h-[100dvh] w-full bg-[#0C0414] flex flex-col overflow-hidden font-sans">
       {/* Top Section: Visualizer & Player (approx 40-45%) */}
-      <div className="flex-none h-[45vh] md:h-[50vh] relative flex flex-col items-center justify-between pb-6 pt-20 bg-gradient-to-b from-black to-[#0C0414] shrink-0">
+      <div className={`flex-none relative flex flex-col items-center justify-between pb-6 pt-20 bg-gradient-to-b from-black to-[#0C0414] shrink-0 transition-all duration-500 ${isPlayerExpanded ? "h-[100dvh] absolute inset-0 z-50" : "h-[45vh] md:h-[50vh]"}`}>
         
         {/* Header */}
         <div className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-8 py-4 bg-transparent">
+            {isPlayerExpanded && (
+              <button onClick={() => setIsPlayerExpanded(false)} className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md transition-all mr-2">
+                <ChevronDown className="w-6 h-6" />
+              </button>
+            )}
           <motion.div 
             className="flex items-center gap-3 cursor-pointer group"
             onClick={handleAdminLogin}
@@ -1212,7 +1218,7 @@ export default function Component() {
       </div>
 
       {/* Bottom Section: Scrollable Grid (approx 55-60%) */}
-      <div className="flex-1 w-full bg-[#05010a] rounded-t-[2.5rem] shadow-[0_-20px_50px_rgba(0,0,0,0.8)] overflow-y-auto relative z-10 border-t border-white/5 pb-24">
+      <div className={`flex-1 w-full bg-[#05010a] rounded-t-[2.5rem] shadow-[0_-20px_50px_rgba(0,0,0,0.8)] overflow-y-auto relative z-10 border-t border-white/5 pb-24 transition-transform duration-500 ${isPlayerExpanded ? "translate-y-full opacity-0 pointer-events-none absolute inset-0" : "translate-y-0 opacity-100 relative"}`}>
         
         {/* Toggles Container */}
         <div className="flex flex-wrap items-center justify-center gap-3 p-6 pb-2 border-b border-white/5">
