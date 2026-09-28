@@ -1,5 +1,6 @@
 "use client"
 
+import { AnimatedTabBar } from "@/components/ui/animated-tab-bar";
 import React, { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Upload, Database, Share2, Users, SkipBack, SkipForward, Shuffle, Repeat, Headphones, Github, Linkedin, Globe, ChevronDown, User } from "lucide-react"
