@@ -104,6 +104,7 @@ export default function Component() {
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
   const [songs, setSongs] = useState<any[]>([])
+  const [isLoadingSongs, setIsLoadingSongs] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState("home");
     const [isAddingSong, setIsAddingSong] = useState(false)
@@ -532,7 +533,7 @@ export default function Component() {
 
 
 
-  const fetchSongs = () => {
+  const fetchSongs = () => { setIsLoadingSongs(true);
     fetch(`${API_BASE}/api/songs`)
       .then(res => {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
@@ -1071,7 +1072,37 @@ export default function Component() {
             ))}
           </div>
 
-          {/* Today's biggest hits */}
+          {/* Skeleton Loading Rows */}
+            {isLoadingSongs && (
+              <>
+                <section>
+                  <div className="h-6 w-48 bg-white/10 rounded mb-4 animate-pulse" />
+                  <div className="flex overflow-x-hidden gap-4 pb-4 -mx-4 px-4">
+                    {[...Array(6)].map((_, i) => (
+                      <div key={`hits-skel-${i}`} className="shrink-0 w-[120px] sm:w-[160px] animate-pulse">
+                        <div className="w-[120px] sm:w-[160px] h-[120px] sm:h-[160px] mb-3 bg-white/10 rounded-md" />
+                        <div className="h-3 bg-white/10 rounded w-3/4 mb-2" />
+                        <div className="h-2 bg-white/10 rounded w-1/2" />
+                      </div>
+                    ))}
+                  </div>
+                </section>
+                <section className="mt-8">
+                  <div className="h-6 w-32 bg-white/10 rounded mb-4 animate-pulse" />
+                  <div className="flex overflow-x-hidden gap-4 pb-4 -mx-4 px-4">
+                    {[...Array(6)].map((_, i) => (
+                      <div key={`chill-skel-${i}`} className="shrink-0 w-[120px] sm:w-[160px] animate-pulse">
+                        <div className="w-[120px] sm:w-[160px] h-[120px] sm:h-[160px] mb-3 bg-white/10 rounded-md" />
+                        <div className="h-3 bg-white/10 rounded w-2/3 mb-2" />
+                        <div className="h-2 bg-white/10 rounded w-1/3" />
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </>
+            )}
+            
+            {/* Today's biggest hits */}
           {songs.length > 0 && (
             <section>
               <h2 className="text-xl font-bold mb-4 text-white">Today's biggest hits</h2>
@@ -1655,6 +1686,7 @@ export default function Component() {
     </div>
   );
 }
+
 
 
 
