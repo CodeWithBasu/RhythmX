@@ -1223,7 +1223,7 @@ export default function Component() {
       </AnimatePresence>
 
       {/* BOTTOM NAVIGATION BAR */}
-      <div className={`fixed bottom-0 left-0 right-0 z-[50] flex justify-center transition-transform duration-300 ${isPlayerExpanded ? 'translate-y-full' : 'translate-y-0'}`}>
+      <div className={`fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-0 sm:right-0 z-[50] flex justify-center transition-transform duration-300 ${isPlayerExpanded ? 'translate-y-full' : 'translate-y-0'}`}>
          <AnimatedTabBar 
            items={tabItems} 
            onTabChange={(idx) => {
@@ -1666,6 +1666,7 @@ export default function Component() {
     </div>
   );
 }
+
 
 
 

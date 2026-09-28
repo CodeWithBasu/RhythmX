@@ -16,7 +16,7 @@ export interface AnimatedTabBarProps {
 
 const tabBarStyles = `
 .animated-tab-bar {
-  --bgColorMenu: #1d1d27;
+  --bgColorMenu: rgba(20, 20, 20, 0.6);
   --duration: 0.7s;
   box-sizing: border-box;
   width: 100%;
@@ -33,6 +33,8 @@ const tabBarStyles = `
 }
 .menu {
   background-color: var(--bgColorMenu);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   justify-content: center;
   align-items: center;
   width: 100%;
@@ -42,7 +44,10 @@ const tabBarStyles = `
   font-size: 1em;
   display: flex;
   position: relative;
-  border-top: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 9999px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 .menu__item {
   all: unset;
@@ -96,6 +101,8 @@ const tabBarStyles = `
   clip-path: url(#menu-clip-path);
   will-change: transform;
   background-color: var(--bgColorMenu);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   width: 10.9em;
   height: 2.4em;
   transition: transform var(--timeOut, var(--duration));
@@ -203,6 +210,7 @@ export const AnimatedTabBar: React.FC<AnimatedTabBarProps> = ({
 };
 
 export default AnimatedTabBar;
+
 
 
 
