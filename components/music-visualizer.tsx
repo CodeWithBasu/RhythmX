@@ -546,7 +546,7 @@ export default function Component() {
       .catch(err => {
         console.error("Failed to load songs", err)
         setError("Network error. Please check your connection.")
-      })
+      }).finally(() => setIsLoadingSongs(false))
   }
 
   useEffect(() => {
@@ -1058,6 +1058,12 @@ export default function Component() {
                 <div className="font-bold text-xs text-white truncate">Liked Songs</div>
             </div>
 
+            {isLoadingSongs && [...Array(5)].map((_, i) => (
+              <div key={`quick-skel-${i}`} className="bg-white/5 rounded-md flex items-center gap-3 pr-3 overflow-hidden h-14 animate-pulse">
+                <div className="w-14 h-14 shrink-0 bg-white/10" />
+                <div className="h-3 bg-white/10 rounded w-2/3" />
+              </div>
+            ))}
             {songs.slice(0, 5).map((song) => (
               <div 
                 key={`quick-${song.id}`}
@@ -1686,6 +1692,8 @@ export default function Component() {
     </div>
   );
 }
+
+
 
 
 
