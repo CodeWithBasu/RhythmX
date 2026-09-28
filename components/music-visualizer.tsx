@@ -1,6 +1,6 @@
 "use client"
 
-import { AnimatedTabBar } from "@/components/ui/animated-tab-bar";
+import { SlideTabs } from "@/components/ui/slide-tabs";
 import React, { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Upload, Home, Search, Library, PlusCircle, Database, Share2, Users, SkipBack, SkipForward, Shuffle, Repeat, Headphones, Github, Linkedin, Globe, ChevronDown, User } from "lucide-react"
@@ -79,26 +79,6 @@ const GridAlbumArt = ({ song }: { song: any }) => {
 }
 
 
-import type { TabItem } from "@/components/ui/animated-tab-bar";
-
-const tabItems: TabItem[] = [
-  {
-    color: "#a855f7",
-    icon: <Home className="icon" />,
-  },
-  {
-    color: "#a855f7",
-    icon: <Search className="icon" />,
-  },
-  {
-    color: "#a855f7",
-    icon: <Library className="icon" />,
-  },
-  {
-    color: "#a855f7",
-    icon: <PlusCircle className="icon" />,
-  },
-];
 
 export default function Component() {
 
@@ -125,7 +105,8 @@ export default function Component() {
   const [duration, setDuration] = useState(0)
   const [songs, setSongs] = useState<any[]>([])
   const [error, setError] = useState<string | null>(null)
-  const [isAddingSong, setIsAddingSong] = useState(false)
+  const [activeTab, setActiveTab] = useState("home");
+    const [isAddingSong, setIsAddingSong] = useState(false)
   const [isBuffering, setIsBuffering] = useState(false)
   const [syncOffset, setSyncOffset] = useState(0)
   const [dragActive, setDragActive] = useState(false)
@@ -1223,14 +1204,22 @@ export default function Component() {
       </AnimatePresence>
 
       {/* BOTTOM NAVIGATION BAR */}
-      <div className={`fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-0 sm:right-0 z-[50] flex justify-center transition-transform duration-300 ${isPlayerExpanded ? 'translate-y-full' : 'translate-y-0'}`}>
-         <AnimatedTabBar 
-           items={tabItems} 
-           onTabChange={(idx) => {
-             if (idx === 3 && isAdmin) {
+      <div className={`fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-0 sm:right-0 z-[50] flex justify-center transition-transform duration-300 ${isPlayerExpanded ? 'translate-y-[150%]' : 'translate-y-0'}`}>
+         <SlideTabs 
+           activeId={activeTab}
+           onChange={(id) => {
+             if (id === 'create') {
                  setIsAddingSong(true);
+             } else {
+                 setActiveTab(id);
              }
            }} 
+           tabs={[
+             { id: 'home', label: 'Home', icon: <Home className="w-4 h-4 sm:w-5 sm:h-5" /> },
+             { id: 'search', label: 'Search', icon: <Search className="w-4 h-4 sm:w-5 sm:h-5" /> },
+             { id: 'library', label: 'Library', icon: <Library className="w-4 h-4 sm:w-5 sm:h-5" /> },
+             ...(isAdmin ? [{ id: 'create', label: 'Create', icon: <PlusCircle className="w-4 h-4 sm:w-5 sm:h-5" /> }] : [])
+           ]}
          />
       </div>
       
