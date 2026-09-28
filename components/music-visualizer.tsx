@@ -1041,15 +1041,24 @@ export default function Component() {
 
         <main className="px-4 py-2 space-y-8 max-w-7xl mx-auto w-full">
           
-          {/* Quick Play Grid (2 Columns) */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 sm:gap-3">
-            {songs.slice(0, 6).map((song) => (
+          {/* Quick Play Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
+            
+            {/* Liked Songs Tile */}
+            <div className="bg-white/10 hover:bg-white/20 transition-colors rounded-md flex items-center gap-3 pr-3 overflow-hidden cursor-pointer h-14">
+                <div className="w-14 h-14 shrink-0 bg-gradient-to-br from-indigo-500 via-purple-400 to-pink-300 flex items-center justify-center shadow-[4px_0_10px_rgba(0,0,0,0.3)]">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                </div>
+                <div className="font-bold text-xs text-white truncate">Liked Songs</div>
+            </div>
+
+            {songs.slice(0, 5).map((song) => (
               <div 
                 key={`quick-${song.id}`}
                 onClick={() => { playSong(song); setIsPlayerExpanded(true); }}
                 className="bg-white/10 hover:bg-white/20 transition-colors rounded-md flex items-center gap-3 pr-3 overflow-hidden cursor-pointer h-14"
               >
-                <div className="w-14 h-14 shrink-0 shadow-[4px_0_10px_rgba(0,0,0,0.3)]">
+                <div className="w-14 h-14 shrink-0 shadow-[4px_0_10px_rgba(0,0,0,0.3)] bg-black/40">
                   <GridAlbumArt song={song} />
                 </div>
                 <div className="font-bold text-xs text-white truncate">{song.title}</div>
