@@ -83,12 +83,29 @@ const GridAlbumArt = ({ song }: { song: any }) => {
 
 const SongCarousel = ({ title, songs, onPlay }: { title: string, songs: any[], onPlay: (song: any) => void }) => {
   const scrollRef = React.useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = React.useState(false);
+  const [canScrollRight, setCanScrollRight] = React.useState(true);
+
+  const updateScrollState = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  React.useEffect(() => {
+    updateScrollState();
+    window.addEventListener('resize', updateScrollState);
+    return () => window.removeEventListener('resize', updateScrollState);
+  }, [songs]);
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
       const { clientWidth, scrollLeft } = scrollRef.current;
       const scrollAmount = direction === 'left' ? -clientWidth * 0.75 : clientWidth * 0.75;
-      scrollRef.current.scrollTo({ left: scrollLeft + scrollAmount, behavior: 'smooth' });
+      scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+      setTimeout(updateScrollState, 400);
     }
   };
 
@@ -96,16 +113,20 @@ const SongCarousel = ({ title, songs, onPlay }: { title: string, songs: any[], o
     <section>
       <h2 className="text-xl font-bold mb-4 text-white">{title}</h2>
       <div className="relative group -mx-4">
-        {/* Left Arrow */}
+        
+        {/* Left Shadow & Arrow */}
+        {canScrollLeft && (
+          <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-[#121212] via-[#121212]/80 to-transparent z-[5] pointer-events-none" />
+        )}
         <button 
           onClick={() => scroll('left')}
-          className="hidden md:flex absolute left-0 top-0 bottom-4 w-16 items-center justify-center bg-gradient-to-r from-black/90 via-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10 text-white"
+          className={`hidden md:flex absolute left-2 top-[60px] sm:top-[80px] -translate-y-1/2 w-10 h-10 rounded-full items-center justify-center bg-black/60 hover:bg-black/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all z-10 text-white shadow-xl hover:scale-105 ${!canScrollLeft && 'hidden'}`}
         >
-          <ChevronLeft className="w-10 h-10 drop-shadow-md" />
+          <ChevronLeft className="w-6 h-6" />
         </button>
 
         {/* Scroll Container */}
-        <div ref={scrollRef} className="flex overflow-x-auto gap-4 pb-4 snap-x hide-scrollbar px-4 scroll-smooth">
+        <div ref={scrollRef} onScroll={updateScrollState} className="flex overflow-x-auto gap-4 pb-4 snap-x hide-scrollbar px-4 scroll-smooth relative z-[1]">
           {songs.map((song) => (
             <div 
               key={`carousel-${title}-${song.id}`} 
@@ -126,18 +147,20 @@ const SongCarousel = ({ title, songs, onPlay }: { title: string, songs: any[], o
           ))}
         </div>
 
-        {/* Right Arrow */}
+        {/* Right Shadow & Arrow */}
+        {canScrollRight && (
+          <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-[#121212] via-[#121212]/80 to-transparent z-[5] pointer-events-none" />
+        )}
         <button 
           onClick={() => scroll('right')}
-          className="hidden md:flex absolute right-0 top-0 bottom-4 w-16 items-center justify-center bg-gradient-to-l from-black/90 via-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10 text-white"
+          className={`hidden md:flex absolute right-2 top-[60px] sm:top-[80px] -translate-y-1/2 w-10 h-10 rounded-full items-center justify-center bg-black/60 hover:bg-black/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all z-10 text-white shadow-xl hover:scale-105 ${!canScrollRight && 'hidden'}`}
         >
-          <ChevronRight className="w-10 h-10 drop-shadow-md" />
+          <ChevronRight className="w-6 h-6" />
         </button>
       </div>
     </section>
   );
 };
-
 export default function Component() {
 
   const { user } = useAuth();
@@ -1685,6 +1708,7 @@ export default function Component() {
     </div>
   );
 }
+
 
 
 
