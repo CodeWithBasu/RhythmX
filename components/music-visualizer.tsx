@@ -1651,11 +1651,11 @@ export default function Component() {
 
         {/* SCROLLABLE BELOW CARDS SECTION */}
         {isPlayerExpanded && (
-          <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-6 flex flex-col gap-8 relative z-20 pb-32">
+          <div className={`w-full mx-auto px-4 sm:px-6 py-6 flex flex-col gap-8 relative z-20 pb-32 transition-all duration-500 ${isLyricsExpanded ? 'max-w-5xl' : 'max-w-2xl'}`}>
             
             {/* LYRICS PREVIEW CARD */}
             {lyrics.length > 0 ? (
-              <div className={`bg-[#603B2C] rounded-2xl shadow-2xl relative transition-all duration-500 ${isLyricsExpanded ? 'fixed inset-0 z-[100] rounded-none flex flex-col pt-12 pb-24 px-6 sm:px-12 md:px-24' : 'p-6 overflow-hidden group'}`}>
+              <div className={`bg-[#603B2C] shadow-2xl transition-all duration-500 ${isLyricsExpanded ? "rounded-3xl min-h-[85vh] flex flex-col pt-12 pb-24 px-6 sm:px-12 md:px-16" : "rounded-2xl relative p-6 max-h-[300px] overflow-hidden group"}`}>
                 <div className="flex justify-between items-center mb-6 shrink-0">
                   <h3 className="text-white font-bold text-lg md:text-2xl">Lyrics</h3>
                   <button 
@@ -1666,7 +1666,7 @@ export default function Component() {
                   </button>
                 </div>
                 
-                <div className={`flex flex-col gap-3 relative ${isLyricsExpanded ? 'flex-1 overflow-y-auto hide-scrollbar' : 'max-h-[300px] overflow-hidden'}`} id="lyrics-container">
+                <div className="flex flex-col gap-3 relative" id="lyrics-container">
                   {lyrics.map((line, i) => {
                     const isActive = i === currentLyricIndex;
                     const isPast = i < currentLyricIndex;
@@ -1702,7 +1702,7 @@ export default function Component() {
             )}
 
             {/* ABOUT THE ARTIST CARD */}
-            <div className="bg-[#181818] rounded-2xl overflow-hidden shadow-2xl">
+            <div className={`bg-[#181818] rounded-2xl overflow-hidden shadow-2xl transition-opacity duration-500 ${isLyricsExpanded ? 'hidden' : 'block'}`}>
                <div className="relative h-64 overflow-hidden">
                   {albumArtUrl ? (
                     <>
@@ -1739,7 +1739,7 @@ export default function Component() {
             </div>
 
             {/* EXPLORE ARTIST CARD */}
-            <div className="bg-[#181818] rounded-2xl p-6 shadow-2xl mb-8">
+            <div className={`bg-[#181818] rounded-2xl p-6 shadow-2xl mb-8 transition-opacity duration-500 ${isLyricsExpanded ? 'hidden' : 'block'}`}>
                <h3 className="text-white font-bold text-lg mb-4">Explore {currentSongObj?.artist || 'Artist'}</h3>
                <div className="flex gap-4 overflow-x-auto pb-4 snap-x hide-scrollbar">
                   <div className="w-32 shrink-0 snap-start">
