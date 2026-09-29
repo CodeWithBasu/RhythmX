@@ -1115,7 +1115,7 @@ export default function Component() {
         {/* Top Header (Spotify Style) */}
         <div className="sticky top-0 z-40 bg-[#121212]/90 backdrop-blur-xl px-4 py-4 flex items-center justify-between max-w-7xl mx-auto w-full">
           <div className="flex items-center gap-3">
-            {user ? <ProfileDropdown /> : <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/50"><User className="w-5 h-5" /></div>}
+            {user ? <ProfileDropdown /> : <Link href="/signin" className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-all cursor-pointer shadow-md hover:scale-105 border border-white/10"><User className="w-5 h-5" /></Link>}
             <button className="bg-[#1ed760] text-black px-4 py-1.5 rounded-full text-sm font-medium">All</button>
             
           </div>
@@ -1809,6 +1809,7 @@ export default function Component() {
     </div>
   );
 }
+
 
 
 
