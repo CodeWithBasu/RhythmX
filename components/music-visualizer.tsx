@@ -1229,7 +1229,7 @@ export default function Component() {
             )}
 
             {activeTab === 'search' && (
-              <div className="space-y-6 pt-4">
+              <div className="space-y-6 pt-4 max-w-2xl mx-auto w-full">
                 <div className="max-w-xl mx-auto">
                   <div className="flex items-center w-full bg-[#242424] hover:bg-[#2a2a2a] focus-within:bg-[#2a2a2a] focus-within:ring-1 focus-within:ring-white/20 rounded-full px-4 py-3 transition-all shadow-lg">
                     <Search className="w-6 h-6 text-white/50 shrink-0 mr-3" />
@@ -1826,6 +1826,7 @@ export default function Component() {
     </div>
   );
 }
+
 
 
 
