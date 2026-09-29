@@ -107,7 +107,7 @@ export function ProfileDropdown({
                                     <Link
                                         href={item.href}
                                         target={item.external ? "_blank" : undefined}
-                                        className="flex items-center p-2 hover:bg-white/10 rounded-xl transition-all duration-200 cursor-pointer group border border-transparent"
+                                        className="flex items-center p-2 hover:bg-white/10 focus:bg-white/10 focus:text-white rounded-xl transition-all duration-200 cursor-pointer group border border-transparent"
                                     >
                                         <div className="flex items-center gap-2 flex-1">
                                             {React.cloneElement(item.icon as React.ReactElement<any>, { className: "w-4 h-4 text-white/70 group-hover:text-white" })}
@@ -126,7 +126,7 @@ export function ProfileDropdown({
                             <button
                                 type="button"
                                 onClick={async () => { await logout(); router.push("/"); }}
-                                className="w-full flex items-center gap-2 p-2 duration-200 bg-red-500/10 rounded-xl hover:bg-red-500/20 cursor-pointer border border-transparent hover:border-red-500/30 transition-all group"
+                                className="w-full flex items-center gap-2 p-2 duration-200 bg-red-500/10 rounded-xl hover:bg-red-500/20 focus:bg-red-500/20 focus:text-red-400 cursor-pointer border border-transparent hover:border-red-500/30 transition-all group"
                             >
                                 <LogOut className="w-4 h-4 text-red-500 group-hover:text-red-400" />
                                 <span className="text-xs font-medium text-red-500 group-hover:text-red-400">
@@ -140,6 +140,7 @@ export function ProfileDropdown({
         </div>
     );
 }
+
 
 
 
