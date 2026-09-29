@@ -161,6 +161,14 @@ const SongCarousel = ({ title, songs, onPlay }: { title: string, songs: any[], o
     </section>
   );
 };
+
+const getSongColor = (title: string) => {
+   let hash = 0;
+   for (let i = 0; i < title.length; i++) hash = title.charCodeAt(i) + ((hash << 5) - hash);
+   const hue = Math.abs(hash) % 360;
+   return `hsl(${hue}, 40%, 20%)`;
+}
+
 export default function Component() {
 
   const { user } = useAuth();
@@ -193,6 +201,7 @@ export default function Component() {
   const [isBuffering, setIsBuffering] = useState(false)
   const [syncOffset, setSyncOffset] = useState(0)
   const [dragActive, setDragActive] = useState(false)
+    const lyricsBgColor = getSongColor(currentTrack)
   const [newSongMeta, setNewSongMeta] = useState({ title: '', artist: '', url: '', imageUrl: '', language: 'English' })
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [uploadProgress, setUploadProgress] = useState(0)
@@ -1655,7 +1664,7 @@ export default function Component() {
             
             {/* LYRICS PREVIEW CARD */}
             {lyrics.length > 0 ? (
-              <div className={`bg-[#603B2C] shadow-2xl transition-all duration-500 ${isLyricsExpanded ? "rounded-3xl min-h-[85vh] flex flex-col pt-12 pb-24 px-6 sm:px-12 md:px-16" : "rounded-2xl relative p-6 max-h-[300px] overflow-hidden group"}`}>
+              <div className={`shadow-2xl transition-all duration-500 ${isLyricsExpanded ? "rounded-3xl min-h-[85vh] flex flex-col pt-12 pb-24 px-6 sm:px-12 md:px-16" : "rounded-2xl relative p-6 max-h-[300px] overflow-hidden group"}`} style={{ backgroundColor: lyricsBgColor }}>
                 <div className="flex justify-between items-center mb-6 shrink-0">
                   <h3 className="text-white font-bold text-lg md:text-2xl">Lyrics</h3>
                   <button 
@@ -1678,8 +1687,8 @@ export default function Component() {
                         className={`font-bold transition-all duration-300 ${
                           isLyricsExpanded ? 'text-3xl sm:text-4xl md:text-5xl py-2' : 'text-xl sm:text-2xl'
                         } ${
-                          isActive ? 'text-white scale-105 origin-left' : 
-                          isPast ? 'text-white/40' : 'text-white/20 hover:text-white/40'
+                          isActive ? 'text-white scale-105 origin-left drop-shadow-md' : 
+                          isPast ? 'text-white/80' : 'text-white/70 hover:text-white'
                         }`}
                       >
                         {line.text || '♪'}
@@ -1691,7 +1700,7 @@ export default function Component() {
                         {lyrics.slice(0, isLyricsExpanded ? lyrics.length : 4).map((l,i) => <div key={i} className="mb-3">{l.text || '♪'}</div>)}
                      </div>
                   )}
-                  {!isLyricsExpanded && <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#603B2C] to-transparent pointer-events-none" />}
+                  {!isLyricsExpanded && <div className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none" style={{ background: `linear-gradient(to top, ${lyricsBgColor}, transparent)` }} />}
                 </div>
               </div>
             ) : (
