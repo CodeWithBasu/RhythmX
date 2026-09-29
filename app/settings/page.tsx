@@ -14,6 +14,39 @@ import {
 export default function SettingsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  
+  // Settings States
+  const [hardwareAcceleration, setHardwareAcceleration] = useState(true);
+  const [showLyrics, setShowLyrics] = useState(false);
+  const [streamingQuality, setStreamingQuality] = useState('High Quality');
+  const [crossfade, setCrossfade] = useState(3);
+  
+  // Load settings from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedHardware = localStorage.getItem('rhythmx_hardware_accel');
+      if (savedHardware !== null) setHardwareAcceleration(savedHardware === 'true');
+      
+      const savedLyrics = localStorage.getItem('rhythmx_show_lyrics');
+      if (savedLyrics !== null) setShowLyrics(savedLyrics === 'true');
+      
+      const savedQuality = localStorage.getItem('rhythmx_streaming_quality');
+      if (savedQuality) setStreamingQuality(savedQuality);
+      
+      const savedCrossfade = localStorage.getItem('rhythmx_crossfade');
+      if (savedCrossfade) setCrossfade(parseInt(savedCrossfade, 10));
+    }
+  }, []);
+  
+  // Save settings to localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('rhythmx_hardware_accel', hardwareAcceleration.toString());
+      localStorage.setItem('rhythmx_show_lyrics', showLyrics.toString());
+      localStorage.setItem('rhythmx_streaming_quality', streamingQuality);
+      localStorage.setItem('rhythmx_crossfade', crossfade.toString());
+    }
+  }, [hardwareAcceleration, showLyrics, streamingQuality, crossfade]);
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -279,7 +312,11 @@ export default function SettingsPage() {
                      </label>
                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                        {['Data Saver', 'High Quality', 'Lossless'].map(quality => (
-                         <button key={quality} className={`py-3.5 px-4 rounded-xl border text-sm font-medium transition-all ${quality === 'High Quality' ? 'bg-gradient-to-b from-purple-500/20 to-purple-500/5 border-purple-500/30 text-white shadow-lg shadow-purple-500/10' : 'bg-white/[0.03] border-white/5 text-white/50 hover:bg-white/[0.06] hover:text-white/80'}`}>
+                         <button 
+                           key={quality} 
+                           onClick={() => setStreamingQuality(quality)}
+                           className={`py-3.5 px-4 rounded-xl border text-sm font-medium transition-all ${streamingQuality === quality ? 'bg-gradient-to-b from-purple-500/20 to-purple-500/5 border-purple-500/30 text-white shadow-lg shadow-purple-500/10' : 'bg-white/[0.03] border-white/5 text-white/50 hover:bg-white/[0.06] hover:text-white/80'}`}
+                         >
                            {quality}
                          </button>
                        ))}
@@ -289,10 +326,17 @@ export default function SettingsPage() {
                    <div className="pt-6 border-t border-white/5">
                      <div className="flex items-center justify-between mb-2">
                        <h3 className="font-semibold text-sm">Audio Crossfade</h3>
-                       <span className="text-purple-400 text-sm font-mono bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">3s</span>
+                       <span className="text-purple-400 text-sm font-mono bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">{crossfade}s</span>
                      </div>
                      <p className="text-xs text-white/40 mb-5">Smooth transition between tracks</p>
-                     <input type="range" min="0" max="10" defaultValue="3" className="w-full accent-purple-500 h-1 bg-white/10 rounded-full appearance-none cursor-pointer" />
+                     <input 
+                       type="range" 
+                       min="0" 
+                       max="10" 
+                       value={crossfade} 
+                       onChange={(e) => setCrossfade(parseInt(e.target.value, 10))}
+                       className="w-full accent-purple-500 h-1 bg-white/10 rounded-full appearance-none cursor-pointer" 
+                     />
                    </div>
                  </div>
                </div>
