@@ -1195,7 +1195,7 @@ export default function Component() {
             {songs.length > 0 && (
               <SongCarousel 
                 title="Today's biggest hits" 
-                songs={songs.slice(0, 8)} 
+                songs={songs} 
                 onPlay={(song) => { playSong(song); setIsPlayerExpanded(true); }} 
               />
             )}
@@ -1204,7 +1204,7 @@ export default function Component() {
             {songs.length > 2 && (
               <SongCarousel 
                 title="Chill" 
-                songs={songs.slice(2, 10)} 
+                songs={[...songs].reverse()} 
                 onPlay={(song) => { playSong(song); setIsPlayerExpanded(true); }} 
               />
             )}
@@ -1809,6 +1809,7 @@ export default function Component() {
     </div>
   );
 }
+
 
 
 
