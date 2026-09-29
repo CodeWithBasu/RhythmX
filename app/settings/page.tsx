@@ -164,14 +164,19 @@ export default function SettingsPage() {
                 </h2>
                 
                 <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8 mb-8 relative">
-                  <div className="relative group cursor-pointer shrink-0">
-                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-2 border-[#111] ring-4 ring-white/5 group-hover:ring-purple-500/30 transition-all duration-300">
-                      <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                    </div>
-                    <div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <Camera className="w-6 h-6 text-white/80" />
-                    </div>
-                  </div>
+                  <label className={`relative group cursor-pointer shrink-0 ${isUploadingAvatar ? 'pointer-events-none' : ''}`}>
+                      <div className={`w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-2 border-[#111] ring-4 ring-white/5 group-hover:ring-purple-500/30 transition-all duration-300 ${isUploadingAvatar ? 'opacity-50' : ''}`}>
+                        <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      </div>
+                      <div className={`absolute inset-0 bg-black/60 rounded-full flex items-center justify-center transition-opacity duration-200 ${isUploadingAvatar ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                        {isUploadingAvatar ? (
+                          <div className="w-6 h-6 rounded-full border-2 border-white/80 border-t-transparent animate-spin" />
+                        ) : (
+                          <Camera className="w-6 h-6 text-white/80" />
+                        )}
+                      </div>
+                      <input type="file" onChange={handleAvatarUpload} accept="image/*" className="hidden" />
+                    </label>
                   <div className="text-center sm:text-left flex-1">
                     <h3 className="text-2xl font-bold tracking-tight">{user.displayName || 'RhythmX User'}</h3>
                     <p className="text-white/40 mt-1 text-sm">{user.email}</p>
@@ -340,3 +345,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+
