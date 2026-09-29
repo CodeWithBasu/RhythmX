@@ -542,7 +542,11 @@ export default function Component() {
       let searchTitle = songTitleRaw.replace('~/', '').trim()
       
       const res = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(searchTitle)}`)
-      if (!res.ok) throw new Error("Network response was not ok")
+      if (!res.ok) {
+        console.warn("LRCLIB API returned status:", res.status)
+        setIsFetchingLyrics(false)
+        return
+      }
       
       const data = await res.json()
       
