@@ -189,6 +189,7 @@ export default function Component() {
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState("home");
     const [isAddingSong, setIsAddingSong] = useState(false)
+    const [isLyricsExpanded, setIsLyricsExpanded] = useState(false)
   const [isBuffering, setIsBuffering] = useState(false)
   const [syncOffset, setSyncOffset] = useState(0)
   const [dragActive, setDragActive] = useState(false)
@@ -1091,6 +1092,16 @@ export default function Component() {
     }
   }, [currentTime, lyrics, currentLyricIndex])
 
+  // Autoscroll lyrics when expanded
+  useEffect(() => {
+    if (isLyricsExpanded && currentLyricIndex !== -1) {
+      const el = document.getElementById(`lyric-${currentLyricIndex}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [currentLyricIndex, isLyricsExpanded])
+
   // Sync lyrics with audio time
   useEffect(() => {
     if (lyrics.length > 0 && currentTime > 0) {
@@ -1103,6 +1114,16 @@ export default function Component() {
       }
     }
   }, [currentTime, lyrics, currentLyricIndex])
+
+  // Autoscroll lyrics when expanded
+  useEffect(() => {
+    if (isLyricsExpanded && currentLyricIndex !== -1) {
+      const el = document.getElementById(`lyric-${currentLyricIndex}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [currentLyricIndex, isLyricsExpanded])
 
   // Handle audio events
   useEffect(() => {
@@ -1634,25 +1655,31 @@ export default function Component() {
             
             {/* LYRICS PREVIEW CARD */}
             {lyrics.length > 0 ? (
-              <div className="bg-[#603B2C] rounded-2xl p-6 shadow-2xl relative overflow-hidden group">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-white font-bold text-lg">Lyrics</h3>
-                  <button className="bg-white text-black px-4 py-1.5 rounded-full text-sm font-bold hover:scale-105 transition-transform">
-                    Show full
+              <div className={`bg-[#603B2C] rounded-2xl shadow-2xl relative transition-all duration-500 ${isLyricsExpanded ? 'fixed inset-0 z-[100] rounded-none flex flex-col pt-12 pb-24 px-6 sm:px-12 md:px-24' : 'p-6 overflow-hidden group'}`}>
+                <div className="flex justify-between items-center mb-6 shrink-0">
+                  <h3 className="text-white font-bold text-lg md:text-2xl">Lyrics</h3>
+                  <button 
+                    onClick={() => setIsLyricsExpanded(!isLyricsExpanded)}
+                    className="bg-white text-black px-4 py-1.5 rounded-full text-sm font-bold hover:scale-105 transition-transform"
+                  >
+                    {isLyricsExpanded ? 'Close' : 'Show full'}
                   </button>
                 </div>
                 
-                <div className="flex flex-col gap-3 relative max-h-[300px] overflow-hidden">
+                <div className={`flex flex-col gap-3 relative ${isLyricsExpanded ? 'flex-1 overflow-y-auto hide-scrollbar' : 'max-h-[300px] overflow-hidden'}`} id="lyrics-container">
                   {lyrics.map((line, i) => {
                     const isActive = i === currentLyricIndex;
                     const isPast = i < currentLyricIndex;
-                    if (Math.abs(i - currentLyricIndex) > 4 && currentLyricIndex !== -1) return null;
+                    if (!isLyricsExpanded && Math.abs(i - currentLyricIndex) > 4 && currentLyricIndex !== -1) return null;
                     return (
                       <div 
-                        key={i} 
-                        className={`text-xl sm:text-2xl font-bold transition-all duration-300 ${
+                        key={i}
+                        id={`lyric-${i}`}
+                        className={`font-bold transition-all duration-300 ${
+                          isLyricsExpanded ? 'text-3xl sm:text-4xl md:text-5xl py-2' : 'text-xl sm:text-2xl'
+                        } ${
                           isActive ? 'text-white scale-105 origin-left' : 
-                          isPast ? 'text-white/40' : 'text-white/20'
+                          isPast ? 'text-white/40' : 'text-white/20 hover:text-white/40'
                         }`}
                       >
                         {line.text || '♪'}
@@ -1660,11 +1687,11 @@ export default function Component() {
                     )
                   })}
                   {currentLyricIndex === -1 && (
-                     <div className="text-xl sm:text-2xl font-bold text-white/50">
-                        {lyrics.slice(0, 4).map((l,i) => <div key={i} className="mb-3">{l.text || '♪'}</div>)}
+                     <div className={`font-bold text-white/50 ${isLyricsExpanded ? 'text-3xl sm:text-4xl md:text-5xl' : 'text-xl sm:text-2xl'}`}>
+                        {lyrics.slice(0, isLyricsExpanded ? lyrics.length : 4).map((l,i) => <div key={i} className="mb-3">{l.text || '♪'}</div>)}
                      </div>
                   )}
-                  <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#603B2C] to-transparent pointer-events-none" />
+                  {!isLyricsExpanded && <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#603B2C] to-transparent pointer-events-none" />}
                 </div>
               </div>
             ) : (
