@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -12,6 +12,46 @@ import {
 } from 'lucide-react';
 
 export default function SettingsPage() {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    
+    setIsUploadingAvatar(true);
+    setSaveMessage('Uploading picture...');
+    try {
+      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dlmpk5juu';
+      const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'rhythmx_unsigned';
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', uploadPreset);
+      
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!res.ok) throw new Error('Upload failed');
+      const data = await res.json();
+      const imageUrl = data.secure_url;
+      
+      await updateProfile(user, { photoURL: imageUrl });
+      
+      setSaveMessage('Profile picture updated successfully!');
+      setTimeout(() => setSaveMessage(''), 3000);
+      
+    } catch (err) {
+      console.error(err);
+      setSaveMessage('Failed to update picture.');
+      setTimeout(() => setSaveMessage(''), 3000);
+    } finally {
+      setIsUploadingAvatar(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
   const { user, logout } = useAuth();
   const router = useRouter();
   
