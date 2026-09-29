@@ -198,6 +198,25 @@ export default function Component() {
   const [activeTab, setActiveTab] = useState("home");
     const [isAddingSong, setIsAddingSong] = useState(false)
     const [isLyricsExpanded, setIsLyricsExpanded] = useState(false)
+    const [likedSongs, setLikedSongs] = useState<string[]>([])
+    
+    useEffect(() => {
+      try {
+        const saved = localStorage.getItem('rhythmx_liked_songs')
+        if (saved) setLikedSongs(JSON.parse(saved))
+      } catch (e) {}
+    }, [])
+
+    const toggleLike = (songId: string, e?: React.MouseEvent) => {
+      if (e) e.stopPropagation()
+      if (!songId) return
+      setLikedSongs(prev => {
+        const isLiked = prev.includes(songId)
+        const next = isLiked ? prev.filter(id => id !== songId) : [...prev, songId]
+        localStorage.setItem('rhythmx_liked_songs', JSON.stringify(next))
+        return next
+      })
+    }
   const [isBuffering, setIsBuffering] = useState(false)
   const [syncOffset, setSyncOffset] = useState(0)
   const [dragActive, setDragActive] = useState(false)
