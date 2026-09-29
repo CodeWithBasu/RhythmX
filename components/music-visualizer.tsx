@@ -1056,6 +1056,20 @@ export default function Component() {
     }
   }, [currentSongObj, songs])
 
+
+  // Sync lyrics with audio time
+  useEffect(() => {
+    if (lyrics.length > 0 && currentTime > 0) {
+      const idx = lyrics.findIndex((line, i) => {
+        const nextLine = lyrics[i + 1]
+        return currentTime >= line.time && (!nextLine || currentTime < nextLine.time)
+      })
+      if (idx !== -1 && idx !== currentLyricIndex) {
+        setCurrentLyricIndex(idx)
+      }
+    }
+  }, [currentTime, lyrics, currentLyricIndex])
+
   // Handle audio events
   useEffect(() => {
     const audio = audioRef.current
