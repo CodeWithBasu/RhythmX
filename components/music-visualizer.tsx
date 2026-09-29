@@ -1191,22 +1191,39 @@ export default function Component() {
               </>
             )}
             
-            {/* Today's biggest hits */}
+                        {/* Home Screen Rows */}
             {songs.length > 0 && (
-              <SongCarousel 
-                title="Today's biggest hits" 
-                songs={songs} 
-                onPlay={(song) => { playSong(song); setIsPlayerExpanded(true); }} 
-              />
-            )}
-
-            {/* Chill */}
-            {songs.length > 2 && (
-              <SongCarousel 
-                title="Chill" 
-                songs={[...songs].reverse()} 
-                onPlay={(song) => { playSong(song); setIsPlayerExpanded(true); }} 
-              />
+              <>
+                <SongCarousel 
+                  title="Today's biggest hits" 
+                  songs={songs} 
+                  onPlay={(song) => { playSong(song); setIsPlayerExpanded(true); }} 
+                />
+                
+                <SongCarousel 
+                  title="Recently Played" 
+                  songs={[...songs].reverse()} 
+                  onPlay={(song) => { playSong(song); setIsPlayerExpanded(true); }} 
+                />
+                
+                <SongCarousel 
+                  title="Chill" 
+                  songs={[...songs].sort((a,b) => a.title.localeCompare(b.title))} 
+                  onPlay={(song) => { playSong(song); setIsPlayerExpanded(true); }} 
+                />
+                
+                <SongCarousel 
+                  title="Sad Songs" 
+                  songs={[...songs].sort((a,b) => (a.artist||'').localeCompare(b.artist||''))} 
+                  onPlay={(song) => { playSong(song); setIsPlayerExpanded(true); }} 
+                />
+                
+                <SongCarousel 
+                  title="India's Best" 
+                  songs={[...songs].sort((a,b) => b.title.localeCompare(a.title))} 
+                  onPlay={(song) => { playSong(song); setIsPlayerExpanded(true); }} 
+                />
+              </>
             )}
           </div>
             )}
@@ -1809,6 +1826,7 @@ export default function Component() {
     </div>
   );
 }
+
 
 
 
