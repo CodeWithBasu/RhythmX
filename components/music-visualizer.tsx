@@ -1667,12 +1667,31 @@ export default function Component() {
               <div className={`shadow-2xl transition-all duration-500 ${isLyricsExpanded ? "rounded-3xl min-h-[85vh] flex flex-col pt-12 pb-24 px-6 sm:px-12 md:px-16" : "rounded-2xl relative p-6 max-h-[300px] overflow-hidden group"}`} style={{ backgroundColor: lyricsBgColor }}>
                 <div className="flex justify-between items-center mb-6 shrink-0">
                   <h3 className="text-white font-bold text-lg md:text-2xl">Lyrics</h3>
-                  <button 
-                    onClick={() => setIsLyricsExpanded(!isLyricsExpanded)}
-                    className="bg-white text-black px-4 py-1.5 rounded-full text-sm font-bold hover:scale-105 transition-transform"
-                  >
-                    {isLyricsExpanded ? 'Close' : 'Show full'}
-                  </button>
+                    <div className="flex gap-2 sm:gap-3">
+                      <button 
+                        onClick={() => {
+                          const text = lyrics.map(l => l.text).join('\n');
+                          const blob = new Blob([text], { type: 'text/plain' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `${currentTrack.replace('~/', '').trim()} - Lyrics.txt`;
+                          a.click();
+                          URL.revokeObjectURL(url);
+                        }}
+                        style={{ backgroundColor: lyricsBgColor }}
+                        className="text-white px-3 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold border border-white/20 hover:bg-white/10 transition-colors flex items-center gap-2"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        <span className="hidden sm:inline">Download</span>
+                      </button>
+                      <button 
+                        onClick={() => setIsLyricsExpanded(!isLyricsExpanded)}
+                        className="bg-white text-black px-4 py-1.5 rounded-full text-sm font-bold hover:scale-105 transition-transform"
+                      >
+                        {isLyricsExpanded ? 'Close' : 'Show full'}
+                      </button>
+                    </div>
                 </div>
                 
                 <div className="flex flex-col gap-3 relative" id="lyrics-container">
@@ -1685,7 +1704,7 @@ export default function Component() {
                         key={i}
                         id={`lyric-${i}`}
                         className={`font-bold transition-all duration-300 ${
-                          isLyricsExpanded ? 'text-3xl sm:text-4xl md:text-5xl py-2' : 'text-xl sm:text-2xl'
+                          isLyricsExpanded ? 'text-2xl sm:text-3xl md:text-4xl py-1' : 'text-lg sm:text-xl'
                         } ${
                           isActive ? 'text-white scale-105 origin-left drop-shadow-md' : 
                           isPast ? 'text-white/80' : 'text-white/70 hover:text-white'
@@ -1696,7 +1715,7 @@ export default function Component() {
                     )
                   })}
                   {currentLyricIndex === -1 && (
-                     <div className={`font-bold text-white/50 ${isLyricsExpanded ? 'text-3xl sm:text-4xl md:text-5xl' : 'text-xl sm:text-2xl'}`}>
+                     <div className={`font-bold text-white/50 ${isLyricsExpanded ? 'text-2xl sm:text-3xl md:text-4xl' : 'text-lg sm:text-xl'}`}>
                         {lyrics.slice(0, isLyricsExpanded ? lyrics.length : 4).map((l,i) => <div key={i} className="mb-3">{l.text || '♪'}</div>)}
                      </div>
                   )}
