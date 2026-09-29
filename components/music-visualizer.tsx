@@ -112,7 +112,7 @@ const SongCarousel = ({ title, songs, onPlay }: { title: string, songs: any[], o
   return (
     <section>
       <h2 className="text-xl font-bold mb-4 text-white">{title}</h2>
-      <div className="relative group -mx-4">
+      <div className="relative group/carousel -mx-4">
         
         {/* Left Shadow & Arrow */}
         {canScrollLeft && (
@@ -120,7 +120,7 @@ const SongCarousel = ({ title, songs, onPlay }: { title: string, songs: any[], o
         )}
         <button 
           onClick={() => scroll('left')}
-          className={`hidden md:flex absolute left-2 top-[60px] sm:top-[80px] -translate-y-1/2 w-10 h-10 rounded-full items-center justify-center bg-black/60 hover:bg-black/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all z-10 text-white shadow-xl hover:scale-105 ${!canScrollLeft && 'hidden'}`}
+          className={`hidden md:flex absolute left-2 top-[60px] sm:top-[80px] -translate-y-1/2 w-10 h-10 rounded-full items-center justify-center bg-black/60 hover:bg-black/80 backdrop-blur-sm opacity-0 group-hover/carousel:opacity-100 transition-all z-10 text-white shadow-xl hover:scale-105 ${!canScrollLeft && 'hidden'}`}
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
@@ -131,7 +131,7 @@ const SongCarousel = ({ title, songs, onPlay }: { title: string, songs: any[], o
             <div 
               key={`carousel-${title}-${song.id}`} 
               onClick={() => onPlay(song)} 
-              className="snap-start shrink-0 w-[120px] sm:w-[160px] cursor-pointer group/item"
+              className="snap-start shrink-0 w-[120px] sm:w-[160px] cursor-pointer group"
             >
               <div className="w-[120px] sm:w-[160px] h-[120px] sm:h-[160px] mb-3">
                 <div className="w-full h-full rounded-md overflow-hidden relative shadow-lg">
@@ -153,7 +153,7 @@ const SongCarousel = ({ title, songs, onPlay }: { title: string, songs: any[], o
         )}
         <button 
           onClick={() => scroll('right')}
-          className={`hidden md:flex absolute right-2 top-[60px] sm:top-[80px] -translate-y-1/2 w-10 h-10 rounded-full items-center justify-center bg-black/60 hover:bg-black/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all z-10 text-white shadow-xl hover:scale-105 ${!canScrollRight && 'hidden'}`}
+          className={`hidden md:flex absolute right-2 top-[60px] sm:top-[80px] -translate-y-1/2 w-10 h-10 rounded-full items-center justify-center bg-black/60 hover:bg-black/80 backdrop-blur-sm opacity-0 group-hover/carousel:opacity-100 transition-all z-10 text-white shadow-xl hover:scale-105 ${!canScrollRight && 'hidden'}`}
         >
           <ChevronRight className="w-6 h-6" />
         </button>
