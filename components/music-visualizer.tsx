@@ -172,11 +172,11 @@ export default function Component() {
   
   useEffect(() => {
     barsRef.current = activeBars
-    setAudioData(new Array(activeBars).fill(0.01))
+    audioDataRef.current = new Array(activeBars).fill(0.01)
   }, [activeBars])
 
   const [isPlaying, setIsPlaying] = useState(false)
-  const [audioData, setAudioData] = useState<number[]>(() => new Array(80).fill(0.01))
+  const audioDataRef = useRef<number[]>(new Array(80).fill(0.01))
   const [currentTrack, setCurrentTrack] = useState<string>("~/ 2 Million")
   const [hasAudio, setHasAudio] = useState(true) // Ahora true por defecto
   const [isInitialized, setIsInitialized] = useState(false)
@@ -199,6 +199,11 @@ export default function Component() {
   const [isAdmin, setIsAdmin] = useState(false)
   const localFileRef = useRef<HTMLInputElement>(null)
   const [theme, setTheme] = useState("neon")
+  const themeRef = useRef(theme)
+  useEffect(() => { themeRef.current = theme }, [theme])
+  
+  const isPlayingRef = useRef(isPlaying)
+  useEffect(() => { isPlayingRef.current = isPlaying }, [isPlaying])
   const [isShuffle, setIsShuffle] = useState(false)
   const [isRepeat, setIsRepeat] = useState(false)
   const [is8DMode, setIs8DMode] = useState(false)
@@ -831,8 +836,20 @@ export default function Component() {
 
     // Aplicar suavizado adicional para olas más fluidas
     const extraSmoothed = smoothData(smoothedData)
-
-    setAudioData(extraSmoothed)
+    audioDataRef.current = extraSmoothed
+    
+    // Direct DOM manipulation for maximum performance
+    for (let i = 0; i < bars; i++) {
+        const el = document.getElementById(`visualizer-bar-${i}`)
+        if (el) {
+            const height = extraSmoothed[i] || 0
+            const colors = getBarColors(i, bars, height, isPlayingRef.current, themeRef.current)
+            el.style.height = `${height * 100}%`
+            el.style.opacity = height > 0 ? "1" : "0"
+            el.style.backgroundColor = colors.bg
+            el.style.boxShadow = isPlayingRef.current ? `0 0 ${Math.floor(height * 6)}px ${colors.glow}` : 'none'
+        }
+    }
   }
 
   // useEffect para manejar el loop de visualización
@@ -1454,31 +1471,21 @@ export default function Component() {
           )}
 
           <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[40vh] max-h-[400px] flex items-end justify-center gap-[1px] sm:gap-[2px] md:gap-1 px-4 z-10">
-            {audioData.slice(0, activeBars).map((height, index) => {
-            const colors = getBarColors(index, activeBars, height, isPlaying, theme);
-            return (
-              <motion.div
-                key={index}
-                className="rounded-t-sm flex-1 max-w-[4px] sm:max-w-[5px] md:max-w-[6px] lg:max-w-[8px]"
-                style={{
-                  backgroundColor: colors.bg,
-                  opacity: height > 0 ? 1 : 0,
-                  boxShadow: isPlaying ? `0 0 ${Math.floor(height * 6)}px ${colors.glow}` : 'none'
-                }}
-                initial={{ scaleX: 0 }}
-                animate={{
-                  height: `${height * 100}%`,
-                  opacity: height > 0 ? 1 : 0,
-                  scaleX: showInitialAnimation ? 1 : 1,
-                }}
-                transition={{
-                  height: { type: "spring", stiffness: height > 0 ? 400 : 200, damping: height > 0 ? 25 : 35, mass: 0.2 },
-                  opacity: { duration: height > 0 ? 0.1 : 0.8, ease: "easeOut" },
-                  scaleX: { duration: 2, delay: Math.abs(index - 40) * 0.015, ease: "easeOut" },
-                }}
-              />
-            );
-          })}
+            {Array.from({ length: activeBars }).map((_, index) => {
+              return (
+                <div
+                  key={index}
+                  id={`visualizer-bar-${index}`}
+                  className="rounded-t-sm flex-1 max-w-[4px] sm:max-w-[5px] md:max-w-[6px] lg:max-w-[8px] transition-all duration-[50ms]"
+                  style={{
+                    height: '1%',
+                    opacity: 0,
+                    backgroundColor: 'rgba(255,255,255,0.2)',
+                    boxShadow: 'none'
+                  }}
+                />
+              );
+            })}
           </div>
         </div>
 
