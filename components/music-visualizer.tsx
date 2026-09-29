@@ -833,26 +833,32 @@ export default function Component() {
 
   // useEffect para manejar el loop de visualización
   useEffect(() => {
-    let intervalId: NodeJS.Timeout | null = null
+    let animationFrame: number;
+    let lastTime = 0;
+
+    const loop = (time: number) => {
+      if (time - lastTime >= 25) { // Throttle to ~40fps
+        updateAudioData();
+        lastTime = time;
+      }
+      animationFrame = requestAnimationFrame(loop);
+    };
 
     if (isPlaying) {
-      setIsLooping(true)
-      console.log("Starting visualization loop")
-
-      intervalId = setInterval(() => {
-        updateAudioData()
-      }, 25) // 40 FPS para fluidez de ola
+      setIsLooping(true);
+      console.log("Starting visualization loop");
+      animationFrame = requestAnimationFrame(loop);
     } else {
-      setIsLooping(false)
-      console.log("Stopping visualization loop")
+      setIsLooping(false);
+      console.log("Stopping visualization loop");
     }
 
     return () => {
-      if (intervalId) {
-        clearInterval(intervalId)
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
       }
-    }
-  }, [isPlaying, isInitialized])
+    };
+  }, [isPlaying, isInitialized]);
 
   // 8D Audio Animation Loop
   useEffect(() => {
