@@ -270,22 +270,22 @@ export default function SettingsPage() {
                  </h2>
                  
                  <div className="space-y-4 relative">
-                   <div className="flex items-center justify-between p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-colors">
+                   <div className="flex items-center justify-between p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-colors cursor-pointer" onClick={() => setHardwareAcceleration(!hardwareAcceleration)}>
                      <div>
                        <h3 className="font-semibold text-sm">Hardware Acceleration</h3>
                        <p className="text-xs text-white/40 mt-1">Smoother 3D visualizer animations</p>
                      </div>
-                     <div className="w-12 h-6 bg-purple-500 rounded-full relative cursor-pointer shadow-inner">
-                       <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm" />
+                     <div className={`w-12 h-6 rounded-full relative shadow-inner transition-colors duration-300 ${hardwareAcceleration ? 'bg-purple-500' : 'bg-black/50 border border-white/10'}`}>
+                       <div className={`absolute top-1 w-4 h-4 rounded-full shadow-sm transition-all duration-300 ${hardwareAcceleration ? 'right-1 bg-white' : 'left-1 bg-white/30'}`} />
                      </div>
                    </div>
-                   <div className="flex items-center justify-between p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-colors">
+                   <div className="flex items-center justify-between p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-colors cursor-pointer" onClick={() => setShowLyrics(!showLyrics)}>
                      <div>
                        <h3 className="font-semibold text-sm">Show Lyrics by Default</h3>
                        <p className="text-xs text-white/40 mt-1">Auto-open lyrics panel when available</p>
                      </div>
-                     <div className="w-12 h-6 bg-black/50 border border-white/10 rounded-full relative cursor-pointer">
-                       <div className="absolute left-1 top-1 w-4 h-4 bg-white/30 rounded-full" />
+                     <div className={`w-12 h-6 rounded-full relative shadow-inner transition-colors duration-300 ${showLyrics ? 'bg-purple-500' : 'bg-black/50 border border-white/10'}`}>
+                       <div className={`absolute top-1 w-4 h-4 rounded-full shadow-sm transition-all duration-300 ${showLyrics ? 'right-1 bg-white' : 'left-1 bg-white/30'}`} />
                      </div>
                    </div>
                  </div>
