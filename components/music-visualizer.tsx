@@ -1237,7 +1237,7 @@ export default function Component() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
             
             {/* Liked Songs Tile */}
-            <div className="bg-white/10 hover:bg-white/20 transition-colors rounded-md flex items-center gap-3 pr-3 overflow-hidden cursor-pointer h-14">
+            <div onClick={() => setActiveTab("liked")} className="bg-white/10 hover:bg-white/20 transition-colors rounded-md flex items-center gap-3 pr-3 overflow-hidden cursor-pointer h-14">
                 <div className="w-14 h-14 shrink-0 bg-gradient-to-br from-indigo-500 via-purple-400 to-pink-300 flex items-center justify-center shadow-[4px_0_10px_rgba(0,0,0,0.3)]">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                 </div>
@@ -1331,6 +1331,36 @@ export default function Component() {
           </div>
             )}
 
+            {activeTab === 'liked' && (
+              <div className="space-y-6 pt-4 max-w-5xl mx-auto w-full">
+                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">Liked Songs</h2>
+                {songs.filter(s => likedSongs.includes(s.id || s.title)).length > 0 ? (
+                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    {songs.filter(s => likedSongs.includes(s.id || s.title)).map(song => (
+                      <div 
+                        key={song.id} 
+                        onClick={() => { playSong(song); setIsPlayerExpanded(true); }}
+                        className="bg-white/5 hover:bg-white/10 p-3 rounded-lg transition-colors cursor-pointer group"
+                      >
+                        <div className="w-full aspect-square rounded-md overflow-hidden mb-3 shadow-lg relative">
+                          {song.imageUrl ? <img src={song.imageUrl} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-white/10 flex items-center justify-center text-white/20 text-xs font-medium">No Image</div>}
+                          <div className="absolute bottom-2 right-2 w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 shadow-xl">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                          </div>
+                        </div>
+                        <h4 className="text-white font-bold text-sm truncate">{song.title}</h4>
+                        <p className="text-white/60 text-xs truncate mt-1">{song.artist || 'Unknown Artist'}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center text-white/50 pt-16">
+                    <p>You haven't liked any songs yet.</p>
+                  </div>
+                )}
+              </div>
+            )}
+            
             {activeTab === 'search' && (
               <div className="space-y-6 pt-4 max-w-2xl mx-auto w-full">
                 <div className="max-w-xl mx-auto">
@@ -1461,7 +1491,9 @@ export default function Component() {
 
             {/* Mini Controls */}
             <div className="flex items-center gap-3 pr-2 shrink-0 text-white" onClick={(e) => e.stopPropagation()}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+              <button onClick={(e) => toggleLike(currentSongObj.id || currentSongObj.title, e)} className={`hover:scale-110 transition-transform ${likedSongs.includes(currentSongObj.id || currentSongObj.title) ? 'text-purple-400' : 'text-white'}`}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill={likedSongs.includes(currentSongObj.id || currentSongObj.title) ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                </button>
               <button 
                 onClick={() => isPlaying ? audioRef.current?.pause() : audioRef.current?.play()}
                 className="w-8 h-8 flex items-center justify-center hover:scale-105 transition-transform"
@@ -1504,7 +1536,10 @@ export default function Component() {
       `}</style>
       {/* EXPANDED PLAYER (Visualizer) */}
       <div 
-        className={`fixed inset-0 z-50 bg-[#0C0414] overflow-y-auto overflow-x-hidden transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isPlayerExpanded ? 'translate-y-0' : 'translate-y-full'}`}
+        className={`fixed inset-0 z-50 overflow-y-auto overflow-x-hidden transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isPlayerExpanded ? 'translate-y-0' : 'translate-y-full'}`}
+        style={{
+          background: `linear-gradient(135deg, ${lyricsBgColor} 0%, #0C0414 70%)`
+        }}
       >
         <div className="flex flex-col min-h-screen w-full relative">
         {/* Collapse Button */}
@@ -1580,8 +1615,9 @@ export default function Component() {
                     )}
                 </motion.div>
                 
-                <div className="flex-1 min-w-0">
-                    <motion.div 
+                <div className="flex-1 min-w-0 flex items-center justify-between gap-4">
+                      <div className="min-w-0">
+                      <motion.div 
                       className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-wider text-white truncate drop-shadow-md mb-2"
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -1598,7 +1634,18 @@ export default function Component() {
                         {currentSongObj.artist}
                       </motion.div>
                     )}
-                </div>
+                
+                  </div>
+                  
+                  {currentSongObj && (
+                      <button 
+                        onClick={(e) => toggleLike(currentSongObj.id || currentSongObj.title, e)}
+                        className={`p-3 rounded-full hover:bg-white/10 transition-all shrink-0 ${likedSongs.includes(currentSongObj.id || currentSongObj.title) ? 'text-purple-400' : 'text-white/60 hover:text-white'}`}
+                      >
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill={likedSongs.includes(currentSongObj.id || currentSongObj.title) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                      </button>
+                  )}
+                  </div>
               </div>
 
               <div className="flex flex-col gap-4 min-w-[280px]">
