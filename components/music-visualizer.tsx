@@ -1160,7 +1160,16 @@ export default function Component() {
 
   
   return (
-    <div className="h-[100dvh] w-full bg-[#290008] bg-[radial-gradient(circle_at_20%_20%,_#9e0b23_0%,_#420210_50%,_#0a0002_100%)] text-white flex flex-col font-sans overflow-hidden relative">
+    <div className="h-[100dvh] w-full bg-[#1a0002] text-white flex flex-col font-sans overflow-hidden relative">
+      {/* Abstract Photo-like Smoke Background */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden mix-blend-screen">
+         <div className="absolute top-[-10%] left-[-20%] w-[70%] h-[60%] rounded-full bg-[#ff4d6d]/30 blur-[120px]"></div>
+         <div className="absolute top-[20%] right-[-30%] w-[80%] h-[70%] rounded-full bg-[#ffb3c1]/20 blur-[140px]"></div>
+         <div className="absolute bottom-[-20%] left-[10%] w-[60%] h-[60%] rounded-full bg-[#c9184a]/30 blur-[130px]"></div>
+         <div className="absolute top-[35%] left-[-10%] w-[100%] h-[40%] -rotate-12 rounded-full bg-white/15 blur-[120px]"></div>
+      </div>
+      {/* Dark overlay to ensure text readability while keeping the smoke effect */}
+      <div className="absolute inset-0 z-0 pointer-events-none bg-black/10"></div>
       
       {/* Home Screen (Only visible if not expanded) */}
       <div className={`flex-1 overflow-y-auto pb-32 transition-opacity duration-300 ${isPlayerExpanded ? 'opacity-0 pointer-events-none absolute inset-0' : 'opacity-100 relative z-10'} bg-transparent`}>
@@ -1521,9 +1530,7 @@ export default function Component() {
       {/* EXPANDED PLAYER (Visualizer) */}
       <div 
         className={`fixed inset-0 z-50 overflow-y-auto overflow-x-hidden transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isPlayerExpanded ? 'translate-y-0' : 'translate-y-full'}`}
-        style={{
-          background: `radial-gradient(circle at 50% 30%, #9c091e 0%, #3d020d 60%, #0d0002 100%)`
-        }}
+        style={{ backgroundColor: '#1a0002' }}
       >
         <div className="flex flex-col min-h-screen w-full relative">
         {/* Collapse Button */}
