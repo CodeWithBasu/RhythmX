@@ -82,80 +82,31 @@ const GridAlbumArt = ({ song }: { song: any }) => {
 
 
 const SongCarousel = ({ title, songs, onPlay }: { title: string, songs: any[], onPlay: (song: any) => void }) => {
-  const scrollRef = React.useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = React.useState(false);
-  const [canScrollRight, setCanScrollRight] = React.useState(true);
-
-  const updateScrollState = () => {
-    if (scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
-    }
-  };
-
-  React.useEffect(() => {
-    updateScrollState();
-    window.addEventListener('resize', updateScrollState);
-    return () => window.removeEventListener('resize', updateScrollState);
-  }, [songs]);
-
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const { clientWidth, scrollLeft } = scrollRef.current;
-      const scrollAmount = direction === 'left' ? -clientWidth * 0.75 : clientWidth * 0.75;
-      scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-      setTimeout(updateScrollState, 400);
-    }
-  };
-
   return (
-    <section>
-      <h2 className="text-xl font-bold mb-4 text-white">{title}</h2>
-      <div className="relative group/carousel -mx-4">
-        
-        {/* Left Shadow & Arrow */}
-        {canScrollLeft && (
-          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-black/50 to-transparent z-[5] pointer-events-none" />
-        )}
-        <button 
-          onClick={() => scroll('left')}
-          className={`hidden md:flex absolute left-2 top-[50%] -translate-y-1/2 w-10 h-10 rounded-full items-center justify-center bg-white/20 hover:bg-white/30 backdrop-blur-md opacity-0 group-hover/carousel:opacity-100 transition-all z-10 text-white shadow-xl hover:scale-105 ${!canScrollLeft && 'hidden'}`}
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-
-        {/* Scroll Container */}
-        <div ref={scrollRef} onScroll={updateScrollState} className="flex overflow-x-auto gap-4 pb-4 snap-x hide-scrollbar px-4 scroll-smooth relative z-[1]">
-          {songs.map((song) => (
-            <div 
-              key={`carousel-${title}-${song.id}`} 
-              onClick={() => onPlay(song)} 
-              className="snap-start shrink-0 w-[140px] sm:w-[160px] cursor-pointer group bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-3 hover:bg-white/10 transition-all"
-            >
-              <div className="w-full aspect-square mb-3 relative rounded-2xl overflow-hidden shadow-lg border border-white/5">
-                  <GridAlbumArt song={song} />
-                  <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
-                  <div className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 shadow-lg">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                  </div>
-              </div>
-              <h3 className="font-bold text-white text-sm truncate px-1">{song.title}</h3>
-              <p className="text-white/60 text-xs truncate px-1 mt-0.5">{song.artist || 'Various Artists'}</p>
+    <section className="px-6 mt-4">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-bold text-white">{title}</h2>
+        <span className="text-xs text-white/60">View all</span>
+      </div>
+      <div className="flex flex-col gap-3">
+        {songs.map((song) => (
+          <div 
+            key={`list-${title}-${song.id}`} 
+            onClick={() => onPlay(song)} 
+            className="flex items-center gap-4 p-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-[24px] cursor-pointer group hover:bg-white/10 transition-colors"
+          >
+            <div className="w-12 h-12 shrink-0 rounded-full overflow-hidden shadow-md border border-white/5 relative">
+              <GridAlbumArt song={song} />
             </div>
-          ))}
-        </div>
-
-        {/* Right Shadow & Arrow */}
-        {canScrollRight && (
-          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-black/50 to-transparent z-[5] pointer-events-none" />
-        )}
-        <button 
-          onClick={() => scroll('right')}
-          className={`hidden md:flex absolute right-2 top-[60px] sm:top-[80px] -translate-y-1/2 w-10 h-10 rounded-full items-center justify-center bg-black/60 hover:bg-black/80 backdrop-blur-sm opacity-0 group-hover/carousel:opacity-100 transition-all z-10 text-white shadow-xl hover:scale-105 ${!canScrollRight && 'hidden'}`}
-        >
-          <ChevronRight className="w-6 h-6" />
-        </button>
+            <div className="flex-1 min-w-0">
+              <h4 className="text-white font-bold text-sm truncate">{song.title}</h4>
+              <p className="text-white/60 text-[10px] truncate mt-0.5">By {song.artist || 'Various Artists'} • 25 Music</p>
+            </div>
+            <button className="w-8 h-8 mr-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white opacity-80 group-hover:opacity-100 transition-all shadow-md shrink-0">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            </button>
+          </div>
+        ))}
       </div>
     </section>
   );
@@ -1209,20 +1160,20 @@ export default function Component() {
 
   
   return (
-    <div className="h-[100dvh] w-full bg-gradient-to-br from-[#4a0484] via-[#2a014a] to-black text-white flex flex-col font-sans overflow-hidden relative">
+    <div className="h-[100dvh] w-full bg-gradient-to-br from-[#5c0a15] via-[#240106] to-black text-white flex flex-col font-sans overflow-hidden relative">
       
       {/* Home Screen (Only visible if not expanded) */}
       <div className={`flex-1 overflow-y-auto pb-32 transition-opacity duration-300 ${isPlayerExpanded ? 'opacity-0 pointer-events-none absolute inset-0' : 'opacity-100 relative z-10'} bg-transparent`}>
         
         {/* Top Header (Glass UI) */}
-        <div className="sticky top-0 z-40 bg-transparent px-4 pt-8 pb-4 flex flex-col gap-6 max-w-7xl mx-auto w-full">
+        <div className="sticky top-0 z-40 bg-transparent px-6 pt-12 pb-4 flex flex-col gap-6 max-w-7xl mx-auto w-full">
           {/* Welcome Row */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {user ? <ProfileDropdown /> : <Link href="/signin" className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white border border-white/20 shadow-lg"><User className="w-6 h-6" /></Link>}
+              {user ? <ProfileDropdown /> : <Link href="/signin" className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white border border-white/20 shadow-lg overflow-hidden"><img src="https://i.pravatar.cc/150?img=68" alt="avatar" className="w-full h-full object-cover opacity-80" /></Link>}
               <div className="flex flex-col">
-                <span className="text-white/60 text-xs font-medium">Welcome Back</span>
-                <span className="text-white text-base font-bold">{user ? user.displayName || 'Guest' : 'Guest'}</span>
+                <span className="text-white/60 text-[10px] uppercase tracking-wider">Welcome Back</span>
+                <span className="text-white text-sm font-bold tracking-wide">{user ? user.displayName || 'William Ione' : 'William Ione'}</span>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -1232,8 +1183,7 @@ export default function Component() {
                 </button>
               )}
               <button className="w-10 h-10 rounded-full bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center text-white shadow-lg relative">
-                <div className="absolute top-2 right-2.5 w-1.5 h-1.5 bg-red-500 rounded-full"></div>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
               </button>
             </div>
           </div>
@@ -1241,39 +1191,38 @@ export default function Component() {
           {/* Search Bar Row */}
           <div className="flex items-center gap-3 relative">
              <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
                 <input 
                   type="text"
                   placeholder="Search here..."
-                  className="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder:text-white/50 rounded-full py-3.5 pl-12 pr-4 outline-none focus:bg-white/20 transition-all"
+                  className="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder:text-white/50 rounded-full py-3 pl-10 pr-4 outline-none focus:bg-white/20 transition-all text-sm"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
              </div>
-             <button className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shrink-0 shadow-lg">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 21v-7"></path><path d="M4 10V3"></path><path d="M12 21v-9"></path><path d="M12 8V3"></path><path d="M20 21v-5"></path><path d="M20 12V3"></path><path d="M1 14h6"></path><path d="M9 8h6"></path><path d="M17 16h6"></path></svg>
+             <button className="w-11 h-11 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shrink-0 shadow-lg">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 21v-7"></path><path d="M4 10V3"></path><path d="M12 21v-9"></path><path d="M12 8V3"></path><path d="M20 21v-5"></path><path d="M20 12V3"></path><path d="M1 14h6"></path><path d="M9 8h6"></path><path d="M17 16h6"></path></svg>
              </button>
           </div>
 
           {/* Categories */}
-          <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-1">
-            <button className="px-6 py-2 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white font-medium whitespace-nowrap text-sm shadow-lg">All</button>
-            <button className="px-6 py-2 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-white/70 font-medium whitespace-nowrap text-sm hover:bg-white/10 transition-all">Trending</button>
-            <button className="px-6 py-2 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-white/70 font-medium whitespace-nowrap text-sm hover:bg-white/10 transition-all">Playlists</button>
-            <button className="px-6 py-2 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-white/70 font-medium whitespace-nowrap text-sm hover:bg-white/10 transition-all">Artists</button>
+          <div className="flex gap-2.5 overflow-x-auto hide-scrollbar pb-1 -mx-6 px-6">
+            <button className="px-5 py-2 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white font-medium whitespace-nowrap text-xs shadow-lg">All</button>
+            <button className="px-5 py-2 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-white/60 font-medium whitespace-nowrap text-xs hover:bg-white/10 transition-all">Hotel Package</button>
+            <button className="px-5 py-2 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-white/60 font-medium whitespace-nowrap text-xs hover:bg-white/10 transition-all">Flight</button>
           </div>
         </div>
 
-        <main className="px-4 py-2 space-y-8 max-w-7xl mx-auto w-full">
+        <main className="py-2 space-y-6 max-w-7xl mx-auto w-full">
             {activeTab === 'home' && (
-              <div className="space-y-8">
+              <div className="space-y-6">
           
           {/* Quick Play / Trending Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
             
             {/* Liked Songs Tile */}
             <div onClick={() => setActiveTab("liked")} className="bg-white/10 hover:bg-white/20 transition-colors rounded-md flex items-center gap-3 pr-3 overflow-hidden cursor-pointer h-14">
-                <div className="w-14 h-14 shrink-0 bg-gradient-to-br from-indigo-500 via-purple-400 to-pink-300 flex items-center justify-center shadow-[4px_0_10px_rgba(0,0,0,0.3)]">
+                <div className="w-14 h-14 shrink-0 bg-gradient-to-br from-indigo-500 via-red-500 to-pink-300 flex items-center justify-center shadow-[4px_0_10px_rgba(0,0,0,0.3)]">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                 </div>
                 <div className="font-bold text-xs text-white truncate">Liked Songs</div>
@@ -1379,7 +1328,7 @@ export default function Component() {
                       >
                         <div className="w-full aspect-square rounded-md overflow-hidden mb-3 shadow-lg relative">
                           {song.imageUrl ? <img src={song.imageUrl} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-white/10 flex items-center justify-center text-white/20 text-xs font-medium">No Image</div>}
-                          <div className="absolute bottom-2 right-2 w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 shadow-xl">
+                          <div className="absolute bottom-2 right-2 w-10 h-10 bg-red-600 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 shadow-xl">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                           </div>
                         </div>
@@ -1430,10 +1379,10 @@ export default function Component() {
                             <GridAlbumArt song={song} />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-white font-medium truncate group-hover:text-purple-400 transition-colors">{song.title}</h4>
+                            <h4 className="text-white font-medium truncate group-hover:text-red-500 transition-colors">{song.title}</h4>
                             <p className="text-white/60 text-xs truncate">{song.artist || 'Unknown Artist'}</p>
                           </div>
-                          <div className="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                          <div className="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                           </div>
                         </div>
@@ -1460,9 +1409,9 @@ export default function Component() {
                 
                 {!user ? (
                   <div className="text-center text-white/50 pt-16 pb-20 border border-white/5 rounded-xl bg-white/5">
-                    <Database className="w-12 h-12 mx-auto mb-4 text-purple-400 opacity-50" />
+                    <Database className="w-12 h-12 mx-auto mb-4 text-red-500 opacity-50" />
                     <p className="font-medium mb-4">Log in to view your saved songs</p>
-                    <button onClick={() => setIsAddingSong(true)} className="bg-purple-500 text-white px-6 py-2 rounded-full font-medium">Log In</button>
+                    <button onClick={() => setIsAddingSong(true)} className="bg-red-600 text-white px-6 py-2 rounded-full font-medium">Log In</button>
                   </div>
                 ) : songs.filter(s => s.uploadedBy === user.uid).length > 0 ? (
                   <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
@@ -1474,7 +1423,7 @@ export default function Component() {
                       >
                         <div className="w-full aspect-square rounded-md overflow-hidden mb-3 shadow-lg relative">
                           <GridAlbumArt song={song} />
-                          <div className="absolute bottom-2 right-2 w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 shadow-xl">
+                          <div className="absolute bottom-2 right-2 w-10 h-10 bg-red-600 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 shadow-xl">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                           </div>
                         </div>
@@ -1485,7 +1434,7 @@ export default function Component() {
                   </div>
                 ) : (
                   <div className="text-center text-white/50 pt-16 pb-20 border border-white/5 rounded-xl bg-white/5">
-                    <Database className="w-12 h-12 mx-auto mb-4 text-purple-400 opacity-50" />
+                    <Database className="w-12 h-12 mx-auto mb-4 text-red-500 opacity-50" />
                     <p className="font-medium mb-4">You haven't uploaded any songs yet</p>
                     <button onClick={() => setIsAddingSong(true)} className="bg-white/10 hover:bg-white/20 text-white px-6 py-2 rounded-full font-medium transition-colors">Upload Your First Song</button>
                   </div>
@@ -1526,7 +1475,7 @@ export default function Component() {
 
             {/* Mini Controls */}
             <div className="flex items-center gap-3 pr-2 shrink-0 text-white" onClick={(e) => e.stopPropagation()}>
-              <button onClick={(e) => toggleLike(currentSongObj.id || currentSongObj.title, e)} className={`hover:scale-110 transition-transform ${likedSongs.includes(currentSongObj.id || currentSongObj.title) ? 'text-purple-400' : 'text-white'}`}>
+              <button onClick={(e) => toggleLike(currentSongObj.id || currentSongObj.title, e)} className={`hover:scale-110 transition-transform ${likedSongs.includes(currentSongObj.id || currentSongObj.title) ? 'text-red-500' : 'text-white'}`}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill={likedSongs.includes(currentSongObj.id || currentSongObj.title) ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                 </button>
               <button 
@@ -1573,7 +1522,7 @@ export default function Component() {
       <div 
         className={`fixed inset-0 z-50 overflow-y-auto overflow-x-hidden transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isPlayerExpanded ? 'translate-y-0' : 'translate-y-full'}`}
         style={{
-          background: `linear-gradient(135deg, ${lyricsBgColor} 0%, #0C0414 70%)`
+          background: `radial-gradient(circle at 50% 50%, #7d0b17 0%, #300208 60%, #0d0002 100%)`
         }}
       >
         <div className="flex flex-col min-h-screen w-full relative">
@@ -1595,7 +1544,7 @@ export default function Component() {
 
         {/* Visualizer Canvas & Bars */}
         <div className="flex-1 relative flex flex-col items-center justify-center w-full min-h-[45vh]">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-900/10 via-[#0C0414]/50 to-[#0C0414] pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-red-900/10 via-[#0C0414]/50 to-[#0C0414] pointer-events-none" />
           
           {!hasAudio && (
             <div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none z-10 px-4">
@@ -1603,7 +1552,7 @@ export default function Component() {
                 text={["RHYTHMX", "SONIC REALITY"]} 
                 typingSpeed={80} 
                  
-                className="text-2xl sm:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 drop-shadow-[0_0_10px_rgba(168,85,247,0.5)] uppercase tracking-[0.2em] text-center"
+                className="text-2xl sm:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-pink-500 to-red-500 drop-shadow-[0_0_10px_rgba(168,85,247,0.5)] uppercase tracking-[0.2em] text-center"
               />
             </div>
           )}
@@ -1644,7 +1593,7 @@ export default function Component() {
                         <Headphones className="w-8 h-8 sm:w-12 sm:h-12 text-white/40" />
                     )}
                     {is8DMode && (
-                      <div className="absolute top-2 right-2 bg-purple-500/80 backdrop-blur text-[10px] px-2 py-0.5 rounded text-white font-bold tracking-widest shadow-[0_0_10px_rgba(168,85,247,0.5)]">
+                      <div className="absolute top-2 right-2 bg-red-600/80 backdrop-blur text-[10px] px-2 py-0.5 rounded text-white font-bold tracking-widest shadow-[0_0_10px_rgba(168,85,247,0.5)]">
                         8D
                       </div>
                     )}
@@ -1675,7 +1624,7 @@ export default function Component() {
                   {currentSongObj && (
                       <button 
                         onClick={(e) => toggleLike(currentSongObj.id || currentSongObj.title, e)}
-                        className={`p-3 rounded-full hover:bg-white/10 transition-all shrink-0 ${likedSongs.includes(currentSongObj.id || currentSongObj.title) ? 'text-purple-400' : 'text-white/60 hover:text-white'}`}
+                        className={`p-3 rounded-full hover:bg-white/10 transition-all shrink-0 ${likedSongs.includes(currentSongObj.id || currentSongObj.title) ? 'text-red-500' : 'text-white/60 hover:text-white'}`}
                       >
                         <svg width="28" height="28" viewBox="0 0 24 24" fill={likedSongs.includes(currentSongObj.id || currentSongObj.title) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                       </button>
@@ -1699,7 +1648,7 @@ export default function Component() {
                     }}
                   >
                     <motion.div 
-                      className="absolute top-0 left-0 bottom-0 bg-gradient-to-r from-purple-500 to-pink-500"
+                      className="absolute top-0 left-0 bottom-0 bg-gradient-to-r from-red-600 to-pink-500"
                       style={{ width: `${(currentTime / (duration || 1)) * 100}%` }}
                       layoutId="progress"
                     />
@@ -1709,7 +1658,7 @@ export default function Component() {
                 </div>
 
                 <div className="flex items-center justify-between px-2">
-                  <button onClick={() => setIsShuffle(!isShuffle)} className={`p-2.5 rounded-full transition-all ${isShuffle ? 'text-purple-400 bg-purple-500/10' : 'text-white/40 hover:text-white/80 hover:bg-white/5'}`}>
+                  <button onClick={() => setIsShuffle(!isShuffle)} className={`p-2.5 rounded-full transition-all ${isShuffle ? 'text-red-500 bg-red-600/10' : 'text-white/40 hover:text-white/80 hover:bg-white/5'}`}>
                     <Shuffle className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                   <button onClick={() => {
@@ -1734,7 +1683,7 @@ export default function Component() {
                   }} className="p-2.5 text-white/70 hover:text-white hover:bg-white/5 rounded-full transition-all">
                     <SkipForward className="w-5 h-5 sm:w-6 sm:h-6" />
                   </button>
-                  <button onClick={() => setIsRepeat(!isRepeat)} className={`p-2.5 rounded-full transition-all ${isRepeat ? 'text-purple-400 bg-purple-500/10' : 'text-white/40 hover:text-white/80 hover:bg-white/5'}`}>
+                  <button onClick={() => setIsRepeat(!isRepeat)} className={`p-2.5 rounded-full transition-all ${isRepeat ? 'text-red-500 bg-red-600/10' : 'text-white/40 hover:text-white/80 hover:bg-white/5'}`}>
                     <Repeat className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                 </div>
@@ -1743,7 +1692,7 @@ export default function Component() {
 
             {/* Extras (Theme / 8D Audio) */}
             <div className="flex flex-wrap items-center justify-center gap-4 pt-4 border-t border-white/5">
-              <button onClick={() => setIs8DMode(!is8DMode)} className={`px-4 py-2 rounded-full text-[10px] sm:text-xs font-bold tracking-wider transition-all ${is8DMode ? 'bg-purple-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.5)]' : 'bg-white/5 text-white/50 hover:bg-white/10 hover:text-white'}`}>
+              <button onClick={() => setIs8DMode(!is8DMode)} className={`px-4 py-2 rounded-full text-[10px] sm:text-xs font-bold tracking-wider transition-all ${is8DMode ? 'bg-red-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.5)]' : 'bg-white/5 text-white/50 hover:bg-white/10 hover:text-white'}`}>
                 <span className="flex items-center gap-2"><Headphones className="w-3 h-3 sm:w-4 sm:h-4" />8D AUDIO {is8DMode ? 'ON' : 'OFF'}</span>
               </button>
               <div className="flex gap-2 bg-white/5 p-1 rounded-full">
@@ -1880,7 +1829,7 @@ export default function Component() {
                   </div>
                   <div className="w-32 shrink-0 snap-start">
                      <div className="w-full aspect-square bg-white/10 rounded-lg overflow-hidden relative">
-                       <div className="absolute inset-0 bg-gradient-to-br from-purple-500/50 to-pink-500/50" />
+                       <div className="absolute inset-0 bg-gradient-to-br from-red-600/50 to-pink-500/50" />
                        {albumArtUrl && <img src={albumArtUrl} className="w-full h-full object-cover mix-blend-overlay opacity-50" />}
                        <span className="absolute bottom-2 left-2 right-2 font-bold text-white text-sm line-clamp-2">Similar Artists</span>
                      </div>
@@ -1902,8 +1851,8 @@ export default function Component() {
           >
             {!user ? (
                 <div className="text-center flex flex-col items-center">
-                  <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mb-4">
-                    <Database className="w-8 h-8 text-purple-400" />
+                  <div className="w-16 h-16 bg-red-600/20 rounded-full flex items-center justify-center mb-4">
+                    <Database className="w-8 h-8 text-red-500" />
                   </div>
                   <h2 className="text-xl font-bold text-white mb-2">Login Required</h2>
                   <p className="text-white/60 mb-6 text-sm">Please log in or sign up first to upload and store music in the RhythmX library.</p>
@@ -2063,14 +2012,14 @@ export default function Component() {
                           }
                         }
                       }}
-                      className="text-sm text-white/60 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-500/20 file:text-purple-400 hover:file:bg-purple-500/30"
+                      className="text-sm text-white/60 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-600/20 file:text-red-500 hover:file:bg-red-600/30"
                     />
                     <input 
                       type="text" 
                       placeholder="Song Title" 
                       value={newSongMeta.title}
                       onChange={(e) => setNewSongMeta({...newSongMeta, title: e.target.value})}
-                      className="w-full bg-[#222] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-500/50"
+                      className="w-full bg-[#222] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-red-600/50"
                       required
                     />
                     <input 
@@ -2078,12 +2027,12 @@ export default function Component() {
                       placeholder="Artist (Optional)" 
                       value={newSongMeta.artist || ''}
                       onChange={(e) => setNewSongMeta({...newSongMeta, artist: e.target.value})}
-                      className="w-full bg-[#222] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-500/50"
+                      className="w-full bg-[#222] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-red-600/50"
                     />
                     <select
                       value={newSongMeta.language}
                       onChange={(e) => setNewSongMeta({...newSongMeta, language: e.target.value})}
-                      className="w-full bg-[#222] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-500/50"
+                      className="w-full bg-[#222] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-red-600/50"
                     >
                       <option value="English">English</option>
                       <option value="Hindi">Hindi</option>
