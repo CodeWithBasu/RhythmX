@@ -1165,8 +1165,12 @@ export default function Component() {
       {/* Home Screen (Only visible if not expanded) */}
       <div className={`flex-1 overflow-y-auto pb-32 transition-opacity duration-300 ${isPlayerExpanded ? 'opacity-0 pointer-events-none absolute inset-0' : 'opacity-100 relative z-10'} bg-transparent`}>
         
+        <main className="py-2 space-y-6 max-w-7xl mx-auto w-full">
+            {activeTab === 'home' && (
+              <div className="space-y-6">
+              
         {/* Top Header (Glass UI) */}
-        <div className="sticky top-0 z-40 bg-transparent px-6 pt-12 pb-4 flex flex-col gap-6 max-w-7xl mx-auto w-full">
+        <div className="bg-transparent px-6 pt-8 pb-4 flex flex-col gap-6 w-full">
           {/* Welcome Row */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -1178,11 +1182,11 @@ export default function Component() {
             </div>
             <div className="flex items-center gap-3">
               {isAdmin && (
-                <button onClick={() => setIsAddingSong(true)} className="w-10 h-10 rounded-full bg-gradient-to-br from-white/10 to-transparent backdrop-blur-md border-t border-l border-white/20 border-b border-r border-white/5 shadow-[0_4px_16px_rgba(0,0,0,0.1)] flex items-center justify-center text-white shadow-lg">
+                <button onClick={() => setIsAddingSong(true)} className="w-10 h-10 rounded-full bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-md border-t border-l border-white/30 border-b border-r border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.3)] flex items-center justify-center text-white shadow-lg">
                   <Upload className="w-5 h-5" />
                 </button>
               )}
-              <button className="w-10 h-10 rounded-full bg-gradient-to-br from-white/10 to-transparent backdrop-blur-md border-t border-l border-white/20 border-b border-r border-white/5 shadow-[0_4px_16px_rgba(0,0,0,0.1)] flex items-center justify-center text-white shadow-lg relative">
+              <button className="w-10 h-10 rounded-full bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-md border-t border-l border-white/30 border-b border-r border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.3)] flex items-center justify-center text-white shadow-lg relative">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
               </button>
             </div>
@@ -1195,7 +1199,7 @@ export default function Component() {
                 <input 
                   type="text"
                   placeholder="Search here..."
-                  className="w-full bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border-t border-l border-white/20 border-b border-r border-white/5 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] text-white placeholder:text-white/50 rounded-full py-3 pl-10 pr-4 outline-none focus:bg-white/20 transition-all text-sm"
+                  className="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder:text-white/50 rounded-full py-3 pl-10 pr-4 outline-none focus:bg-white/20 transition-all text-sm shadow-md"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -1206,47 +1210,57 @@ export default function Component() {
           </div>
 
           {/* Categories */}
-          <div className="flex gap-2.5 overflow-x-auto hide-scrollbar pb-1 -mx-6 px-6">
-            <button className="px-5 py-2 rounded-full bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-md border-t border-l border-white/30 border-b border-r border-white/10 shadow-[0_4px_16px_rgba(0,0,0,0.2)] text-white font-medium whitespace-nowrap text-xs shadow-lg">All</button>
+          <div className="flex gap-2.5 overflow-x-auto hide-scrollbar pb-1">
+            <button className="px-5 py-2 rounded-full bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-md border-t border-l border-white/30 border-b border-r border-white/10 shadow-[0_4px_16px_rgba(0,0,0,0.2)] text-white font-medium whitespace-nowrap text-xs">All</button>
             <button className="px-5 py-2 rounded-full bg-gradient-to-br from-white/10 to-transparent backdrop-blur-md border-t border-l border-white/20 border-b border-r border-white/5 shadow-[0_4px_16px_rgba(0,0,0,0.1)] text-white/60 font-medium whitespace-nowrap text-xs hover:bg-white/10 transition-all">Hotel Package</button>
             <button className="px-5 py-2 rounded-full bg-gradient-to-br from-white/10 to-transparent backdrop-blur-md border-t border-l border-white/20 border-b border-r border-white/5 shadow-[0_4px_16px_rgba(0,0,0,0.1)] text-white/60 font-medium whitespace-nowrap text-xs hover:bg-white/10 transition-all">Flight</button>
           </div>
         </div>
 
-        <main className="py-2 space-y-6 max-w-7xl mx-auto w-full">
-            {activeTab === 'home' && (
-              <div className="space-y-6">
-          
-          {/* Quick Play / Trending Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-            
-            {/* Liked Songs Tile */}
-            <div onClick={() => setActiveTab("liked")} className="bg-white/10 hover:bg-white/20 transition-colors rounded-md flex items-center gap-3 pr-3 overflow-hidden cursor-pointer h-14">
-                <div className="w-14 h-14 shrink-0 bg-gradient-to-br from-indigo-500 via-red-500 to-pink-300 flex items-center justify-center shadow-[4px_0_10px_rgba(0,0,0,0.3)]">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                </div>
-                <div className="font-bold text-xs text-white truncate">Liked Songs</div>
-            </div>
-
-            {isLoadingSongs && [...Array(5)].map((_, i) => (
-              <div key={`quick-skel-${i}`} className="bg-white/5 rounded-md flex items-center gap-3 pr-3 overflow-hidden h-14 animate-pulse">
-                <div className="w-14 h-14 shrink-0 bg-white/10" />
-                <div className="h-3 bg-white/10 rounded w-2/3" />
-              </div>
-            ))}
-            {songs.slice(0, 5).map((song) => (
+        {/* Trending Card (Glass UI) */}
+          {songs.length > 0 && (
+            <div className="flex overflow-x-auto gap-4 hide-scrollbar px-6 pb-4 -mx-6">
               <div 
-                key={`quick-${song.id}`}
-                onClick={() => { playSong(song); setIsPlayerExpanded(true); }}
-                className="bg-white/10 hover:bg-white/20 transition-colors rounded-md flex items-center gap-3 pr-3 overflow-hidden cursor-pointer h-14"
+                onClick={() => { playSong(songs[0]); setIsPlayerExpanded(true); }}
+                className="relative w-[280px] h-[280px] shrink-0 rounded-[40px] overflow-hidden cursor-pointer shadow-2xl group border border-white/20 p-5 flex flex-col justify-between"
               >
-                <div className="w-14 h-14 shrink-0 shadow-[4px_0_10px_rgba(0,0,0,0.3)] bg-black/40">
-                  <GridAlbumArt song={song} />
+                <div className="absolute inset-0 z-0">
+                  <GridAlbumArt song={songs[0]} />
+                  <div className="absolute inset-0 bg-black/20 mix-blend-overlay"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#4a0210]/90 via-[#4a0210]/20 to-transparent"></div>
                 </div>
-                <div className="font-bold text-xs text-white truncate">{song.title}</div>
+                
+                <div className="relative z-10 flex justify-between items-start">
+                  <div className="bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full text-white/90 text-[10px] font-bold tracking-wide border border-white/20 shadow-sm">Trending</div>
+                  <div className="w-8 h-8 rounded-full bg-[#8b1521]/80 backdrop-blur-md flex items-center justify-center text-white border border-white/20 shadow-lg">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                  </div>
+                </div>
+                
+                <div className="relative z-10 flex items-end justify-between">
+                  <div>
+                    <h2 className="text-white text-lg font-bold mb-0.5 drop-shadow-md">{songs[0].title}</h2>
+                    <p className="text-white/80 text-[10px]">By {songs[0].artist || 'Various Artists'} • 25 Music</p>
+                  </div>
+                  <button className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center border border-white/20 hover:scale-105 transition-transform shrink-0 shadow-lg">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                  </button>
+                </div>
               </div>
-            ))}
-          </div>
+              
+              {songs.length > 1 && (
+                <div 
+                  onClick={() => { playSong(songs[1]); setIsPlayerExpanded(true); }}
+                  className="relative w-[280px] h-[280px] shrink-0 rounded-[40px] overflow-hidden cursor-pointer shadow-2xl group border border-white/20 p-5 flex flex-col justify-between"
+                >
+                  <div className="absolute inset-0 z-0 opacity-80">
+                    <GridAlbumArt song={songs[1]} />
+                    <div className="absolute inset-0 bg-black/40 mix-blend-overlay"></div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Skeleton Loading Rows */}
             {isLoadingSongs && (
@@ -1348,7 +1362,7 @@ export default function Component() {
             {activeTab === 'search' && (
               <div className="space-y-6 pt-4 max-w-2xl mx-auto w-full">
                 <div className="max-w-xl mx-auto">
-                  <div className="flex items-center w-full bg-[#242424] hover:bg-[#2a2a2a] focus-within:bg-[#2a2a2a] focus-within:ring-1 focus-within:ring-white/20 rounded-full px-4 py-3 transition-all shadow-lg">
+                  <div className="flex items-center w-full bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 focus-within:bg-white/20 rounded-full px-4 py-3 transition-all shadow-lg">
                     <Search className="w-6 h-6 text-white/50 shrink-0 mr-3" />
                     <input
                       type="text"
