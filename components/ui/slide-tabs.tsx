@@ -52,7 +52,7 @@ export const SlideTabs = ({
           });
         }
       }}
-      className="relative mx-auto flex w-fit items-center rounded-full border border-white/10 bg-black/40 backdrop-blur-xl p-1.5 shadow-2xl"
+      className="relative mx-auto flex w-fit items-center rounded-full border border-white/10 bg-gradient-to-br from-black/60 to-black/30 backdrop-blur-2xl border-t border-l border-white/20 border-b border-r border-white/5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] p-1.5 shadow-2xl"
     >
       {tabs.map((tab, i) => (
         <Tab
@@ -117,7 +117,7 @@ const Cursor = ({ position }: { position: any }) => {
         opacity: position.opacity,
       }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className="absolute z-0 top-[6px] bottom-[6px] rounded-full bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+      className="absolute z-0 top-[6px] bottom-[6px] rounded-full bg-gradient-to-r from-red-600 to-red-500 shadow-[0_0_15px_rgba(220,38,38,0.5)]"
     />
   );
 };

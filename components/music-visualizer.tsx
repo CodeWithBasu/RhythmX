@@ -93,7 +93,7 @@ const SongCarousel = ({ title, songs, onPlay }: { title: string, songs: any[], o
           <div 
             key={`list-${title}-${song.id}`} 
             onClick={() => onPlay(song)} 
-            className="flex items-center gap-4 p-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-[24px] cursor-pointer group hover:bg-white/10 transition-colors"
+            className="flex items-center gap-4 p-2 bg-gradient-to-br from-white/10 to-transparent backdrop-blur-md border-t border-l border-white/20 border-b border-r border-white/5 shadow-[0_4px_16px_rgba(0,0,0,0.1)] rounded-[24px] cursor-pointer group hover:bg-white/10 transition-colors"
           >
             <div className="w-12 h-12 shrink-0 rounded-full overflow-hidden shadow-md border border-white/5 relative">
               <GridAlbumArt song={song} />
@@ -102,7 +102,7 @@ const SongCarousel = ({ title, songs, onPlay }: { title: string, songs: any[], o
               <h4 className="text-white font-bold text-sm truncate">{song.title}</h4>
               <p className="text-white/60 text-[10px] truncate mt-0.5">By {song.artist || 'Various Artists'} • 25 Music</p>
             </div>
-            <button className="w-8 h-8 mr-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white opacity-80 group-hover:opacity-100 transition-all shadow-md shrink-0">
+            <button className="w-8 h-8 mr-2 rounded-full bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-md border-t border-l border-white/30 border-b border-r border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.3)] flex items-center justify-center text-white opacity-80 group-hover:opacity-100 transition-all shadow-md shrink-0">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
             </button>
           </div>
@@ -1160,7 +1160,7 @@ export default function Component() {
 
   
   return (
-    <div className="h-[100dvh] w-full bg-gradient-to-br from-[#5c0a15] via-[#240106] to-black text-white flex flex-col font-sans overflow-hidden relative">
+    <div className="h-[100dvh] w-full bg-[#290008] bg-[radial-gradient(circle_at_20%_20%,_#9e0b23_0%,_#420210_50%,_#0a0002_100%)] text-white flex flex-col font-sans overflow-hidden relative">
       
       {/* Home Screen (Only visible if not expanded) */}
       <div className={`flex-1 overflow-y-auto pb-32 transition-opacity duration-300 ${isPlayerExpanded ? 'opacity-0 pointer-events-none absolute inset-0' : 'opacity-100 relative z-10'} bg-transparent`}>
@@ -1178,11 +1178,11 @@ export default function Component() {
             </div>
             <div className="flex items-center gap-3">
               {isAdmin && (
-                <button onClick={() => setIsAddingSong(true)} className="w-10 h-10 rounded-full bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center text-white shadow-lg">
+                <button onClick={() => setIsAddingSong(true)} className="w-10 h-10 rounded-full bg-gradient-to-br from-white/10 to-transparent backdrop-blur-md border-t border-l border-white/20 border-b border-r border-white/5 shadow-[0_4px_16px_rgba(0,0,0,0.1)] flex items-center justify-center text-white shadow-lg">
                   <Upload className="w-5 h-5" />
                 </button>
               )}
-              <button className="w-10 h-10 rounded-full bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center text-white shadow-lg relative">
+              <button className="w-10 h-10 rounded-full bg-gradient-to-br from-white/10 to-transparent backdrop-blur-md border-t border-l border-white/20 border-b border-r border-white/5 shadow-[0_4px_16px_rgba(0,0,0,0.1)] flex items-center justify-center text-white shadow-lg relative">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
               </button>
             </div>
@@ -1195,21 +1195,21 @@ export default function Component() {
                 <input 
                   type="text"
                   placeholder="Search here..."
-                  className="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder:text-white/50 rounded-full py-3 pl-10 pr-4 outline-none focus:bg-white/20 transition-all text-sm"
+                  className="w-full bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border-t border-l border-white/20 border-b border-r border-white/5 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] text-white placeholder:text-white/50 rounded-full py-3 pl-10 pr-4 outline-none focus:bg-white/20 transition-all text-sm"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
              </div>
-             <button className="w-11 h-11 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shrink-0 shadow-lg">
+             <button className="w-11 h-11 rounded-full bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-md border-t border-l border-white/30 border-b border-r border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.3)] flex items-center justify-center text-white shrink-0 shadow-lg">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 21v-7"></path><path d="M4 10V3"></path><path d="M12 21v-9"></path><path d="M12 8V3"></path><path d="M20 21v-5"></path><path d="M20 12V3"></path><path d="M1 14h6"></path><path d="M9 8h6"></path><path d="M17 16h6"></path></svg>
              </button>
           </div>
 
           {/* Categories */}
           <div className="flex gap-2.5 overflow-x-auto hide-scrollbar pb-1 -mx-6 px-6">
-            <button className="px-5 py-2 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white font-medium whitespace-nowrap text-xs shadow-lg">All</button>
-            <button className="px-5 py-2 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-white/60 font-medium whitespace-nowrap text-xs hover:bg-white/10 transition-all">Hotel Package</button>
-            <button className="px-5 py-2 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-white/60 font-medium whitespace-nowrap text-xs hover:bg-white/10 transition-all">Flight</button>
+            <button className="px-5 py-2 rounded-full bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-md border-t border-l border-white/30 border-b border-r border-white/10 shadow-[0_4px_16px_rgba(0,0,0,0.2)] text-white font-medium whitespace-nowrap text-xs shadow-lg">All</button>
+            <button className="px-5 py-2 rounded-full bg-gradient-to-br from-white/10 to-transparent backdrop-blur-md border-t border-l border-white/20 border-b border-r border-white/5 shadow-[0_4px_16px_rgba(0,0,0,0.1)] text-white/60 font-medium whitespace-nowrap text-xs hover:bg-white/10 transition-all">Hotel Package</button>
+            <button className="px-5 py-2 rounded-full bg-gradient-to-br from-white/10 to-transparent backdrop-blur-md border-t border-l border-white/20 border-b border-r border-white/5 shadow-[0_4px_16px_rgba(0,0,0,0.1)] text-white/60 font-medium whitespace-nowrap text-xs hover:bg-white/10 transition-all">Flight</button>
           </div>
         </div>
 
@@ -1451,7 +1451,7 @@ export default function Component() {
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 50, opacity: 0 }}
-            className="fixed bottom-[70px] left-2 right-2 sm:left-1/2 sm:-translate-x-1/2 sm:w-[500px] bg-white/10 backdrop-blur-md rounded-2xl p-2 flex items-center gap-3 shadow-[0_10px_40px_rgba(0,0,0,0.5)] cursor-pointer hover:bg-white/20 transition-colors z-[60] border border-white/20"
+            className="fixed bottom-[70px] left-2 right-2 sm:left-1/2 sm:-translate-x-1/2 sm:w-[500px] bg-gradient-to-br from-white/10 to-transparent backdrop-blur-xl rounded-[24px] p-2 flex items-center gap-3 shadow-[0_8px_32px_0_rgba(0,0,0,0.4)] cursor-pointer hover:bg-white/20 transition-colors z-[60] border-t border-l border-white/20 border-b border-r border-white/5"
             onClick={() => setIsPlayerExpanded(true)}
           >
             {/* Progress Bar (Spotify Style) */}
@@ -1522,7 +1522,7 @@ export default function Component() {
       <div 
         className={`fixed inset-0 z-50 overflow-y-auto overflow-x-hidden transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isPlayerExpanded ? 'translate-y-0' : 'translate-y-full'}`}
         style={{
-          background: `radial-gradient(circle at 50% 50%, #7d0b17 0%, #300208 60%, #0d0002 100%)`
+          background: `radial-gradient(circle at 50% 30%, #9c091e 0%, #3d020d 60%, #0d0002 100%)`
         }}
       >
         <div className="flex flex-col min-h-screen w-full relative">

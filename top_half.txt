@@ -1,0 +1,981 @@
+"use client"
+
+import React, { useState, useEffect, useRef } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Upload, Database, Share2, Users, SkipBack, SkipForward, Shuffle, Repeat, Headphones, Github, Linkedin, Globe } from "lucide-react"
+import Link from "next/link"
+import { ProfileDropdown } from "@/components/ui/profile-dropdown";
+import { useAuth } from "@/contexts/AuthContext";
+import ElasticSlider from "@/components/ui/elastic-slider"
+import TextType from "@/components/ui/TextType"
+import { useDevice } from "@/hooks/use-device"
+import { getPusherClient } from "@/lib/pusher-client"
+
+const DEFAULT_TEXT = [
+  "LOST IN THE NEON LIGHTS",
+  "FEEL THE RHYTHM IN YOUR MIND",
+  "ECHOES OF A CYBER CITY",
+  "WE ARE INFINITE"
+];
+
+const API_BASE = process.env.NEXT_PUBLIC_BASE_URL || '';
+
+// Dynamic Bar Color Generator
+const getBarColors = (index: number, total: number, height: number, isPlaying: boolean, theme: string = "neon") => {
+  if (!isPlaying) return { bg: 'rgba(255, 255, 255, 0.2)', glow: 'transparent' };
+  
+  let hue, saturation = 90, lightness = 60 + (height * 5);
+
+  if (theme === "synthwave") {
+    // Hot Pink (320) -> Orange (30) -> Yellow (60)
+    hue = (320 + ((index / total) * 100)) % 360; 
+  } else if (theme === "matrix") {
+    // Pure Hacker Green
+    hue = 120;
+    saturation = 100;
+  } else if (theme === "ocean") {
+    // Deep Blue to Bright Cyan
+    hue = 220 - ((index / total) * 60); 
+  } else {
+    // default: neon (Violet to Pink to Orange)
+    hue = 280 - ((index / total) * 250); 
+  }
+  
+  return {
+    bg: `hsl(${hue}, ${saturation}%, ${lightness}%)`,
+    glow: `hsla(${hue}, ${saturation}%, ${lightness}%, ${Math.min(0.25, height * 0.25)})`
+  };
+};
+
+export default function Component() {
+  const { user } = useAuth();
+  const device = useDevice()
+  // 64 bars on mobile is the sweet spot—wider than before, but not edge-to-edge
+  const activeBars = device === 'mobile' ? 64 : device === 'tablet' ? 72 : 80;
+  
+  const barsRef = useRef(activeBars)
+  
+  useEffect(() => {
+    barsRef.current = activeBars
+    setAudioData(new Array(activeBars).fill(0.01))
+  }, [activeBars])
+
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [audioData, setAudioData] = useState<number[]>(() => new Array(80).fill(0.01))
+  const [currentTrack, setCurrentTrack] = useState<string>("~/ 2 Million")
+  const [hasAudio, setHasAudio] = useState(true) // Ahora true por defecto
+  const [isInitialized, setIsInitialized] = useState(false)
+  const [isLooping, setIsLooping] = useState(false)
+  const [showInitialAnimation, setShowInitialAnimation] = useState(false)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
+  const [songs, setSongs] = useState<any[]>([])
+  const [error, setError] = useState<string | null>(null)
+  const [isAddingSong, setIsAddingSong] = useState(false)
+  const [isBuffering, setIsBuffering] = useState(false)
+  const [syncOffset, setSyncOffset] = useState(0)
+  const [dragActive, setDragActive] = useState(false)
+  const [newSongMeta, setNewSongMeta] = useState({ title: '', url: '', language: 'English' })
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [isAdmin, setIsAdmin] = useState(false)
+  const localFileRef = useRef<HTMLInputElement>(null)
+  const [theme, setTheme] = useState("neon")
+  const [isShuffle, setIsShuffle] = useState(false)
+  const [isRepeat, setIsRepeat] = useState(false)
+  const [is8DMode, setIs8DMode] = useState(false)
+  const [albumArtUrl, setAlbumArtUrl] = useState<string | null>(null)
+
+  const handleAdminLogin = () => {
+    const password = prompt("Enter Security Key to unlock Admin Panel:");
+    if (password === "rhythmxadmin") {
+      setIsAdmin(true);
+      alert("Admin Access Granted.");
+    } else if (password !== null) {
+      alert("Invalid Security Key.");
+    }
+  };
+
+  const [partyId, setPartyId] = useState<string | null>(null)
+  const [isHost, setIsHost] = useState(false)
+  const [currentSongObj, setCurrentSongObj] = useState<any>(null)
+  const [hasJoinedMobile, setHasJoinedMobile] = useState(false)
+
+  // Real-Time Social Reactions
+  const sharedChannelRef = useRef<any>(null);
+  const [reactions, setReactions] = useState<{id: string, emoji: string, x: number}[]>([]);
+  
+  const addReaction = (emoji: string) => {
+    const id = Date.now().toString() + Math.random().toString();
+    const x = Math.random() * 80 + 10; // Random X from 10vw to 90vw
+    setReactions(prev => [...prev, { id, emoji, x }]);
+    setTimeout(() => setReactions(prev => prev.filter(r => r.id !== id)), 2500);
+  };
+
+  const handleSendReaction = (emoji: string) => {
+    addReaction(emoji);
+    if (sharedChannelRef.current) {
+      sharedChannelRef.current.trigger('client-reaction', { emoji });
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const pId = params.get('party')
+      if (pId) {
+        setPartyId(pId)
+        setIsHost(false)
+      }
+    }
+  }, [])
+
+  const currentSongObjRef = useRef(currentSongObj);
+  useEffect(() => { currentSongObjRef.current = currentSongObj; }, [currentSongObj]);
+
+  const isInitializedRef = useRef(isInitialized);
+  useEffect(() => { isInitializedRef.current = isInitialized; }, [isInitialized]);
+
+  // Party Guest Sync via Pusher
+  useEffect(() => {
+    if (!partyId || isHost || !hasJoinedMobile) return;
+    
+    // Initial fetch to get current state before websocket connects
+    const fetchInitial = async () => {
+      const startFetch = Date.now();
+      try {
+        const res = await fetch(`${API_BASE}/api/party?id=${partyId}`);
+        if (res.ok) {
+          const data = await res.json();
+          processSyncEvent(data, (Date.now() - startFetch) / 2000);
+        }
+      } catch (e) {
+        console.error("Initial sync error", e);
+      }
+    };
+    fetchInitial();
+
+    const pusher = getPusherClient();
+    const channelName = `private-party-${partyId}`;
+    let channel = pusher.channel(channelName);
+    if (!channel) {
+       channel = pusher.subscribe(channelName);
+    }
+
+    channel.bind('client-sync', (data: any) => {
+      // Direct client-to-client transmission bypasses API delays perfectly. Use 50ms default transmission latency.
+      processSyncEvent(data, 0.05);
+    });
+
+    channel.bind('client-reaction', (data: any) => {
+      addReaction(data.emoji);
+    });
+
+    sharedChannelRef.current = channel;
+
+    return () => {
+      channel.unbind_all();
+      pusher.unsubscribe(channelName);
+    };
+  }, [partyId, isHost, hasJoinedMobile]);
+
+  // Immediately apply Manual Sync Calibration to audio playback when slider is moved
+  const prevSyncOffsetRef = useRef(syncOffset);
+  useEffect(() => {
+    if (audioRef.current && !isHost && partyId) {
+      const diff = syncOffset - prevSyncOffsetRef.current;
+      if (diff !== 0) {
+        audioRef.current.currentTime += diff;
+        prevSyncOffsetRef.current = syncOffset;
+      }
+    }
+  }, [syncOffset, isHost, partyId]);
+
+  const processSyncEvent = async (data: any, latency = 0) => {
+    const hasNewSong = data.song && (!currentSongObjRef.current || currentSongObjRef.current.id !== data.song.id);
+    
+    let timeSinceUpdate = 0;
+    if (data.serverTime && data.updatedAt) {
+      timeSinceUpdate = (data.serverTime - data.updatedAt) / 1000;
+    }
+    // Apply manual user sync adjustment offset to eliminate hardware/bluetooth latency
+    const expectedTime = data.isPlaying ? data.currentTime + Math.max(0, timeSinceUpdate) + latency + syncOffset : data.currentTime;
+
+    if (hasNewSong) {
+      setCurrentSongObj(data.song);
+      
+      let songUrl = data.song.url;
+      if (!songUrl) {
+        songUrl = `${API_BASE}/api/songs/${data.song.id}/stream`;
+      }
+      if (audioRef.current) {
+        audioRef.current.src = songUrl;
+        audioRef.current.load();
+        audioRef.current.currentTime = expectedTime;
+        setIsBuffering(true);
+        
+        if (audioContextRef.current?.state === "suspended") {
+           await audioContextRef.current.resume();
+        }
+        if (!isInitializedRef.current) {
+           await initializeAudioContext();
+        }
+        
+        if (data.isPlaying) {
+           const p = audioRef.current.play();
+           if (p !== undefined) p.catch(() => {});
+           setIsPlaying(true);
+        }
+        setCurrentTrack(`~/ ${data.song.title}`);
+        setHasAudio(true);
+      }
+    } else if (audioRef.current) {
+       const drift = expectedTime - audioRef.current.currentTime;
+       
+       // Higher drift threshold (1.5s) prevents normal network connection jitter from causing microscopic stutters and lagginess every second.
+       // Only scrub jumps (like Host seeking) will trigger this snap!
+       if (Math.abs(drift) > 1.5) {
+          audioRef.current.currentTime = expectedTime;
+       }
+       
+       // Sync state
+       if (data.isPlaying && audioRef.current.paused) {
+          // Absolute synchronization snap upon Resume Action!
+          audioRef.current.currentTime = expectedTime;
+          const p = audioRef.current.play();
+          if (p !== undefined) p.catch(() => {});
+          setIsPlaying(true);
+       } else if (!data.isPlaying && !audioRef.current.paused) {
+          audioRef.current.pause();
+          setIsPlaying(false);
+       }
+    }
+  };
+
+  // Party Host Sync
+  const channelRef = useRef<any>(null);
+  const pendingSyncRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (!partyId || !isHost || !audioRef.current || !currentSongObj) return;
+    
+    // Connect Host to private channel for Client Events
+    const pusher = getPusherClient();
+    const channelName = `private-party-${partyId}`;
+    let channel = pusher.channel(channelName);
+    if (!channel) {
+       channel = pusher.subscribe(channelName);
+    }
+    channelRef.current = channel;
+    sharedChannelRef.current = channel;
+
+    channel.bind('client-reaction', (data: any) => {
+      addReaction(data.emoji);
+    });
+
+    // Broadcast function
+    const broadcast = async () => {
+      if (!audioRef.current) return;
+      
+      const payload = {
+        id: partyId,
+        song: currentSongObj,
+        currentTime: audioRef.current.currentTime,
+        isPlaying: !audioRef.current.paused,
+        clientTime: Date.now()
+      };
+
+      // 1. Instantly ping all guests without waiting for server response!
+      channelRef.current?.trigger('client-sync', payload);
+
+      // 2. Async save to database
+      try {
+        await fetch(`${API_BASE}/api/party`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      } catch (e) {
+        console.error("Failed to host sync", e);
+      }
+    };
+
+    // 1. Send constant baseline syncs slightly faster (every 1 second instead of 2 seconds)
+    const interval = setInterval(broadcast, 1000);
+    
+    // 2. Send INSTANT sync pulses exactly when Host interacts (Play, Pause, Scrubbing)
+    const handleAction = () => {
+       if (pendingSyncRef.current) clearTimeout(pendingSyncRef.current);
+       pendingSyncRef.current = setTimeout(broadcast, 10);
+    };
+
+    const audioEl = audioRef.current;
+    if (audioEl) {
+      audioEl.addEventListener('play', handleAction);
+      audioEl.addEventListener('pause', handleAction);
+      audioEl.addEventListener('seeked', handleAction);
+    }
+    
+    return () => {
+      clearInterval(interval);
+      if (pendingSyncRef.current) clearTimeout(pendingSyncRef.current);
+      if (audioEl) {
+        audioEl.removeEventListener('play', handleAction);
+        audioEl.removeEventListener('pause', handleAction);
+        audioEl.removeEventListener('seeked', handleAction);
+      }
+      pusher.unsubscribe(channelName);
+    };
+  }, [partyId, isHost, currentSongObj]);
+
+  const startParty = async () => {
+    if (partyId) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('party', partyId);
+      navigator.clipboard.writeText(url.toString());
+      alert("Party link copied to clipboard! Share it with your friends.");
+      return;
+    }
+    
+    if (!currentSongObj) {
+      alert("Please select and play a song from your library first to start a party!");
+      return;
+    }
+    
+    try {
+      const res = await fetch(`${API_BASE}/api/party`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          song: currentSongObj,
+          currentTime: audioRef.current?.currentTime || 0,
+          isPlaying: audioRef.current ? !audioRef.current.paused : false
+        })
+      });
+      const data = await res.json();
+      setPartyId(data.id);
+      setIsHost(true);
+      
+      const url = new URL(window.location.href);
+      url.searchParams.set('party', data.id);
+      window.history.pushState({}, '', url.toString());
+      
+      navigator.clipboard.writeText(url.toString());
+      alert("Party started! The link has been copied to your clipboard. Share it to sync playback!");
+    } catch (e) {
+      alert("Failed to start party. Please make sure the database is accessible.");
+    }
+  }
+
+  // Synced Lyrics State
+  interface LyricLine {
+    time: number // in seconds
+    text: string
+  }
+  const [lyrics, setLyrics] = useState<LyricLine[]>([])
+  const [currentLyricIndex, setCurrentLyricIndex] = useState<number>(-1)
+  const [isFetchingLyrics, setIsFetchingLyrics] = useState(false)
+
+  // Parse standard .lrc file format into our array structure
+  const parseLRC = (lrcString: string): LyricLine[] => {
+    const lines = lrcString.split('\n')
+    const parsedLyrics: LyricLine[] = []
+    
+    // Regex matches [mm:ss.xx]
+    const timeRegex = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/
+
+    lines.forEach(line => {
+      const match = timeRegex.exec(line)
+      if (match) {
+        const minutes = parseInt(match[1], 10)
+        const seconds = parseInt(match[2], 10)
+        const milliseconds = parseInt(match[3], 10)
+        
+        const timeInSeconds = minutes * 60 + seconds + (milliseconds / (match[3].length === 2 ? 100 : 1000))
+        const text = line.replace(timeRegex, '').trim()
+        
+        if (text) {
+          parsedLyrics.push({ time: timeInSeconds, text })
+        }
+      }
+    })
+    
+    return parsedLyrics
+  }
+
+  // Fetch true synced lyrics from LRCLIB
+  const fetchSyncedLyrics = async (songTitleRaw: string) => {
+    try {
+      setIsFetchingLyrics(true)
+      setLyrics([])
+      setCurrentLyricIndex(-1)
+      
+      // Clean up title (remove "The Weeknd" part from "Starboy (The Weeknd)" if possible)
+      // For LRCLIB, usually just throwing the full string works well on their search endpoint
+      let searchTitle = songTitleRaw.replace('~/', '').trim()
+      
+      const res = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(searchTitle)}`)
+      if (!res.ok) throw new Error("Network response was not ok")
+      
+      const data = await res.json()
+      
+      if (data && data.length > 0) {
+        // Find best match with synced lyrics
+        const bestSynced = data.find((d: any) => d.syncedLyrics)
+        // Find best match with plain lyrics
+        const bestPlain = data.find((d: any) => d.plainLyrics)
+
+        if (bestSynced) {
+          const parsed = parseLRC(bestSynced.syncedLyrics)
+          setLyrics(parsed)
+          console.log("Successfully loaded synced lyrics from LRCLIB!")
+        } else if (bestPlain) {
+          console.log("No synced lyrics found. Falling back to plain lyrics...")
+          const rawLines = bestPlain.plainLyrics
+            .split('\n')
+            .map((l: string) => l.trim())
+            .filter((l: string) => l.length > 0)
+          
+          // Estimate duration (fallback to 3 minutes if API doesn't provide it)
+          const songDuration = bestPlain.duration || 180 
+          
+          // Generate pseudo-synced timestamps evenly distributed across the track
+          const parsed: LyricLine[] = rawLines.map((text: string, index: number) => ({
+            time: (index / Math.max(rawLines.length, 1)) * songDuration,
+            text
+          }))
+          setLyrics(parsed)
+        } else {
+          console.log("No lyrics found for this track.")
+        }
+      } else {
+        console.log("No lyrics found for this track.")
+      }
+    } catch (error) {
+      console.error("Failed to fetch lyrics:", error)
+    } finally {
+      setIsFetchingLyrics(false)
+    }
+  }
+
+  // Fetch Album Art
+  const fetchAlbumArt = async (title: string) => {
+    try {
+      const cleanTitle = title.replace('~/', '').trim();
+      const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(cleanTitle)}&entity=song&limit=1`);
+      const data = await res.json();
+      if (data.results && data.results.length > 0) {
+        // Get high-res version of the artwork
+        const highResUrl = data.results[0].artworkUrl100.replace('100x100', '600x600');
+        setAlbumArtUrl(highResUrl);
+      } else {
+        setAlbumArtUrl(null);
+      }
+    } catch (e) {
+      console.error('Failed to fetch album art', e);
+      setAlbumArtUrl(null);
+    }
+  }
+
+  // Listen for track changes to refetch lyrics and album art
+  useEffect(() => {
+    if (currentTrack && currentTrack !== "~/ 2 Million") {
+      fetchSyncedLyrics(currentTrack)
+      fetchAlbumArt(currentTrack)
+    }
+  }, [currentTrack])
+
+
+
+  const fetchSongs = () => {
+    fetch(`${API_BASE}/api/songs`)
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
+        return res.json()
+      })
+      .then(data => {
+        setSongs(data)
+        setError(null)
+      })
+      .catch(err => {
+        console.error("Failed to load songs", err)
+        setError("Network error. Please check your connection.")
+      })
+  }
+
+  useEffect(() => {
+    fetchSongs()
+  }, [])
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true)
+    } else if (e.type === "dragleave") {
+      setDragActive(false)
+    }
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragActive(false)
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0]
+      if (file.type.startsWith('audio/')) {
+        setSelectedFile(file)
+        setNewSongMeta({
+          ...newSongMeta,
+          title: file.name.replace(/\.[^/.]+$/, "")
+        })
+      }
+    }
+  }
+
+  // Audio refs
+  const audioRef = useRef<HTMLAudioElement>(null)
+  const audioContextRef = useRef<AudioContext | null>(null)
+  const analyserRef = useRef<AnalyserNode | null>(null)
+  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null)
+  const pannerRef = useRef<StereoPannerNode | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Cargar audio por defecto al montar el componente
+  useEffect(() => {
+    if (audioRef.current && !audioRef.current.src) {
+      // Usar la URL raw de GitHub para el archivo MP3
+      audioRef.current.src = "https://raw.githubusercontent.com/Railly/drive/main/2_Million.mp3"
+      audioRef.current.load()
+    }
+  }, [])
+
+  const initializeAudioContext = async () => {
+    if (!audioRef.current || isInitialized) return
+
+    try {
+      console.log("Initializing audio context...")
+
+      // Create audio context
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)()
+
+      // Resume if suspended
+      if (audioContextRef.current.state === "suspended") {
+        await audioContextRef.current.resume()
+      }
+
+      // Create analyser
+      analyserRef.current = audioContextRef.current.createAnalyser()
+      analyserRef.current.fftSize = 1024
+      analyserRef.current.smoothingTimeConstant = 0.2
+
+      // Create source - only if it doesn't exist
+      if (!sourceRef.current) {
+        sourceRef.current = audioContextRef.current.createMediaElementSource(audioRef.current)
+        pannerRef.current = audioContextRef.current.createStereoPanner()
+        
+        // Connect: source -> analyser -> panner -> destination
+        sourceRef.current.connect(analyserRef.current)
+        analyserRef.current.connect(pannerRef.current)
+        pannerRef.current.connect(audioContextRef.current.destination)
+      }
+
+      setIsInitialized(true)
+      console.log("Audio context initialized successfully")
+    } catch (error) {
+      console.error("Error initializing audio context:", error)
+    }
+  }
+
+  // Función para suavizar datos (efecto ola)
+  const smoothData = (data: number[]) => {
+    const smoothed = [...data]
+
+    // Aplicar suavizado entre barras vecinas para efecto ola
+    for (let i = 1; i < smoothed.length - 1; i++) {
+      smoothed[i] = (data[i - 1] + data[i] * 2 + data[i + 1]) / 4
+    }
+
+    return smoothed
+  }
+
+  // Función para actualizar datos con efecto OLA - AMBOS LADOS SINTÉTICOS
+  const updateAudioData = () => {
+    if (!analyserRef.current) return
+
+    const bufferLength = analyserRef.current.frequencyBinCount
+    const dataArray = new Uint8Array(bufferLength)
+
+    analyserRef.current.getByteFrequencyData(dataArray)
+
+    const bars = barsRef.current
+    const halfBars = Math.floor(bars / 2)
+    const rawData = []
+    const usefulFreqRange = Math.floor(bufferLength * 0.3)
+
+    // Calcular nivel general de audio para threshold
+    let totalEnergy = 0
+    for (let i = 0; i < usefulFreqRange; i++) {
+      totalEnergy += dataArray[i]
+    }
+    const averageEnergy = totalEnergy / usefulFreqRange
+    const energyThreshold = 50 // Mantener alto
+
+    for (let i = 0; i < bars; i++) {
+      let value = 0
+
+      if (i < halfBars) {
+        // Lado izquierdo: AHORA TAMBIÉN SINTÉTICO
+        const freqIndex = Math.floor((i / halfBars) * usefulFreqRange)
+        const baseValue = dataArray[freqIndex] || 0
+
+        // Añadir variación sintética al lado izquierdo también
+        const timeOffset = Date.now() * 0.006 + i * 0.12 // Diferentes parámetros que el derecho
+        const synthetic = Math.sin(timeOffset) * 0.25 + Math.cos(timeOffset * 1.5) * 0.15
+        value = baseValue * (0.8 + synthetic) // Ligeramente diferente al derecho
+      } else {
+        // Lado derecho: crear datos sintéticos basados en el lado izquierdo
+        const mirrorIndex = (bars - 1) - i
+        const baseIndex = Math.floor((mirrorIndex / halfBars) * usefulFreqRange)
+        const baseValue = dataArray[baseIndex] || 0
+
+        const timeOffset = Date.now() * 0.008 + i * 0.15
+        const synthetic = Math.sin(timeOffset) * 0.3 + Math.cos(timeOffset * 1.2) * 0.2
+        value = baseValue * (0.7 + synthetic)
+      }
+
+      let normalized = value / 255
+
+      // Si el nivel general está muy bajo, no mostrar nada
+      if (averageEnergy < energyThreshold) {
+        normalized = 0.01
+      } else {
+        // Amplificación por posición para efecto ola - REDUCIDA 40% MÁS
+        const quarterBars = Math.floor(bars / 4)
+        if (i < quarterBars) {
+          normalized *= 1.5 // Era 2.5, ahora 1.5 (40% menos)
+        } else if (i < halfBars) {
+          normalized *= 1.2 // Era 2.0, ahora 1.2 (40% menos)
+        } else if (i < quarterBars * 3) {
+          normalized *= 1.05 // Era 1.75, ahora 1.05 (40% menos)
+        } else {
+          normalized *= 0.9 // Era 1.5, ahora 0.9 (40% menos)
+        }
+
+        // Curva suave para efecto ola
+        normalized = Math.pow(Math.max(0, normalized), 0.4)
+
+        // SISTEMA DE NIVELES - CONTRASTE EXTREMO + REDUCCIÓN 40%
+        if (normalized > 0.8) {
+          // NIVEL SÚPER ALTO: Explosivo - MÁS CONTRASTE
+          normalized = Math.pow(normalized, 0.15) * 1.8 // Era 2.0, ahora 1.8 (40% menos) pero curva más agresiva
+        } else if (normalized > 0.7) {
+          // NIVEL ALTO: Elevado - REDUCIDO
+          normalized = Math.pow(normalized, 0.3) * 0.9 // Era 1.5, ahora 0.9 (40% menos)
+        } else if (normalized > 0.5) {
+          // NIVEL MEDIO-ALTO: Súper reducido para contraste extremo
+          normalized = Math.pow(normalized, 0.8) * 0.1 // Era 0.25, ahora 0.1 (60% menos para más contraste)
+        } else if (normalized > 0.45) {
+          // NIVEL MEDIO-BAJO: Eliminado
+          normalized = 0.01
+        } else {
+          // NIVEL BAJO: Desaparecer
+          normalized = 0.01
+        }
+
+        // Threshold individual MÁS ESTRICTO
+        if (normalized < 0.45) {
+          // Era 0.4, ahora 0.45 - más estricto
+          normalized = 0.01
+        }
+      }
+
+      const final = Math.max(0, Math.min(1.0, normalized)) // Cap at 1.0 (100% height)
+      rawData.push(final)
+    }
+
+    // Aplicar suavizado para efecto ola
+    const smoothedData = smoothData(rawData)
+
+    // Aplicar suavizado adicional para olas más fluidas
+    const extraSmoothed = smoothData(smoothedData)
+
+    setAudioData(extraSmoothed)
+  }
+
+  // useEffect para manejar el loop de visualización
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout | null = null
+
+    if (isPlaying) {
+      setIsLooping(true)
+      console.log("Starting visualization loop")
+
+      intervalId = setInterval(() => {
+        updateAudioData()
+      }, 25) // 40 FPS para fluidez de ola
+    } else {
+      setIsLooping(false)
+      console.log("Stopping visualization loop")
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId)
+      }
+    }
+  }, [isPlaying, isInitialized])
+
+  // 8D Audio Animation Loop
+  useEffect(() => {
+    let animationFrame: number;
+    const animate8D = () => {
+      if (is8DMode && pannerRef.current && isPlaying) {
+        const time = Date.now() / 1500;
+        pannerRef.current.pan.value = Math.sin(time) * 0.8;
+      } else if (pannerRef.current) {
+        pannerRef.current.pan.value = 0;
+      }
+      animationFrame = requestAnimationFrame(animate8D);
+    };
+    if (is8DMode) {
+      animate8D();
+    } else if (pannerRef.current) {
+      pannerRef.current.pan.value = 0;
+    }
+    return () => cancelAnimationFrame(animationFrame);
+  }, [is8DMode, isPlaying]);
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith("audio/")) {
+      alert("Please select an audio file")
+      return
+    }
+
+    try {
+      const audioUrl = URL.createObjectURL(file)
+
+      if (audioRef.current) {
+        // Stop current playback
+        if (isPlaying) {
+          audioRef.current.pause()
+          setIsPlaying(false)
+        }
+
+        // Set new source
+        audioRef.current.src = audioUrl
+        audioRef.current.load()
+
+        setCurrentTrack(`~/ ${file.name.replace(/\.[^/.]+$/, "")}`)
+        setHasAudio(true)
+
+        // Trigger initial animation
+        setShowInitialAnimation(true)
+        setTimeout(() => setShowInitialAnimation(false), 2000)
+
+        console.log("Audio file loaded:", file.name)
+      }
+    } catch (error) {
+      console.error("Error loading audio file:", error)
+    }
+  }
+
+  const playSong = async (song: any) => {
+    setCurrentSongObj(song);
+    if (audioRef.current) {
+      let songUrl = song.url
+      if (!songUrl) {
+        setIsBuffering(true)
+        songUrl = `${API_BASE}/api/songs/${song.id}/stream`
+      }
+
+      // Update track info
+      audioRef.current.src = songUrl
+      audioRef.current.load()
+      setCurrentTrack(`~/ ${song.title}`)
+      setHasAudio(true)
+      
+      // Reset visualizer state for new song
+      setShowInitialAnimation(true)
+      setTimeout(() => setShowInitialAnimation(false), 2000)
+
+      try {
+        // Ensure context is initialized
+        if (!isInitialized) {
+          await initializeAudioContext()
+        }
+        
+        // Ensure context is running
+        if (audioContextRef.current?.state === "suspended") {
+          await audioContextRef.current.resume()
+        }
+
+        // Start playing
+        const playPromise = audioRef.current.play()
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            setIsPlaying(true)
+            console.log("Auto-playing:", song.title)
+          }).catch(error => {
+            if (error.name !== 'AbortError') {
+              console.error("Error auto-playing song:", error)
+            }
+            setIsPlaying(false)
+          })
+        }
+      } catch (error) {
+        console.error("Error auto-playing song setup:", error)
+        setIsPlaying(false)
+      }
+    }
+  }
+
+  const togglePlayback = async () => {
+    if (!audioRef.current) return
+
+    try {
+      if (!isInitialized) {
+        await initializeAudioContext()
+      }
+
+      if (audioContextRef.current?.state === "suspended") {
+        await audioContextRef.current.resume()
+      }
+
+      if (audioRef.current.paused) {
+        const playPromise = audioRef.current.play()
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            console.log("Playing")
+          }).catch(error => {
+            if (error.name !== 'AbortError') {
+              console.error("Error toggling playback:", error)
+            }
+          })
+        }
+      } else {
+        audioRef.current.pause()
+        console.log("Paused")
+      }
+    } catch (error) {
+      console.error("Error toggling playback state:", error)
+    }
+  }
+
+  const skipForward = () => {
+    if (currentSongObj && songs.length > 0) {
+      if (isShuffle) {
+        const randomIndex = Math.floor(Math.random() * songs.length);
+        playSong(songs[randomIndex]);
+        return;
+      }
+      const currentIndex = songs.findIndex(s => s.id === currentSongObj.id)
+      if (currentIndex !== -1 && currentIndex < songs.length - 1) {
+        playSong(songs[currentIndex + 1])
+      }
+    }
+  }
+
+  const skipBackward = () => {
+    if (currentSongObj && songs.length > 0) {
+      if (isShuffle) {
+        const randomIndex = Math.floor(Math.random() * songs.length);
+        playSong(songs[randomIndex]);
+        return;
+      }
+      const currentIndex = songs.findIndex(s => s.id === currentSongObj.id)
+      if (currentIndex > 0) {
+        playSong(songs[currentIndex - 1])
+      } else if (audioRef.current) {
+        audioRef.current.currentTime = 0
+      }
+    } else if (audioRef.current) {
+      audioRef.current.currentTime = 0
+    }
+  }
+
+  // Hardware Media Controls (Earbuds, Bluetooth, Lockscreen)
+  useEffect(() => {
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.setActionHandler('previoustrack', () => skipBackward())
+      navigator.mediaSession.setActionHandler('nexttrack', () => skipForward())
+      navigator.mediaSession.setActionHandler('play', () => {
+        if (audioRef.current) audioRef.current.play()
+      })
+      navigator.mediaSession.setActionHandler('pause', () => {
+        if (audioRef.current) audioRef.current.pause()
+      })
+
+      if (currentSongObj) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: currentSongObj.title || 'Unknown Track',
+          artist: 'RhythmX',
+          artwork: [
+            { src: '/rhythmx-logo.png', sizes: '512x512', type: 'image/png' }
+          ]
+        })
+      }
+    }
+  }, [currentSongObj, songs])
+
+  // Handle audio events
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    const handleCanPlay = () => {
+      console.log("Audio can play")
+      setIsBuffering(false)
+      if (!isInitialized) {
+        initializeAudioContext()
+      }
+    }
+
+    const handleEnded = () => {
+      setIsPlaying(false)
+    }
+
+    const handleError = (e: any) => {
+      console.error("Audio error event:", e)
+      setIsPlaying(false)
+      setIsBuffering(false)
+      if (e.target.error) {
+        switch (e.target.error.code) {
+          case e.target.error.MEDIA_ERR_ABORTED:
+            console.log("Audio playback aborted.")
+            break
+          case e.target.error.MEDIA_ERR_NETWORK:
+            alert("Audio playback error: A network error caused the audio download to fail.")
+            break
+          case e.target.error.MEDIA_ERR_DECODE:
+            alert("Audio playback error: The audio file is corrupted or not supported.")
+            break
+          case e.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+            alert("Audio playback error: The audio format is not supported or the URL is invalid.")
+            break
+          default:
+            alert("Audio playback error: An unknown error occurred.")
+            break
+        }
+      } else {
+        alert("Audio playback error: An unknown error occurred.")
+      }
+    }
+
+    audio.addEventListener("canplaythrough", handleCanPlay)
+    audio.addEventListener("ended", handleEnded)
+    audio.addEventListener("error", handleError)
+
+    return () => {
+      audio.removeEventListener("canplaythrough", handleCanPlay)
+      audio.removeEventListener("ended", handleEnded)
+      audio.removeEventListener("error", handleError)
+    }
+  }, [hasAudio, isInitialized])
+
+  

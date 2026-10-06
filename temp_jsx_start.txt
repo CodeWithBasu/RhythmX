@@ -1,0 +1,18 @@
+                    return (
+                      <div 
+                        key={i}
+                        id={`lyric-${i}`}
+                        className={`font-bold transition-all duration-300 ${
+                          isLyricsExpanded ? 'text-2xl sm:text-3xl md:text-4xl py-1' : 'text-lg sm:text-xl'
+                        } ${
+                          isActive ? 'text-white scale-105 origin-left drop-shadow-md' : 
+                          isPast ? 'text-white/80' : 'text-white/70 hover:text-white'
+                        }`}
+                      >
+                        {line.text || '♪'}
+                      </div>
+                    )
+                  })}
+                  {currentLyricIndex === -1 && (
+                     <div className={`font-bold text-white/50 ${isLyricsExpanded ? 'text-2xl sm:text-3xl md:text-4xl' : 'text-lg sm:text-xl'}`}>
+                        {lyrics.slice(0, isLyricsExpanded ? lyrics.length : 4).map((l,i) => <div key={i} className="m
