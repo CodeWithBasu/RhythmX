@@ -116,11 +116,11 @@ const SongCarousel = ({ title, songs, onPlay }: { title: string, songs: any[], o
         
         {/* Left Shadow & Arrow */}
         {canScrollLeft && (
-          <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-[#121212] via-[#121212]/80 to-transparent z-[5] pointer-events-none" />
+          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-black/50 to-transparent z-[5] pointer-events-none" />
         )}
         <button 
           onClick={() => scroll('left')}
-          className={`hidden md:flex absolute left-2 top-[60px] sm:top-[80px] -translate-y-1/2 w-10 h-10 rounded-full items-center justify-center bg-black/60 hover:bg-black/80 backdrop-blur-sm opacity-0 group-hover/carousel:opacity-100 transition-all z-10 text-white shadow-xl hover:scale-105 ${!canScrollLeft && 'hidden'}`}
+          className={`hidden md:flex absolute left-2 top-[50%] -translate-y-1/2 w-10 h-10 rounded-full items-center justify-center bg-white/20 hover:bg-white/30 backdrop-blur-md opacity-0 group-hover/carousel:opacity-100 transition-all z-10 text-white shadow-xl hover:scale-105 ${!canScrollLeft && 'hidden'}`}
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
@@ -131,25 +131,24 @@ const SongCarousel = ({ title, songs, onPlay }: { title: string, songs: any[], o
             <div 
               key={`carousel-${title}-${song.id}`} 
               onClick={() => onPlay(song)} 
-              className="snap-start shrink-0 w-[120px] sm:w-[160px] cursor-pointer group"
+              className="snap-start shrink-0 w-[140px] sm:w-[160px] cursor-pointer group bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-3 hover:bg-white/10 transition-all"
             >
-              <div className="w-[120px] sm:w-[160px] h-[120px] sm:h-[160px] mb-3">
-                <div className="w-full h-full rounded-md overflow-hidden relative shadow-lg">
+              <div className="w-full aspect-square mb-3 relative rounded-2xl overflow-hidden shadow-lg border border-white/5">
                   <GridAlbumArt song={song} />
-                  <div className="absolute top-2 left-2">
-                    <img src="/rhythmx-logo.png" className="w-4 h-4 rounded-sm opacity-80" />
+                  <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
+                  <div className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 shadow-lg">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                   </div>
-                </div>
               </div>
-              <h3 className="font-medium text-white/90 text-sm truncate">{song.title}</h3>
-              <p className="text-white/60 text-xs line-clamp-2 mt-1 leading-tight">{song.artist || 'Various Artists'}</p>
+              <h3 className="font-bold text-white text-sm truncate px-1">{song.title}</h3>
+              <p className="text-white/60 text-xs truncate px-1 mt-0.5">{song.artist || 'Various Artists'}</p>
             </div>
           ))}
         </div>
 
         {/* Right Shadow & Arrow */}
         {canScrollRight && (
-          <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-[#121212] via-[#121212]/80 to-transparent z-[5] pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-black/50 to-transparent z-[5] pointer-events-none" />
         )}
         <button 
           onClick={() => scroll('right')}
@@ -1210,31 +1209,67 @@ export default function Component() {
 
   
   return (
-    <div className="h-[100dvh] w-full bg-[#050505] text-white flex flex-col font-sans overflow-hidden relative">
+    <div className="h-[100dvh] w-full bg-gradient-to-br from-[#4a0484] via-[#2a014a] to-black text-white flex flex-col font-sans overflow-hidden relative">
       
       {/* Home Screen (Only visible if not expanded) */}
-      <div className={`flex-1 overflow-y-auto pb-32 transition-opacity duration-300 ${isPlayerExpanded ? 'opacity-0 pointer-events-none absolute inset-0' : 'opacity-100 relative z-10'} bg-[#121212]`}>
+      <div className={`flex-1 overflow-y-auto pb-32 transition-opacity duration-300 ${isPlayerExpanded ? 'opacity-0 pointer-events-none absolute inset-0' : 'opacity-100 relative z-10'} bg-transparent`}>
         
-        {/* Top Header (Spotify Style) */}
-        <div className="sticky top-0 z-40 bg-[#121212]/90 backdrop-blur-xl px-4 py-4 flex items-center justify-between max-w-7xl mx-auto w-full">
-          <div className="flex items-center gap-3">
-            {user ? <ProfileDropdown /> : <Link href="/signin" className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-all cursor-pointer shadow-md hover:scale-105 border border-white/10"><User className="w-5 h-5" /></Link>}
-            <button className="bg-[#1ed760] text-black px-4 py-1.5 rounded-full text-sm font-medium">All</button>
-            
+        {/* Top Header (Glass UI) */}
+        <div className="sticky top-0 z-40 bg-transparent px-4 pt-8 pb-4 flex flex-col gap-6 max-w-7xl mx-auto w-full">
+          {/* Welcome Row */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {user ? <ProfileDropdown /> : <Link href="/signin" className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white border border-white/20 shadow-lg"><User className="w-6 h-6" /></Link>}
+              <div className="flex flex-col">
+                <span className="text-white/60 text-xs font-medium">Welcome Back</span>
+                <span className="text-white text-base font-bold">{user ? user.displayName || 'Guest' : 'Guest'}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              {isAdmin && (
+                <button onClick={() => setIsAddingSong(true)} className="w-10 h-10 rounded-full bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center text-white shadow-lg">
+                  <Upload className="w-5 h-5" />
+                </button>
+              )}
+              <button className="w-10 h-10 rounded-full bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center text-white shadow-lg relative">
+                <div className="absolute top-2 right-2.5 w-1.5 h-1.5 bg-red-500 rounded-full"></div>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+              </button>
+            </div>
           </div>
-          {isAdmin && (
-            <button onClick={() => setIsAddingSong(true)} className="bg-white/10 text-white p-2 rounded-full">
-              <Upload className="w-4 h-4" />
-            </button>
-          )}
+          
+          {/* Search Bar Row */}
+          <div className="flex items-center gap-3 relative">
+             <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50" />
+                <input 
+                  type="text"
+                  placeholder="Search here..."
+                  className="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder:text-white/50 rounded-full py-3.5 pl-12 pr-4 outline-none focus:bg-white/20 transition-all"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+             </div>
+             <button className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shrink-0 shadow-lg">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 21v-7"></path><path d="M4 10V3"></path><path d="M12 21v-9"></path><path d="M12 8V3"></path><path d="M20 21v-5"></path><path d="M20 12V3"></path><path d="M1 14h6"></path><path d="M9 8h6"></path><path d="M17 16h6"></path></svg>
+             </button>
+          </div>
+
+          {/* Categories */}
+          <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-1">
+            <button className="px-6 py-2 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white font-medium whitespace-nowrap text-sm shadow-lg">All</button>
+            <button className="px-6 py-2 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-white/70 font-medium whitespace-nowrap text-sm hover:bg-white/10 transition-all">Trending</button>
+            <button className="px-6 py-2 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-white/70 font-medium whitespace-nowrap text-sm hover:bg-white/10 transition-all">Playlists</button>
+            <button className="px-6 py-2 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-white/70 font-medium whitespace-nowrap text-sm hover:bg-white/10 transition-all">Artists</button>
+          </div>
         </div>
 
         <main className="px-4 py-2 space-y-8 max-w-7xl mx-auto w-full">
             {activeTab === 'home' && (
               <div className="space-y-8">
           
-          {/* Quick Play Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
+          {/* Quick Play / Trending Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
             
             {/* Liked Songs Tile */}
             <div onClick={() => setActiveTab("liked")} className="bg-white/10 hover:bg-white/20 transition-colors rounded-md flex items-center gap-3 pr-3 overflow-hidden cursor-pointer h-14">
@@ -1335,7 +1370,7 @@ export default function Component() {
               <div className="space-y-6 pt-4 max-w-5xl mx-auto w-full">
                 <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">Liked Songs</h2>
                 {songs.filter(s => likedSongs.includes(s.id || s.title)).length > 0 ? (
-                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
                     {songs.filter(s => likedSongs.includes(s.id || s.title)).map(song => (
                       <div 
                         key={song.id} 
@@ -1430,7 +1465,7 @@ export default function Component() {
                     <button onClick={() => setIsAddingSong(true)} className="bg-purple-500 text-white px-6 py-2 rounded-full font-medium">Log In</button>
                   </div>
                 ) : songs.filter(s => s.uploadedBy === user.uid).length > 0 ? (
-                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
                     {songs.filter(s => s.uploadedBy === user.uid).map(song => (
                       <div 
                         key={song.id} 
@@ -1467,7 +1502,7 @@ export default function Component() {
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 50, opacity: 0 }}
-            className="fixed bottom-[70px] left-2 right-2 sm:left-1/2 sm:-translate-x-1/2 sm:w-[500px] bg-[#3d1515] rounded-lg p-2 flex items-center gap-3 shadow-2xl cursor-pointer hover:bg-[#4d1a1a] transition-colors z-[60] border-b-2 border-white/10"
+            className="fixed bottom-[70px] left-2 right-2 sm:left-1/2 sm:-translate-x-1/2 sm:w-[500px] bg-white/10 backdrop-blur-md rounded-2xl p-2 flex items-center gap-3 shadow-[0_10px_40px_rgba(0,0,0,0.5)] cursor-pointer hover:bg-white/20 transition-colors z-[60] border border-white/20"
             onClick={() => setIsPlayerExpanded(true)}
           >
             {/* Progress Bar (Spotify Style) */}
