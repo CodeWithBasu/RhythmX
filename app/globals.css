@@ -106,12 +106,12 @@
 }
 
 ::selection {
-  background: #a855f7; /* Vibrant Purple */
+  background: #ef4444; /* Red */
   color: white;
 }
 
 ::-moz-selection {
-  background: #a855f7;
+  background: #ef4444;
   color: white;
 }
 
