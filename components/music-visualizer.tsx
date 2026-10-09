@@ -124,7 +124,7 @@ export default function Component() {
   const { user } = useAuth();
   const device = useDevice()
   // 64 bars on mobile is the sweet spot—wider than before, but not edge-to-edge
-  const activeBars = device === 'mobile' ? 64 : device === 'tablet' ? 72 : 80;
+  const activeBars = device === 'mobile' ? 48 : device === 'tablet' ? 64 : 80;
   
   const barsRef = useRef(activeBars)
   
@@ -1515,7 +1515,7 @@ export default function Component() {
         </div>
 
         {/* Visualizer Canvas & Bars */}
-        <div className="flex-1 relative flex flex-col items-center justify-center w-full min-h-[45vh]">
+        <div className="flex-1 relative flex flex-col items-center justify-center w-full min-h-[45vh] overflow-hidden max-w-full">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-red-900/10 via-[#0C0414]/50 to-[#0C0414] pointer-events-none" />
           
           {!hasAudio && (
@@ -1529,7 +1529,7 @@ export default function Component() {
             </div>
           )}
 
-          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[40vh] max-h-[400px] flex items-end justify-center gap-[1px] sm:gap-[2px] md:gap-1 px-4 z-10">
+          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[40vh] max-h-[400px] flex items-end justify-center gap-[1px] sm:gap-[2px] md:gap-1 px-2 sm:px-4 z-10 w-full overflow-hidden">
             {Array.from({ length: activeBars }).map((_, index) => {
               return (
                 <div
