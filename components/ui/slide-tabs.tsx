@@ -52,7 +52,7 @@ export const SlideTabs = ({
           });
         }
       }}
-      className="relative mx-auto flex w-fit items-center rounded-full border border-white/10 bg-gradient-to-br from-black/60 to-black/30 backdrop-blur-2xl border-t border-l border-white/20 border-b border-r border-white/5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] p-1.5 shadow-2xl"
+      className="relative mx-auto flex w-fit items-center rounded-full border border-white/10 bg-white/[0.08] backdrop-blur-3xl border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.5)] p-1.5 shadow-2xl"
     >
       {tabs.map((tab, i) => (
         <Tab
