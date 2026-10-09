@@ -1192,22 +1192,6 @@ export default function Component() {
             </div>
           </div>
           
-          {/* Search Bar Row */}
-          <div className="flex items-center gap-3 relative">
-             <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
-                <input 
-                  type="text"
-                  placeholder="Search here..."
-                  className="w-full bg-white/[0.08] backdrop-blur-2xl border border-white/[0.15] text-white placeholder:text-white/50 rounded-full py-3 pl-10 pr-4 outline-none focus:bg-white/[0.15] focus:border-white/30 transition-all text-sm shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-             </div>
-             <button className="w-11 h-11 rounded-full bg-white/[0.1] backdrop-blur-xl border border-white/[0.15] shadow-[0_4px_12px_rgba(0,0,0,0.2)] hover:bg-white/[0.15] flex items-center justify-center text-white shrink-0 transition-colors">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 21v-7"></path><path d="M4 10V3"></path><path d="M12 21v-9"></path><path d="M12 8V3"></path><path d="M20 21v-5"></path><path d="M20 12V3"></path><path d="M1 14h6"></path><path d="M9 8h6"></path><path d="M17 16h6"></path></svg>
-             </button>
-          </div>
 
           {/* Categories */}
           <div className="flex gap-2.5 overflow-x-auto hide-scrollbar pb-1">
