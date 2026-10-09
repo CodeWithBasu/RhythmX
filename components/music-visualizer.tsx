@@ -1492,7 +1492,7 @@ export default function Component() {
       `}</style>
       {/* EXPANDED PLAYER (Visualizer) */}
       <div 
-        className={`fixed inset-0 z-50 overflow-y-auto overflow-x-hidden transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isPlayerExpanded ? 'translate-y-0' : 'translate-y-full'}`}
+        className={`fixed inset-0 z-50 overflow-y-auto overflow-x-hidden hide-scrollbar transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isPlayerExpanded ? 'translate-y-0' : 'translate-y-full'}`}
         style={{
           background: `radial-gradient(circle at 50% 30%, #9c091e 0%, #3d020d 60%, #0d0002 100%)`
         }}
