@@ -1160,13 +1160,13 @@ export default function Component() {
 
   
   return (
-    <div className="h-[100dvh] w-full bg-[#1a0005] text-white flex flex-col font-sans overflow-hidden relative">
+    <div className="h-[100dvh] w-full bg-[#290008] bg-[radial-gradient(circle_at_20%_20%,_#9e0b23_0%,_#420210_50%,_#0a0002_100%)] text-white flex flex-col font-sans overflow-hidden relative">
       {/* Background Lighting Blurs */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
         {/* Top Blur */}
-        <div className="absolute top-[-20%] left-[-10%] w-[120%] h-[50vh] bg-red-600/30 blur-[120px] rounded-full mix-blend-screen"></div>
+        <div className="absolute top-[-20%] left-[-10%] w-[120%] h-[30vh] bg-red-600/20 blur-[100px] rounded-[100%]"></div>
         {/* Bottom Blur */}
-        <div className="absolute bottom-[-20%] left-[-10%] w-[120%] h-[50vh] bg-red-600/30 blur-[120px] rounded-full mix-blend-screen"></div>
+        <div className="absolute bottom-[-20%] left-[-10%] w-[120%] h-[30vh] bg-red-600/20 blur-[100px] rounded-[100%]"></div>
       </div>
       
       {/* Home Screen (Only visible if not expanded) */}
